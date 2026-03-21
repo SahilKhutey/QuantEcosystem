@@ -1,4 +1,4 @@
-# Trade Pro Quant Ecosystem 🚀
+# Finance Quant Ecosystem 🚀
 
 An institutional-grade, full-stack quantitative trading ecosystem built for advanced algorithmic trading, market intelligence, and portfolio management.
 
@@ -6,7 +6,7 @@ An institutional-grade, full-stack quantitative trading ecosystem built for adva
 
 ## 🌟 Overview
 
-Trade Pro is not just a trading terminal; it is a complete quantitative ecosystem. It bridges the gap between traditional retail trading platforms and institutional quantitative infrastructure. The ecosystem seamlessly integrates raw market data, complex mathematical models, AI sentiment analysis, and rapid execution into a single, cohesive interface.
+Finance Quant is not just a trading terminal; it is a complete quantitative ecosystem. It bridges the gap between traditional retail trading platforms and institutional quantitative infrastructure. The ecosystem seamlessly integrates raw market data, complex mathematical models, AI sentiment analysis, and rapid execution into a single, cohesive interface.
 
 The platform is designed with a microservices architecture, featuring a React-based high-performance frontend terminal and multiple specialized backend engines (Python/Flask/FastAPI) handling heavy quantitative workloads.
 
