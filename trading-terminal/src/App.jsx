@@ -22,6 +22,10 @@ import StockAnalysisPage from './pages/StockAnalysisPage';
 import QuantEnginePage from './pages/QuantEnginePage';
 import AIAgentPage from './pages/AIAgentPage';
 import TradingEnginePage from './pages/TradingEnginePage';
+import GlobalWealthPage from './pages/GlobalWealthPage';
+import SIPDashboard from './pages/SIPDashboard';
+import SWPDashboard from './pages/SWPDashboard';
+import EquityAnalysisPage from './pages/EquityAnalysisPage';
 
 const AppContainer = styled.div`
   display: flex;
@@ -80,6 +84,12 @@ function App() {
               <Route path="/quant-engine" element={<QuantEnginePage />} />
               <Route path="/ai-agent" element={<AIAgentPage />} />
               <Route path="/trading-engine" element={<TradingEnginePage />} />
+              
+              {/* Wealth Management Routes */}
+              <Route path="/wealth" element={<GlobalWealthPage />} />
+              <Route path="/wealth/sip" element={<SIPDashboard />} />
+              <Route path="/wealth/swp" element={<SWPDashboard />} />
+              <Route path="/wealth/equity" element={<EquityAnalysisPage />} />
             </Routes>
           </div>
         </AppContainer>

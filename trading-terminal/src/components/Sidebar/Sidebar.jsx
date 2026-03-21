@@ -3,6 +3,7 @@ import {
   FiHome, FiActivity, FiTrendingUp, FiPieChart, FiShield,
   FiMessageSquare, FiBarChart2, FiSettings, FiChevronRight,
   FiChevronDown, FiGlobe, FiCpu, FiBriefcase, FiSearch,
+  FiDollarSign, FiLayers, FiMap, FiTarget
 } from 'react-icons/fi';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -117,6 +118,13 @@ const moduleNavItems = [
   },
 ];
 
+const wealthNavItems = [
+  { to: '/wealth', icon: FiMap, label: 'Wealth Map', accent: 'rgba(234,179,8,0.12)' },
+  { to: '/wealth/sip', icon: FiTrendingUp, label: 'SIP Analyzer', accent: 'rgba(59,130,246,0.12)' },
+  { to: '/wealth/swp', icon: FiTarget, label: 'SWP Planner', accent: 'rgba(239,68,68,0.12)' },
+  { to: '/wealth/equity', icon: FiLayers, label: 'Global Equity', accent: 'rgba(16,185,129,0.12)' },
+];
+
 const coreNavItems = [
   { to: '/',          icon: FiHome,          label: 'Dashboard'   },
   { to: '/trading',   icon: FiActivity,      label: 'Trading'     },
@@ -128,7 +136,7 @@ const coreNavItems = [
 
 const Sidebar = () => {
   const location = useLocation();
-  const [openSections, setOpenSections] = useState({ core: true, settings: false });
+  const [openSections, setOpenSections] = useState({ core: true, wealth: true, settings: false });
 
   const toggle = (section) =>
     setOpenSections(p => ({ ...p, [section]: !p[section] }));
@@ -164,6 +172,24 @@ const Sidebar = () => {
               <Icon size={16} />
               <span>{label}</span>
             </NavItem>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      <Divider />
+
+      {/* Wealth Management */}
+      <CollapsibleSection $isOpen={openSections.wealth}>
+        <div className="section-header" onClick={() => toggle('wealth')}>
+          <SectionTitle style={{ padding: 0 }}>Wealth Management</SectionTitle>
+          {openSections.wealth ? <FiChevronDown size={13} color="var(--text-tertiary)" /> : <FiChevronRight size={13} color="var(--text-tertiary)" />}
+        </div>
+        <div className="collapsible-content">
+          {wealthNavItems.map(({ to, icon: Icon, label, accent }) => (
+             <NavItem key={to} to={to} $active={isActive(to)} $accent={accent}>
+               <Icon size={16} />
+               <span>{label}</span>
+             </NavItem>
           ))}
         </div>
       </CollapsibleSection>
