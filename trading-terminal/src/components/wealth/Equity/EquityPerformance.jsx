@@ -84,7 +84,7 @@ const EquityPerformance = ({ indices }) => {
             <div>
               <h3>{idx.name}</h3>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
-                Last: {idx.history[idx.history.length - 1].value.toLocaleString()}
+                Last: {idx.currency}{idx.history[idx.history.length - 1].value.toLocaleString()}
               </div>
             </div>
             <span>{idx.region}</span>

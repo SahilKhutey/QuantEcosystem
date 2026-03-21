@@ -54,6 +54,9 @@ const DashboardPage = () => {
     // Fetch latest prices for portfolio items to keep dashboard fresh
     portfolio.forEach(h => getLatestPrice(h.symbol));
     
+    // Fetch live indices for the top bar
+    ['^NSEI', '^BSESN', 'INR=X', '^INDIAVIX'].forEach(symbol => getLatestPrice(symbol));
+    
     Promise.all([
       runModelFusion(selectedSymbol),
       getMarketAnalysis(),
@@ -87,10 +90,10 @@ const DashboardPage = () => {
       {/* Market indices bar */}
       <div style={styles.indicesBar}>
         {[
-          { label: 'NIFTY 50',   value: mockKpis.nifty,      change: mockKpis.nifty_change,   up: true },
-          { label: 'SENSEX',     value: mockKpis.sensex,     change: mockKpis.sensex_change,   up: true },
-          { label: 'USD/INR',    value: mockKpis.usd_inr,    change: '−0.12%',                up: false },
-          { label: 'VIX India',  value: mockKpis.vix_india,  change: '−5.8%',                 up: false },
+          { label: 'NIFTY 50',   value: prices['^NSEI'] ? Math.round(prices['^NSEI']).toLocaleString() : mockKpis.nifty,      change: mockKpis.nifty_change,   up: true },
+          { label: 'SENSEX',     value: prices['^BSESN'] ? Math.round(prices['^BSESN']).toLocaleString() : mockKpis.sensex,     change: mockKpis.sensex_change,   up: true },
+          { label: 'USD/INR',    value: prices['INR=X'] ? prices['INR=X'].toFixed(2) : mockKpis.usd_inr,    change: 'Live Fetch',                up: false },
+          { label: 'VIX India',  value: prices['^INDIAVIX'] ? prices['^INDIAVIX'].toFixed(2) : mockKpis.vix_india,  change: 'Live Fetch',                 up: false },
         ].map(idx => (
           <div key={idx.label} style={styles.indexItem}>
             <span style={styles.indexLabel}>{idx.label}</span>

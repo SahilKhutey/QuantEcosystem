@@ -22,10 +22,10 @@ import StockAnalysisPage from './pages/StockAnalysisPage';
 import QuantEnginePage from './pages/QuantEnginePage';
 import AIAgentPage from './pages/AIAgentPage';
 import TradingEnginePage from './pages/TradingEnginePage';
-import GlobalWealthPage from './pages/GlobalWealthPage';
-import SIPDashboard from './pages/SIPDashboard';
-import SWPDashboard from './pages/SWPDashboard';
-import EquityAnalysisPage from './pages/EquityAnalysisPage';
+import GlobalWealthPage from './pages/GlobalWealthPage.jsx';
+import SIPDashboard from './pages/SIPDashboard.jsx';
+import SWPDashboard from './pages/SWPDashboard.jsx';
+import EquityAnalysisPage from './pages/EquityAnalysisPage.jsx';
 
 const AppContainer = styled.div`
   display: flex;

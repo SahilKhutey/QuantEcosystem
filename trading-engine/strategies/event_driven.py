@@ -279,6 +279,46 @@ class EventDrivenStrategy:
         
         self.trade_history.append(trade)
         return trade
+        
+    def _trade_sentiment_gap(self, event: CorporateEvent, pre_market_price: float,
+                             yesterday_close: float) -> Optional[Dict]:
+        """
+        Asymmetrical Gap Arbitrage: Uses rigorous NLP classification mapping.
+        If overnight news acts contrarian to retail open panic, instantly generate High-Confidence Synthetics.
+        For example: Earnings NLP is VERY_POSITIVE, but stock gaps down > 2% due to general macro flutter. 
+        It systematically synthetically buys the gap for intra-day mean reversion.
+        """
+        gap_pct = (pre_market_price - yesterday_close) / yesterday_close
+        
+        # NLP Divergence: VERY POSITIVE event but panicked retail GAP DOWN
+        if event.sentiment == EventSentiment.VERY_POSITIVE and gap_pct < -0.02:
+            return {
+                'trade_id': f"gap_fade_buy_{event.event_id}",
+                'symbol': event.symbol,
+                'event_type': "NLP_GAP_ARBITRAGE",
+                'signal': 'STRONG_BUY',
+                'confidence': 0.95,
+                'entry_price': pre_market_price,
+                'target': yesterday_close, # Mean revert gap fill
+                'stop_loss': pre_market_price * 0.98,
+                'reasoning': "Strong NLP Sentiment countered by illogical retail pre-market drop."
+            }
+            
+        # NLP Divergence: VERY NEGATIVE event but irrational FOMO GAP UP
+        if event.sentiment == EventSentiment.VERY_NEGATIVE and gap_pct > 0.02:
+            return {
+                'trade_id': f"gap_fade_short_{event.event_id}",
+                'symbol': event.symbol,
+                'event_type': "NLP_GAP_ARBITRAGE",
+                'signal': 'STRONG_SELL',
+                'confidence': 0.95,
+                'entry_price': pre_market_price,
+                'target': yesterday_close, # Mean revert gap fill
+                'stop_loss': pre_market_price * 1.02,
+                'reasoning': "Weak NLP Sentiment countered by illogical algorithmic short-squeeze up."
+            }
+            
+        return None
     
     def post_event_analysis(self, event: CorporateEvent,
                           price_data: pd.DataFrame) -> Dict:

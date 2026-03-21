@@ -9,6 +9,7 @@ from functools import wraps
 import jwt
 import asyncio
 from datetime import datetime, timedelta
+import yfinance as yf
 
 # Configure logging
 logger = logging.getLogger('MarketAPI')
@@ -106,3 +107,53 @@ def get_account():
     except Exception as e:
         logger.error(f"Error in get_account: {str(e)}")
         return jsonify({'status': 'error', 'message': 'Failed to get account information', 'error': str(e)}), 500
+
+@market_bp.route('/market/indices', methods=['GET'])
+def get_global_indices():
+    try:
+        def fetch_index(ticker, req_id, name, region, currency):
+            t = yf.Ticker(ticker)
+            info = t.info
+            hist = t.history(period="1y", interval="1mo")
+            
+            history_data = []
+            if not hist.empty:
+                for date, row in hist.iterrows():
+                    history_data.append({
+                        'date': date.strftime('%b %y'),
+                        'value': round(row['Close'], 2)
+                    })
+            
+            # yfinance index info is sparse, fallback to approximate logic if missing
+            return {
+                'id': req_id,
+                'name': name,
+                'region': region,
+                'currency': currency,
+                'marketCap': info.get('marketCap', 'N/A') if info.get('marketCap') else 'N/A', # Indices often lack explicit market cap in free YF
+                'peRatio': round(info.get('trailingPE', 0), 2) if info.get('trailingPE') else 'N/A',
+                'dividendYield': round(info.get('dividendYield', 0) * 100, 2) if info.get('dividendYield') else 'N/A',
+                'ytdReturn': round(info.get('ytdReturn', 0) * 100, 2) if info.get('ytdReturn') else (
+                    round(((hist['Close'].iloc[-1] - hist['Close'].iloc[0]) / hist['Close'].iloc[0]) * 100, 2) if len(hist) > 1 else 0
+                ),
+                'history': history_data
+            }
+            
+        indices_map = [
+            ('^GSPC', 'SPX', 'S&P 500', 'North America', '$'),
+            ('^NDX', 'NDX', 'Nasdaq 100', 'North America', '$'),
+            ('^NSEI', 'NIFTY', 'NIFTY 50', 'Asia Pacific', '₹'),
+            ('^STOXX50E', 'STOXX', 'Euro Stoxx 50', 'Europe', '€'),
+            ('^N225', 'NIKKEI', 'Nikkei 225', 'Asia Pacific', '¥')
+        ]
+        
+        # We can execute synchronously since there are only 5, or use threads. Synchronous is fine for now.
+        data = []
+        for symbol, req_id, name, region, currency in indices_map:
+            data.append(fetch_index(symbol, req_id, name, region, currency))
+            
+        return jsonify({'status': 'success', 'data': data, 'timestamp': datetime.utcnow().isoformat()})
+    except Exception as e:
+        logger.error(f"Error in get_global_indices: {str(e)}")
+        return jsonify({'status': 'error', 'message': 'Failed to fetch actual live indices data', 'error': str(e)}), 500
+

@@ -109,3 +109,16 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Fluid UI / UX Responsive Hooks */
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .responsive-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

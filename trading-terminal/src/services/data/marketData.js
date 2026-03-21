@@ -117,8 +117,8 @@ export const useMarketData = () => {
   const { selectedSymbol, selectedTimeframe } = useAppStore();
   
   return {
-    getLatestPrice: () => store.fetchPrice(selectedSymbol),
-    getPriceHistory: () => store.fetchHistory(selectedSymbol, selectedTimeframe),
+    getLatestPrice: (sym) => store.fetchPrice(sym || selectedSymbol),
+    getPriceHistory: (sym, tf) => store.fetchHistory(sym || selectedSymbol, tf || selectedTimeframe),
     prices: store.prices,
     history: store.history,
     loading: store.loading,

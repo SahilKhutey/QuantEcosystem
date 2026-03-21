@@ -198,30 +198,93 @@ class MomentumStrategy:
             slope, intercept = np.polyfit(x, y, 1)
             indicators['trend_slope'] = slope
             indicators['trend_r_squared'] = np.corrcoef(x, y)[0, 1] ** 2
+            
+        # Store full RSI array for divergence calculations
+        indicators['rsi_array'] = talib.RSI(close, timeperiod=14)
         
         return indicators
     
+    def _detect_rsi_divergence(self, df: pd.DataFrame, indicators: Dict) -> int:
+        """
+        Scans for Institutional Hidden/Regular Divergence.
+        Returns:
+            1: Bullish Divergence (Price Lower Lows, RSI Higher Lows)
+           -1: Bearish Divergence (Price Higher Highs, RSI Lower Highs)
+            0: No statistically significant divergence
+        """
+        rsi_array = indicators.get('rsi_array')
+        if rsi_array is None or len(df) < 30:
+            return 0
+            
+        close = df['close'].values
+        
+        # Lookback windows
+        current_price = close[-1]
+        current_rsi = rsi_array[-1]
+        
+        # Find extreme points in the last N periods
+        lookback = 15
+        if len(close) < lookback + 5: return 0
+        
+        past_price_high = np.max(close[-lookback:-5])
+        past_price_low = np.min(close[-lookback:-5])
+        
+        past_rsi_high = np.nanmax(rsi_array[-lookback:-5])
+        past_rsi_low = np.nanmin(rsi_array[-lookback:-5])
+        
+        # Bullish Divergence (Accumulation)
+        # Price forms a lower low, but momentum (RSI) formed a higher low.
+        if current_price < past_price_low and current_rsi > past_rsi_low:
+            return 1
+            
+        # Bearish Divergence (Distribution)
+        # Price forms a higher high, but momentum (RSI) formed a lower high.
+        if current_price > past_price_high and current_rsi < past_rsi_high:
+            return -1
+            
+        return 0
+        
     def _check_price_momentum(self, df: pd.DataFrame, 
                             indicators: Dict) -> Tuple[MomentumSignal, float]:
-        """Check price momentum"""
+        """Check price momentum augmented by Institutional Divergence arrays"""
         price_momentum = indicators.get('price_momentum', 0)
         roc = indicators.get('roc', 0)
+        
+        divergence = self._detect_rsi_divergence(df, indicators)
         
         signal = MomentumSignal.HOLD
         confidence = 0
         
-        if price_momentum > 10 and roc > 5:  # Strong upward momentum
-            signal = MomentumSignal.STRONG_BUY
-            confidence = 0.8
-        elif price_momentum > 5 and roc > 2:  # Moderate upward momentum
+        if price_momentum > 10 and roc > 5:
+            if divergence == -1:
+                # Upward trend but Bearish Divergence halts strong buy! Institutional trap.
+                signal = MomentumSignal.HOLD
+                confidence = 0
+            else:
+                signal = MomentumSignal.STRONG_BUY
+                confidence = 0.8
+        elif price_momentum > 5 and roc > 2:
             signal = MomentumSignal.BUY
             confidence = 0.6
-        elif price_momentum < -10 and roc < -5:  # Strong downward momentum
-            signal = MomentumSignal.STRONG_SELL
-            confidence = 0.8
-        elif price_momentum < -5 and roc < -2:  # Moderate downward momentum
+        elif price_momentum < -10 and roc < -5:
+            if divergence == 1:
+                # Downward trend but Bullish Divergence halts strong sell! Institutional trap.
+                signal = MomentumSignal.HOLD
+                confidence = 0
+            else:
+                signal = MomentumSignal.STRONG_SELL
+                confidence = 0.8
+        elif price_momentum < -5 and roc < -2:
             signal = MomentumSignal.SELL
             confidence = 0.6
+            
+        # Pure Divergence Reversal Entries
+        if divergence == 1 and signal == MomentumSignal.HOLD:
+            signal = MomentumSignal.BUY
+            confidence = 0.9 # High conviction accumulation
+        elif divergence == -1 and signal == MomentumSignal.HOLD:
+            signal = MomentumSignal.SELL
+            confidence = 0.9 # High conviction distribution
         
         return signal, confidence
     
