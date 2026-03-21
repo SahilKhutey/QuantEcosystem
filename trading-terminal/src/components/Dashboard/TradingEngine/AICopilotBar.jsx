@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCommand, FiSend, FiTerminal, FiCpu, FiMessageSquare, FiActivity, FiXCircle } from 'react-icons/fi';
+import api from '@/services/api';
 
 const AICopilotBar = () => {
   const [query, setQuery] = useState('');
@@ -13,7 +14,7 @@ const AICopilotBar = () => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [history, isTyping]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
 
@@ -24,34 +25,17 @@ const AICopilotBar = () => {
     setExpanded(true);
     setIsTyping(true);
 
-    // Simulate AI parsing context over 19 frameworks
-    setTimeout(() => {
-      generateMockResponse(userMsg.content);
-    }, 1200);
-  };
-
-  const generateMockResponse = (inputText) => {
-    setIsTyping(false);
-    const lowInput = inputText.toLowerCase();
-    let responseText = "I successfully parsed your intent. The Master Orchestrator has acknowledged the configuration.";
-
-    // Simple RegEx parsing for demo wow-factor
-    if (lowInput.includes('qlib')) {
-      responseText = "Acknowledged. Injecting `Microsoft Qlib` Alpha 158 Tensors natively into the Backtesting Engine. The ML Factors are tracking momentum.";
-    } else if (lowInput.includes('deploy') || lowInput.includes('subscribe')) {
-      responseText = "Deploying the requested Proprietary Engine. Systemic Risk Matrices are engaged. Capital scaling is restricted to Value-at-Risk limits.";
-    } else if (lowInput.includes('volatility') || lowInput.includes('intraday')) {
-      responseText = "Initializing `Freqtrade / Intraday Scalper`. 5-minute Opening Range Breakout logic is active. I will notify the Hummingbot Executor to bridge order fills via WebSockets.";
-    } else if (lowInput.includes('help') || lowInput.includes('status')) {
-      responseText = "I am the Antigravity Terminal Copilot. I currently oversee 19 active quantitative repositories spanning Data Acquisition (`OpenBB`, `CCXT`), ML Generation (`Qlib`, `FinRL`), and Execution (`Hummingbot`).";
-    } else if (lowInput.includes('clear')) {
-        setHistory([]);
-        setExpanded(false);
-        return;
+    // Call the genuine DL Python Backend
+    try {
+      const resp = await api.post('/copilot/execute', { query: userMsg.content });
+      const aiMsg = { id: Date.now() + 1, role: 'ai', content: resp.data.ai_response };
+      setHistory(prev => [...prev, aiMsg]);
+    } catch (err) {
+      console.error("AI Error:", err);
+      const aiMsg = { id: Date.now() + 1, role: 'ai', content: "CRITICAL FAILURE: Unable to contact the Python NLP tensor nodes at /api/copilot/execute." };
+      setHistory(prev => [...prev, aiMsg]);
     }
-
-    const aiMsg = { id: Date.now() + 1, role: 'ai', content: responseText };
-    setHistory(prev => [...prev, aiMsg]);
+    setIsTyping(false);
   };
 
   return (

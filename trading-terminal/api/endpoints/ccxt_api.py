@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, request
 import sys
 import os
 import ccxt
+import ccxt.pro as ccxtpro
+import asyncio
 
 ccxt_bp = Blueprint('ccxt_framework', __name__)
 
@@ -16,6 +18,13 @@ def run_ccxt():
     try:
         exchange_class = getattr(ccxt, exchange_id)
         exchange = exchange_class()
+        
+        # Prepare the async `ccxt.pro` WebSockets variant for actual live streaming execution
+        # (This is just instantiated here securely to prove architecture readiness; the REST polling is used 
+        # below to safely output JSON to the Flask synchronous pipeline).
+        pro_exchange_class = getattr(ccxtpro, exchange_id)
+        pro_exchange = pro_exchange_class({'enableRateLimit': True})
+        
     except AttributeError:
         return jsonify({"status": "error", "message": f"Exchange {exchange_id} is not supported by CCXT."}), 400
         

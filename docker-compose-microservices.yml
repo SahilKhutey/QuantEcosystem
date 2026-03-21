@@ -23,7 +23,7 @@ services:
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181
 
-  # Data Services
+  # Data & Cache Services
   market-data-service:
     build: 
       context: .
@@ -35,6 +35,8 @@ services:
     depends_on:
       - redis
       - kafka
+    networks:
+      - quant_network
 
   # Strategy Services (Micro-scaled)
   scalping-service:

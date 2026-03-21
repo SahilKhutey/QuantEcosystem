@@ -22,6 +22,9 @@ import OpenBBDashboard from '../components/dashboard/TradingEngine/OpenBBDashboa
 import HummingbotDashboard from '../components/dashboard/TradingEngine/HummingbotDashboard';
 import UnifiedPipelineBuilder from '../components/dashboard/TradingEngine/UnifiedPipelineBuilder';
 import StrategyMarketplace from '../components/dashboard/TradingEngine/StrategyMarketplace';
+import TradingViewWidget from '../components/dashboard/TradingEngine/TradingViewWidget';
+import IndianMarketsDashboard from '../components/dashboard/TradingEngine/IndianMarketsDashboard';
+import AlertsDashboard from '../components/dashboard/TradingEngine/AlertsDashboard';
 import AICopilotBar from '../components/dashboard/TradingEngine/AICopilotBar';
 
 const TradingEnginePage = () => (
@@ -53,6 +56,9 @@ const TradingEnginePage = () => (
       <PortfolioOptimization />
       <RiskManagement />
     </div>
+
+    {/* Post-Trade System Anomalies & Execution Performance Monitoring */}
+    <AlertsDashboard />
 
     {/* Lean Engine Backtester */}
     <LeanBacktester />
@@ -89,6 +95,12 @@ const TradingEnginePage = () => (
 
     {/* Meta Prophet GAM Time-Series Forecaster */}
     <ProphetDashboard />
+
+    {/* The Native Live Web Socket Engine */}
+    <TradingViewWidget />
+
+    {/* The Indian Market Broker UI Matrix */}
+    <IndianMarketsDashboard />
 
     {/* CCXT Market Data Connection Normalizer */}
     <CcxtDashboard />

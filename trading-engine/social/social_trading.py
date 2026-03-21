@@ -46,10 +46,17 @@ class SocialTrading:
         # Placeholder for live trade retrieval
         return [{'symbol': 'BTC/USD', 'side': 'BUY', 'amount': 0.5}]
 
-    def scale_trade(self, trade: Dict, total_allocation: float) -> Dict:
-        """Determines position size for follower relative to master's total risk"""
-        trade['amount'] *= (total_allocation / 100000) # Assuming master has 100k
-        return trade
+    def scale_trade(self, trade: Dict, total_allocation: float, master_equity: float = 1000000.0) -> Dict:
+        """Determines position size for follower relative to master's total risk architecture"""
+        # E.g., Master risks 2% of $1,000,000 = $20,000
+        # Follower risks 2% of $5,000 = $100
+        # We calculate the identical native risk fraction and apply to Follower's isolated allocation
+        native_fraction = trade.get('amount', 0) / master_equity
+        
+        scaled_trade = trade.copy()
+        scaled_trade['amount'] = round(total_allocation * native_fraction, 4)
+        print(f"[COPY TRADE SCALER] Master Risk: {native_fraction*100}% | Mirrored Size: ${scaled_trade['amount']}")
+        return scaled_trade
 
     async def execute_trade(self, follower_id: str, trade: Dict):
         print(f"MIRROR TRADE: Executing {trade['side']} for Follower={follower_id}")

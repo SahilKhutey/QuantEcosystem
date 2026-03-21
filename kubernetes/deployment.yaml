@@ -13,17 +13,28 @@ spec:
         app: trading-engine
     spec:
       containers:
-      - name: trading-engine
+      - name: trading-engine-master
         image: trading-engine:latest
         ports:
-        - containerPort: 8000
+        - containerPort: 5000
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
             memory: "1Gi"
             cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+      
+      # Sidecar Architecture: High-Frequency Localized Redis Cache Matrix
+      - name: redis-cache-sidecar
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"
         env:
         - name: DATABASE_URL
           valueFrom:

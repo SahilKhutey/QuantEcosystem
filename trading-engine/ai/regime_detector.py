@@ -28,7 +28,7 @@ class MarketRegimeDetector:
         # Identify current cluster
         regime = self.clustering.predict(features.reshape(1, -1))[0]
         
-        # Mapping clusters to meaningful regimes
+        # Mapping clusters to meaningful regimes based on Volatility/Momentum Vectors
         regimes = {
             0: {'name': 'low_vol_bull', 'volatility': 'low', 'trend': 'up'},
             1: {'name': 'high_vol_bear', 'volatility': 'high', 'trend': 'down'},

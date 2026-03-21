@@ -22,6 +22,12 @@ from api.endpoints.openbb_api import openbb_bp
 from api.endpoints.hummingbot_api import hummingbot_bp
 from api.endpoints.marketplace_api import marketplace_bp
 
+# The Brand New Explicit Broker API Mappings
+from api.endpoints.tradingview_api import tradingview_bp
+from api.endpoints.indian_brokers_api import indian_brokers_bp
+from api.endpoints.alerts_api import alerts_bp
+from api.endpoints.copilot_api import copilot_bp
+
 app = Flask(__name__)
 CORS(app)
 
@@ -46,6 +52,12 @@ app.register_blueprint(quantstats_bp, url_prefix='/api/quantstats')
 app.register_blueprint(openbb_bp, url_prefix='/api/openbb')
 app.register_blueprint(hummingbot_bp, url_prefix='/api/hummingbot')
 app.register_blueprint(marketplace_bp, url_prefix='/api/marketplace')
+
+# Registering External Webhook and Regional Endpoints
+app.register_blueprint(tradingview_bp, url_prefix='/api/tradingview')
+app.register_blueprint(indian_brokers_bp, url_prefix='/api/indian_brokers')
+app.register_blueprint(alerts_bp, url_prefix='/api/alerts')
+app.register_blueprint(copilot_bp, url_prefix='/api/copilot')
 
 @app.route('/health')
 def health_check():
