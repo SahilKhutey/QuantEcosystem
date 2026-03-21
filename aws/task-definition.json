@@ -1,0 +1,44 @@
+{
+  "family": "data-monitoring-dashboard",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "dashboard",
+      "image": "data-monitoring-dashboard:1.0.0",
+      "cpu": 512,
+      "memory": 1024,
+      "portMappings": [
+        {
+          "containerPort": 8501,
+          "hostPort": 8501,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "STREAMLIT_SECRET_KEY",
+          "value": "your_strong_secret_key"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "data-monitoring-dashboard",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "data-monitoring"
+        }
+      }
+    }
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
+}

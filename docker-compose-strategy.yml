@@ -1,0 +1,48 @@
+# docker-compose-strategy.yml
+version: '3.8'
+
+services:
+  strategy-api:
+    build: ./strategy-engine
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/strategydb
+      - REDIS_URL=redis://redis:6379
+      - MARKET_DATA_URL=http://market-data:8000
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./strategy-engine:/app
+    command: uvicorn api.strategy_api:router --host 0.0.0.0 --port 8000 --reload
+
+  strategy-worker:
+    build: ./strategy-engine
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/strategydb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./strategy-engine:/app
+    command: python -m strategy_engine.worker
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: strategydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - strategy_db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  strategy_db_data:
+  redis_data:

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-analyzer-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: stock-analyzer-api
+  template:
+    metadata:
+      labels:
+        app: stock-analyzer-api
+    spec:
+      containers:
+      - name: api
+        image: stock-analyzer/api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-analyzer-service
+spec:
+  selector:
+    app: stock-analyzer-api
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer

@@ -1,0 +1,64 @@
+name: Deploy Trading Engine
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pandas numpy talib-binary scikit-learn
+    
+    - name: Run unit and integration tests
+      run: |
+        pytest tests/ --cov=trading_engine --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Build Docker image
+      run: docker build -t trading-engine:latest .
+      
+    - name: Push to Container Registry
+      run: |
+        # In production: docker login and push to ECR/GCR/DockerHub
+        echo "Pushing image..."
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Kubeconfig
+      run: |
+        echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > kubeconfig.yaml
+        export KUBECONFIG=kubeconfig.yaml
+    
+    - name: Deploy to Kubernetes Cluster via Helm/Kubectl
+      run: |
+        kubectl apply -f kubernetes/
+        kubectl rollout status deployment/trading-engine

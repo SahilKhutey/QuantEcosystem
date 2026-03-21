@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=main.py
+      - API_KEY=${API_KEY}
+      - DB_HOST=${DB_HOST}
+    volumes:
+      - ./data:/app/data
+    restart: always
+
+  frontend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - REACT_APP_API_URL=http://api:5000
+    volumes:
+      - ./public:/app/public
+      - ./dist:/app/dist
+    depends_on:
+      - api
+    restart: always
+
+  websocket:
+    build: .
+    ports:
+      - "8765:8765"
+    environment:
+      - API_KEY=${API_KEY}
+    depends_on:
+      - api
+    command: python -m services.websocket.websocket_server
+    restart: always

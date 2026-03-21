@@ -1,0 +1,10 @@
+yfinance
+alpha_vantage
+streamlit
+pandas
+numpy
+plotly
+requests
+psutil
+talib
+python-dotenv

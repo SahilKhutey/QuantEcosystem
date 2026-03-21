@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Base Infrastructure
+  redis:
+    image: redis:alpine
+    ports: ["6379:6379"]
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    ports: ["5432:5432"]
+    environment:
+      - POSTGRES_PASSWORD=trading_pass
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports: ["9092:9092"]
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+
+  # Data Services
+  market-data-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile.data
+    ports: ["8002:8000"]
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - KAFKA_URL=kafka:9092
+    depends_on:
+      - redis
+      - kafka
+
+  # Strategy Services (Micro-scaled)
+  scalping-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.strategy
+    command: python run_strategy.py --type scalping
+    environment:
+      - MARKET_DATA_URL=http://market-data-service:8000
+      - RISK_SERVICE_URL=http://risk-service:8000
+    depends_on:
+      - market-data-service
+
+  swing-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.strategy
+    command: python run_strategy.py --type swing
+    environment:
+      - MARKET_DATA_URL=http://market-data-service:8000
+    depends_on:
+      - market-data-service
+
+  # AI Services
+  ai-signal-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    environment:
+      - ML_MODEL_PATH=/models
+    volumes:
+      - ./models:/models
+
+  # Risk & Execution Services
+  risk-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.risk
+    ports: ["8003:8000"]
+
+  # API Gateway & Dashboard
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports: ["8000:8000"]
+    depends_on:
+      - scalping-service
+      - swing-service
+      - risk-service

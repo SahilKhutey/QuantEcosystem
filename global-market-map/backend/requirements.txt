@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+websockets
+pydantic
+requests
+pandas
+numpy
+spacy
+nltk
+scikit-learn
+aiohttp
+transformers
+torch
