@@ -11,6 +11,14 @@ import numpy as np
 
 # Data source configuration
 DATA_SOURCES = {
+    'yfinance': {
+        'name': 'Yahoo Finance',
+        'api_url': '',
+        'ws_url': None,
+        'requires_api_key': False,
+        'description': 'Global stocks, forex, crypto (No API Key needed)',
+        'assets': ['stocks', 'crypto']
+    },
     'alpaca': {
         'name': 'Alpaca',
         'api_url': 'https://data.alpaca.markets/v2',
@@ -186,8 +194,8 @@ class MarketDataService:
                     
         # Merge and return results
         if results:
-            # Prioritize by source reliability
-            priority_order = ['alpaca', 'alpha_vantage', 'federal_reserve', 'news_api']
+            # Prioritize by source reliability (yfinance first for guaranteed data)
+            priority_order = ['yfinance', 'alpaca', 'alpha_vantage', 'federal_reserve', 'news_api']
             for source in priority_order:
                 if source in results:
                     return results[source]
@@ -203,6 +211,9 @@ class MarketDataService:
                                            start: str,
                                            end: str) -> Optional[pd.DataFrame]:
         """Get historical data from a specific source"""
+        if source == 'yfinance':
+            return await asyncio.to_thread(self._fetch_yf_historical, symbol, timeframe, start, end)
+            
         # Format parameters based on source
         params = {}
         endpoint = ""
@@ -352,6 +363,9 @@ class MarketDataService:
     
     async def _get_real_time_data_from_source(self, source: str, symbol: str, asset_type: str) -> Optional[Dict]:
         """Get real-time data from a specific source"""
+        if source == 'yfinance':
+            return await asyncio.to_thread(self._fetch_yf_realtime, symbol)
+            
         if source == 'alpaca':
             return await self._make_request(
                 source,
@@ -440,3 +454,72 @@ class MarketDataService:
             if any(k in text for k in keywords):
                 return category
         return 'general'
+
+    def _fetch_yf_historical(self, symbol, timeframe, start, end):
+        try:
+            import yfinance as yf
+            interval_map = {'1Min': '1m', '5Min': '5m', '15Min': '15m', '1H': '1h', '1D': '1d', '1W': '1wk', '1M': '1mo'}
+            interval = interval_map.get(timeframe, '1d')
+            
+            ticker = yf.Ticker(symbol)
+            if start and end:
+                df = ticker.history(interval=interval, start=start, end=end)
+            else:
+                period_map = {'1m': '7d', '5m': '60d', '15m': '60d', '1h': '730d', '1d': '1y'}
+                period = period_map.get(interval, '1mo') # default to 1mo for frontend chart performance
+                df = ticker.history(interval=interval, period=period)
+                
+            if df.empty:
+                return None
+                
+            df = df.reset_index()
+            time_col = 'Datetime' if 'Datetime' in df.columns else 'Date'
+            if time_col in df.columns:
+                if df[time_col].dt.tz is not None:
+                    df['timestamp'] = df[time_col].dt.tz_convert(None)
+                else:
+                    df['timestamp'] = df[time_col]
+                df.set_index('timestamp', inplace=True)
+            
+            df.rename(columns={
+                'Open': 'open', 'High': 'high', 'Low': 'low', 
+                'Close': 'close', 'Volume': 'volume'
+            }, inplace=True)
+            
+            df['symbol'] = symbol
+            df['asset_type'] = 'stocks'
+            df['source'] = 'yfinance'
+            
+            return df[['open', 'high', 'low', 'close', 'volume', 'symbol', 'asset_type', 'source']]
+        except Exception as e:
+            self.logger.error(f"yfinance historical error for {symbol}: {str(e)}")
+            return None
+
+    def _fetch_yf_realtime(self, symbol):
+        try:
+            import yfinance as yf
+            ticker = yf.Ticker(symbol)
+            info = ticker.fast_info
+            
+            try:
+                price = info.last_price
+            except AttributeError:
+                price = None
+                
+            if price is None or pd.isna(price):
+                df = ticker.history(period='1d')
+                if not df.empty:
+                    price = df['Close'].iloc[-1]
+                else:
+                    return None
+                    
+            return {
+                'symbol': symbol,
+                'price': float(price),
+                'source': 'yfinance',
+                'timestamp': datetime.now().isoformat()
+            }
+        except Exception as e:
+            self.logger.error(f"yfinance realtime error for {symbol}: {str(e)}")
+            return None
+
