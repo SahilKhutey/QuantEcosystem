@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autonomous-trading
+  labels:
+    app: autonomous-trading
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autonomous-trading
+  template:
+    metadata:
+      labels:
+        app: autonomous-trading
+    spec:
+      containers:
+      - name: trading-system
+        image: autonomous-trading:1.0
+        env:
+          - name: ALPACA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: trading-system-secrets
+                key: alpaca-key
+          - name: ALPACA_API_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: trading-system-secrets
+                key: alpaca-secret
+          - name: TDA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: trading-system-secrets
+                key: tda-key
+          - name: TDA_ACCESS_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: trading-system-secrets
+                key: tda-token
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "1024Mi"
+          limits:
+            cpu: "2000m"
+            memory: "2048Mi"
+        livenessProbe:
+          exec:
+            command: ["python", "-c", "import sys; sys.path.append('.'); from main import setup_logging; print('System alive')"]
+          initialDelaySeconds: 30
+          periodSeconds: 60
+        readinessProbe:
+          exec:
+            command: ["python", "-c", "import sys; sys.path.append('.'); from main import setup_logging; print('System ready')"]
+          initialDelaySeconds: 30
+          periodSeconds: 60
+        volumeMounts:
+          - name: log-volume
+            mountPath: /logs
+      volumes:
+        - name: log-volume
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: trading-system-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autonomous-trading
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+  selector:
+    app: autonomous-trading
