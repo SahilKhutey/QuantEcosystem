@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from services.broker.alpaca_api import AlpacaAPI
+from services.broker.broker_interface import BrokerAPI
 
 logger = logging.getLogger('MarketData')
 
@@ -16,8 +16,8 @@ class MarketDataService:
     - Rate limit management
     """
     
-    def __init__(self, alpaca_api: AlpacaAPI):
-        self.alpaca = alpaca_api
+    def __init__(self, broker: BrokerAPI):
+        self.alpaca = broker
         self.data_cache = {}
         self.last_update = {}
         self.rate_limit = {

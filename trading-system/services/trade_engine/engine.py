@@ -5,7 +5,8 @@ import numpy as np
 from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional
-from services.broker.alpaca_api import AlpacaAPI, OrderRequest
+from services.broker.broker_interface import BrokerAPI, OrderRequest
+from services.broker.alpaca_api import AlpacaAPI
 from services.risk.manager import RiskManager
 from services.data.market_data import MarketDataService
 
@@ -47,8 +48,8 @@ class TradeEngine:
     - Comprehensive audit trail
     """
     
-    def __init__(self, alpaca_api: AlpacaAPI, risk_manager: RiskManager, market_data: MarketDataService):
-        self.alpaca = alpaca_api
+    def __init__(self, broker: BrokerAPI, risk_manager: RiskManager, market_data: MarketDataService):
+        self.alpaca = broker
         self.risk = risk_manager
         self.market = market_data
         self.logger = logger

@@ -1,68 +1,41 @@
-import requests
 import time
 import logging
-import json
+import requests
 from dataclasses import dataclass
 from datetime import datetime
 from services.broker.broker_interface import BrokerAPI, OrderRequest
 
-logger = logging.getLogger('AlpacaAPI')
+logger = logging.getLogger('TDAPI')
 
-class AlpacaAPI(BrokerAPI):
+class TDAPI(BrokerAPI):
     """
-    Production-grade Alpaca API integration with global market support
+    TD Ameritrade API integration with global market support
     """
     
-    BASE_URL = "https://api.alpaca.markets"
-    DATA_URL = "https://data.alpaca.markets"
-    WEBSOCKET_URL = "wss://stream.data.alpaca.markets/v2"
+    BASE_URL = "https://api.tdameritrade.com/v1"
     
-    def __init__(self, api_key: str = None, api_secret: str = None):
+    def __init__(self, api_key: str = None, access_token: str = None):
         self.api_key = api_key
-        self.api_secret = api_secret
-        self.rate_limit = {
-            'max_requests': 20,
-            'window_seconds': 60,
-            'current': 0,
-            'last_reset': time.time(),
-            'last_request': time.time()
-        }
+        self.access_token = access_token
         self.logger = logger
-        self.order_id_prefix = f"ALP_{int(time.time())}_"
+        self.order_id_prefix = f"TDA_{int(time.time())}_"
         self.active_orders = {}
         self.last_order_id = 0
     
-    def _check_rate_limit(self):
-        """Enforce Alpaca's API rate limits (20 requests/minute)"""
-        current_time = time.time()
-        
-        # Reset counter if window has passed
-        if current_time - self.rate_limit['last_reset'] > self.rate_limit['window_seconds']:
-            self.rate_limit['current'] = 0
-            self.rate_limit['last_reset'] = current_time
-        
-        # Check if we're within limits
-        if self.rate_limit['current'] >= self.rate_limit['max_requests']:
-            wait_time = self.rate_limit['window_seconds'] - (current_time - self.rate_limit['last_reset'])
-            self.logger.warning(f"API rate limit hit. Waiting {wait_time:.1f} seconds...")
-            time.sleep(wait_time)
-            self.rate_limit['current'] = 0
-            self.rate_limit['last_reset'] = time.time()
-        
-        # Increment counter
-        self.rate_limit['current'] += 1
-        self.rate_limit['last_request'] = current_time
-    
     def _get_headers(self):
-        """Get authentication headers for Alpaca API"""
+        """Get authentication headers for TD Ameritrade API"""
         return {
-            'APCA-API-KEY-ID': self.api_key,
-            'APCA-API-SECRET-KEY': self.api_secret,
+            'Authorization': f'Bearer {self.access_token}',
             'Content-Type': 'application/json'
         }
     
+    def _check_rate_limit(self):
+        """TD Ameritrade has rate limits (120 requests per 5 minutes)"""
+        # In production, implement rate limiting
+        pass
+    
     def submit_order(self, order: OrderRequest) -> dict:
-        """Submit an order to Alpaca with comprehensive risk management"""
+        """Submit an order to TD Ameritrade"""
         self._check_rate_limit()
         
         # Generate unique client order ID if not provided
@@ -72,91 +45,65 @@ class AlpacaAPI(BrokerAPI):
         
         # Prepare payload based on order type
         payload = {
-            'symbol': order.symbol,
-            'qty': order.quantity,
-            'side': 'buy' if order.action == 'BUY' else 'sell',
-            'type': order.order_type,
-            'time_in_force': order.time_in_force,
-            'client_order_id': order.client_order_id,
-            'extended_hours': order.extended_hours
+            'orderType': order.order_type.upper(),
+            'session': 'NORMAL',
+            'duration': 'DAY',
+            'orderStrategyType': 'SINGLE',
+            'orderLegCollection': [{
+                'instruction': order.action,
+                'quantity': order.quantity,
+                'instrument': {
+                    'symbol': order.symbol,
+                    'assetType': 'EQUITY'
+                }
+            }]
         }
         
         # Add price parameters for limit/stop orders
         if order.order_type == 'limit' and order.price:
-            payload['limit_price'] = order.price
+            payload['price'] = order.price
         elif order.order_type == 'stop' and order.stop_price:
-            payload['stop_price'] = order.stop_price
+            payload['stopPrice'] = order.stop_price
         elif order.order_type == 'stop_limit':
             if order.price and order.stop_price:
-                payload['limit_price'] = order.price
-                payload['stop_price'] = order.stop_price
-        
-        # Add order class if specified
-        if order.order_class:
-            payload['order_class'] = order.order_class
-            
-        # Add take profit and stop loss for OCO orders
-        if order.take_profit and order.stop_loss:
-            payload['take_profit'] = order.take_profit
-            payload['stop_loss'] = order.stop_loss
+                payload['price'] = order.price
+                payload['stopPrice'] = order.stop_price
         
         try:
-            # Submit order to Alpaca
+            # Submit order to TD Ameritrade
             response = requests.post(
-                f"{self.BASE_URL}/v2/orders",
+                f"{self.BASE_URL}/accounts/{self.api_key}/orders",
                 json=payload,
                 headers=self._get_headers()
             )
             
-            # Handle response
+            # Handle response (TD API often returns 201 Created with an empty body but location header contains order ID)
             if response.status_code in (200, 201):
-                order_data = response.json()
-                self.active_orders[order_data['id']] = {
+                # TD API might not return JSON on success
+                try:
+                    order_data = response.json()
+                except:
+                    order_data = {'status': 'accepted', 'order_id': response.headers.get('Location', '').split('/')[-1]}
+                
+                self.active_orders[order_data.get('order_id', 'N/A')] = {
                     'order': order,
                     'status': 'pending',
                     'timestamp': time.time(),
-                    'client_order_id': order_data['client_order_id']
+                    'client_order_id': order_data.get('client_order_id', order.client_order_id)
                 }
-                self.logger.info(f"Order submitted: {order_data['id']} for {order.symbol}")
+                self.logger.info(f"Order submitted: {order_data.get('order_id', 'N/A')} for {order.symbol}")
                 return order_data
             
-            # Handle rate limit errors
-            if response.status_code == 429:
-                self.logger.error("API rate limit exceeded. Retrying after 1 second...")
-                time.sleep(1)
-                return self.submit_order(order)
-            
-            # Handle specific Alpaca errors
-            error = response.json()
-            error_code = error.get('code', 0)
-            
-            # 40310 - Order rejected (symbol not tradable)
-            if error_code == 40310:
-                self.logger.error(f"Order rejected: {error.get('message', 'Symbol not tradable')}")
-                return {
-                    'error': error.get('message', 'Symbol not tradable'),
-                    'status': 'rejected',
-                    'client_order_id': order.client_order_id,
-                    'rejection_code': error_code
-                }
-            
-            # 40302 - Order rejected (insufficient funds)
-            if error_code == 40302:
-                self.logger.error(f"Order rejected: {error.get('message', 'Insufficient funds')}")
-                return {
-                    'error': error.get('message', 'Insufficient funds'),
-                    'status': 'rejected',
-                    'client_order_id': order.client_order_id,
-                    'rejection_code': error_code
-                }
-            
-            # Other errors
+            # Handle specific TD Ameritrade errors
+            try:
+                error = response.json()
+            except:
+                error = {'message': 'API error'}
             self.logger.error(f"Order submission failed: {error.get('message', 'API error')}")
             return {
                 'error': error.get('message', 'API error'),
                 'status': 'rejected',
-                'client_order_id': order.client_order_id,
-                'rejection_code': error_code
+                'client_order_id': order.client_order_id
             }
             
         except Exception as e:
@@ -164,8 +111,7 @@ class AlpacaAPI(BrokerAPI):
             return {
                 'error': str(e),
                 'status': 'rejected',
-                'client_order_id': order.client_order_id,
-                'rejection_code': 9999
+                'client_order_id': order.client_order_id
             }
     
     def get_order_status(self, order_id: str) -> dict:
@@ -174,14 +120,12 @@ class AlpacaAPI(BrokerAPI):
         
         try:
             response = requests.get(
-                f"{self.BASE_URL}/v2/orders/{order_id}",
+                f"{self.BASE_URL}/accounts/{self.api_key}/orders/{order_id}",
                 headers=self._get_headers()
             )
             
             if response.status_code == 200:
                 return response.json()
-            elif response.status_code == 404:
-                return {'error': 'Order not found', 'status': 'unknown'}
             else:
                 error = response.json()
                 self.logger.error(f"Order status check failed: {error.get('message', 'API error')}")
@@ -197,7 +141,7 @@ class AlpacaAPI(BrokerAPI):
         
         try:
             response = requests.delete(
-                f"{self.BASE_URL}/v2/orders/{order_id}",
+                f"{self.BASE_URL}/accounts/{self.api_key}/orders/{order_id}",
                 headers=self._get_headers()
             )
             
@@ -222,7 +166,7 @@ class AlpacaAPI(BrokerAPI):
         
         try:
             response = requests.get(
-                f"{self.BASE_URL}/v2/positions",
+                f"{self.BASE_URL}/accounts/{self.api_key}/positions",
                 headers=self._get_headers()
             )
             
@@ -243,7 +187,7 @@ class AlpacaAPI(BrokerAPI):
         
         try:
             response = requests.get(
-                f"{self.BASE_URL}/v2/account",
+                f"{self.BASE_URL}/accounts/{self.api_key}",
                 headers=self._get_headers()
             )
             
@@ -260,23 +204,25 @@ class AlpacaAPI(BrokerAPI):
     
     def get_historical_data(self, symbol: str, timeframe: str = '1D', 
                           start: str = None, end: str = None) -> dict:
-        """Get historical market data from Alpaca Data API"""
+        """Get historical market data from TD Ameritrade"""
         self._check_rate_limit()
         
         try:
             params = {
                 'symbol': symbol,
-                'timeframe': timeframe,
-                'limit': 1000
+                'periodType': 'day',
+                'frequencyType': timeframe.lower(),
+                'frequency': 1,
+                'needExtendedHoursData': 'true'
             }
             
             if start:
-                params['start'] = start
+                params['startDate'] = int(datetime.strptime(start, "%Y-%m-%d").timestamp() * 1000)
             if end:
-                params['end'] = end
+                params['endDate'] = int(datetime.strptime(end, "%Y-%m-%d").timestamp() * 1000)
             
             response = requests.get(
-                f"{self.DATA_URL}/v2/stocks/{symbol}/bars",
+                f"{self.BASE_URL}/marketdata/{symbol}/pricehistory",
                 params=params,
                 headers=self._get_headers()
             )
@@ -293,12 +239,18 @@ class AlpacaAPI(BrokerAPI):
             return {'error': str(e)}
     
     def get_real_time_data(self, symbol: str) -> dict:
-        """Get real-time market data from Alpaca Data API"""
+        """Get real-time market data from TD Ameritrade"""
         self._check_rate_limit()
         
         try:
+            params = {
+                'apikey': self.api_key,
+                'symbol': symbol
+            }
+            
             response = requests.get(
-                f"{self.DATA_URL}/v2/stocks/{symbol}/quotes/latest",
+                f"{self.BASE_URL}/marketdata/quotes",
+                params=params,
                 headers=self._get_headers()
             )
             

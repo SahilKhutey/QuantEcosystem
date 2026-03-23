@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     IB_PORT: int = 7497
     IB_CLIENT_ID: int = 1
     
+    # TD Ameritrade Settings
+    TDA_KEY: Optional[str] = None
+    TDA_TOKEN: Optional[str] = None
+    
     # Trading Settings
     STRATEGY_NAME: str = "MeanReversion"
     MAX_POSITION_SIZE_PCT: float = 0.05
@@ -27,7 +31,9 @@ class Settings(BaseSettings):
     def API_KEYS(self) -> Dict[str, str]:
         return {
             'alpaca_key': self.API_KEY,
-            'alpaca_secret': self.API_SECRET
+            'alpaca_secret': self.API_SECRET,
+            'tda_key': self.TDA_KEY,
+            'tda_token': self.TDA_TOKEN
         }
     
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")

@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-terminal
+  labels:
+    app: trading-terminal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trading-terminal
+  template:
+    metadata:
+      labels:
+        app: trading-terminal
+    spec:
+      containers:
+      - name: trading-terminal
+        image: trading-terminal:1.0
+        env:
+          - name: ALPACA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: trading-system-secrets
+                key: alpaca-key
+          - name: ALPACA_API_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: trading-system-secrets
+                key: alpaca-secret
+          - name: TD_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: trading-system-secrets
+                key: td-key
+          - name: TD_ACCESS_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: trading-system-secrets
+                key: td-token
+          - name: LOG_LEVEL
+            value: "INFO"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1024Mi"
+        livenessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        volumeMounts:
+          - name: config-volume
+            mountPath: /app/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: trading-system-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trading-terminal
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8501
+      targetPort: 8501
+  selector:
+    app: trading-terminal

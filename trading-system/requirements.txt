@@ -12,3 +12,4 @@ TA-Lib
 matplotlib
 plotly
 scipy
+streamlit

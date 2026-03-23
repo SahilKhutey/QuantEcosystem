@@ -1,0 +1,12 @@
+# Prometheus Scraping Configuration
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'trading-terminal'
+    scrape_interval: 5s
+    # Health endpoint provided by Streamlit/Custom Middleware
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['trading-terminal-service:8501']

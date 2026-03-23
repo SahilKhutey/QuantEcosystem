@@ -3,7 +3,7 @@ import logging
 import json
 import numpy as np
 from datetime import datetime, timedelta
-from services.broker.alpaca_api import AlpacaAPI, OrderRequest
+from services.broker.broker_interface import BrokerAPI, OrderRequest
 
 logger = logging.getLogger('RiskManager')
 
@@ -17,10 +17,10 @@ class RiskManager:
     - Real-time monitoring
     """
     
-    def __init__(self, alpaca_api: AlpacaAPI, max_drawdown: float = 0.15, 
+    def __init__(self, broker: BrokerAPI, max_drawdown: float = 0.15, 
                  position_size: float = 0.02, max_daily_loss: float = 0.05,
                  max_leverage: float = 1.0, max_position_allocation: float = 0.1):
-        self.alpaca = alpaca_api
+        self.alpaca = broker
         self.max_drawdown = max_drawdown
         self.position_size = position_size
         self.max_daily_loss = max_daily_loss

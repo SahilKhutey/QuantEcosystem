@@ -7,9 +7,14 @@ import http.server
 import socketserver
 from config.settings import API_KEYS
 from services.broker.alpaca_api import AlpacaAPI
+from services.broker.ib_api import IBAPI
+from services.broker.broker_interface import GlobalBrokerRouter
 from services.risk.manager import RiskManager
 from services.data.market_data import MarketDataService
 from services.trade_engine.engine import TradeEngine, TradeOrder
+from services.trading.hft_engine import HFTScalpingEngine
+from services.trading.swing_engine import SwingTradingEngine
+from services.trading.intraday_engine import IntradayTradingEngine
 
 def setup_logging():
     """Configure logging for production environment"""
@@ -59,11 +64,32 @@ def main():
     logger.info("Starting production trading system")
     
     try:
-        # Initialize components
-        alpaca = AlpacaAPI()
-        market_data = MarketDataService(alpaca)
-        risk_manager = RiskManager(alpaca)
-        trade_engine = TradeEngine(alpaca, risk_manager, market_data)
+        # Initialize Broker Router
+        router = GlobalBrokerRouter()
+        # Initialize Alpaca
+        alpaca = AlpacaAPI(
+            api_key=API_KEYS.get('alpaca_key'),
+            api_secret=API_KEYS.get('alpaca_secret')
+        )
+        router.add_broker('alpaca', alpaca)
+        
+        # Initialize Interactive Brokers (Simulated)
+        ib = IBAPI(host='127.0.0.1', port=7497, client_id=1)
+        router.add_broker('ibkr', ib)
+        
+        # Set active broker
+        router.set_active_broker('alpaca')
+        
+        # Initialize specialized engines
+        hft_engine = HFTScalpingEngine(router, risk_manager)
+        swing_engine = SwingTradingEngine(router, risk_manager)
+        intraday_engine = IntradayTradingEngine(router, risk_manager)
+        
+        # Add TD Ameritrade (If keys available)
+        if API_KEYS.get('tda_key'):
+            from services.broker.td_api import TDAPI
+            tda = TDAPI(api_key=API_KEYS.get('tda_key'), access_token=API_KEYS.get('tda_token'))
+            router.add_broker('tda', tda)
         
         # Start health server in background for K8s probes
         health_thread = threading.Thread(target=start_health_server, daemon=True)
@@ -85,6 +111,7 @@ def main():
             # Get market insights for trading decisions
             market_insights = trade_engine.get_market_insights()
             
+            # 1. Standard Trading Engine Cycle
             # Process signals from the strategy engine
             opportunities = market_insights.get('trading_opportunities', [])
             for opportunity in opportunities:
@@ -108,32 +135,44 @@ def main():
                     entry_price=opportunity['price']
                 ))
             
-            # Monitor active orders
+            # 2. HFT & Intraday Engine Cycles
+            # In production, this would be triggered by real-time data push
+            for symbol in ['AAPL', 'TSLA', 'SPY']:
+                real_time = market_data.get_real_time_quote(symbol)
+                if 'bid' in real_time and 'ask' in real_time:
+                    hft_engine.process_market_data(symbol, real_time['bid'], real_time['ask'], real_time.get('volume', 1000))
+                    intraday_engine.process_market_data(symbol, real_time['bid'], real_time['ask'], real_time.get('volume', 1000))
+            
+            hft_engine.monitor_trades()
+            intraday_engine.monitor_trades()
+            
+            # 3. Swing Trading Engine Cycle (Daily Processing)
+            # Typically runs at market close or start of day
+            if market_data.is_market_open():
+                for symbol in ['AAPL', 'MSFT', 'AMZN']:
+                    hist_data = market_data.get_historical_ohlc(symbol, timeframe='1D')
+                    if not hist_data.empty:
+                        swing_engine.process_daily_data(symbol, hist_data)
+            
+            swing_engine.monitor_trades()
+            
+            # Monitor and Audit
             trade_engine.monitor_orders()
             
             # Check for circuit breaker conditions
             if not trade_engine.check_circuit_breaker():
                 logger.critical("CIRCUIT BREAKER ACTIVE - TRADING SUSPENDED")
-                # Send critical alert (in production)
-                # This would notify via email/SMS in a real system
-                time.sleep(300)  # Wait 5 minutes before checking again
+                time.sleep(300)
                 continue
             
-            # Check market hours to reset daily metrics
-            if market_data.is_market_open() and not market_data.was_market_open():
-                risk_manager.reset_daily()
-                logger.info("Daily metrics reset for new trading day")
-            
-            # Get and log system status
+            # Status Reporting
             status = trade_engine.get_trading_status()
-            logger.info(f"Trading status: Active orders={status['active_orders']}, Capital=${status['current_capital']:,.2f}, Drawdown={status['risk_metrics']['drawdown']:.2%}")
+            hft_status = hft_engine.get_status()
+            swing_status = swing_engine.get_status()
+            intraday_status = intraday_engine.get_status()
             
-            # Log portfolio analysis
-            portfolio = trade_engine.get_portfolio_analysis()
-            logger.info(f"Portfolio value: ${portfolio['current_portfolio_value']:,.2f}, Unrealized P&L: ${portfolio['unrealized_pnl']:,.2f}")
-            
-            # Log market insights
-            logger.info(f"Market sentiment: {market_insights['market_sentiment']['current']:.2f} ({market_insights['market_sentiment']['trend']})")
+            logger.info(f"Trading status: Active={status['active_orders']}, HFT={hft_status['active_trades']}, Swing={swing_status['active_positions']}, Intraday={intraday_status['active_positions']}")
+            logger.info(f"P&L: Total=${status['current_capital']:,.2f}, HFT_WR={hft_status['performance_metrics']['win_rate']:.1%}, Swing_WR={swing_status['performance_metrics']['win_rate']:.1%}, Intraday_WR={intraday_status['performance_metrics']['win_rate']:.1%}")
             
             # Wait before next cycle
             time.sleep(10)
