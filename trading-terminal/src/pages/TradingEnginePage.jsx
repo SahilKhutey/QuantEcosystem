@@ -26,6 +26,7 @@ import TradingViewWidget from '../components/dashboard/TradingEngine/TradingView
 import IndianMarketsDashboard from '../components/dashboard/TradingEngine/IndianMarketsDashboard';
 import AlertsDashboard from '../components/dashboard/TradingEngine/AlertsDashboard';
 import AICopilotBar from '../components/dashboard/TradingEngine/AICopilotBar';
+import AutonomousMonitor from '../components/Dashboard/TradingEngine/AutonomousMonitor';
 
 const TradingEnginePage = () => (
 <div style={{ position: 'relative', minHeight: '100vh', paddingBottom: '120px' }}>
@@ -44,6 +45,9 @@ const TradingEnginePage = () => (
         <span className="status-dot live" /> Position Monitor Active
       </span>
     </div>
+
+    {/* Real-time Autonomous Execution Monitor */}
+    <AutonomousMonitor />
 
     {/* The Ultimate Pipeline Orchestrator linking 19 Repos */}
     <UnifiedPipelineBuilder />

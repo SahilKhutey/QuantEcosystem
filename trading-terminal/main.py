@@ -27,12 +27,14 @@ from api.endpoints.tradingview_api import tradingview_bp
 from api.endpoints.indian_brokers_api import indian_brokers_bp
 from api.endpoints.alerts_api import alerts_bp
 from api.endpoints.copilot_api import copilot_bp
+from api.endpoints.autonomous import autonomous_bp
 
 app = Flask(__name__)
 CORS(app)
 
 # Register Blueprints
 app.register_blueprint(market_bp, url_prefix='/api')
+app.register_blueprint(autonomous_bp, url_prefix='/api/autonomous')
 app.register_blueprint(backtest_bp, url_prefix='/api/backtest')
 app.register_blueprint(backtrader_bp, url_prefix='/api/backtrader')
 app.register_blueprint(zipline_bp, url_prefix='/api/zipline')
