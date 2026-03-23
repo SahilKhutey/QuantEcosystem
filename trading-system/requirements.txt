@@ -1,0 +1,14 @@
+alpaca-trade-api
+ib-insync
+pydantic-settings
+psutil
+aiohttp
+requests
+numpy
+pandas
+structlog
+python-dotenv
+TA-Lib
+matplotlib
+plotly
+scipy

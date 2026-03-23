@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  trading-system:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
