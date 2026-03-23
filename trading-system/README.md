@@ -72,7 +72,8 @@ kubectl apply -f k8s/deployment_terminal.yaml
 ---
 
 ## 📈 Monitoring & Reliability
-Detailed operational guidelines, maintenance cycles, and disaster recovery plans are available in the [production_guide.md](production_guide.md).
+- **Operational Guide**: Detailed maintenance and disaster recovery in [production_guide.md](production_guide.md).
+- **Theory of Operations**: Understand the signal-to-execution pipeline in [autonomous_trading_engine.md](autonomous_trading_engine.md).
 
 ---
 *Developed for Institutional-Grade Quantitative Trading Operations*
