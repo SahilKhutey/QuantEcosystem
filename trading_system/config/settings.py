@@ -41,5 +41,17 @@ class Settings:
     CCXT_ENABLED: bool = True
     BINANCE_API_KEY: str = os.getenv("BINANCE_API_KEY", "")
     BINANCE_SECRET_KEY: str = os.getenv("BINANCE_SECRET_KEY", "")
+    
+    # Compliance & Recovery
+    COMPLIANCE_CONFIG: Dict[str, Any] = {
+        'audit_storage': 'trading_system/audit_trail',
+        'retention_days': 365
+    }
+    
+    RECOVERY_CONFIG: Dict[str, Any] = {
+        'primary_region': 'us-east-1',
+        'secondary_region': 'us-west-2',
+        'backup_interval_seconds': 1800
+    }
 
 settings = Settings()

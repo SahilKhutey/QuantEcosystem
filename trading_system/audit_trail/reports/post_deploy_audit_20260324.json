@@ -1,0 +1,85 @@
+{
+    "report_id": "CR-1774324774",
+    "report_type": "daily",
+    "timestamp": "2026-03-24T03:59:34.131979",
+    "summary": {
+        "total_events": 150,
+        "status": "PASS"
+    },
+    "events": [
+        {
+            "timestamp": "2026-03-24T03:59:34.130446",
+            "event_type": "TRIAL_EXECUTION",
+            "user": "trader_01",
+            "details": {
+                "symbol": "AAPL",
+                "qty": 1
+            },
+            "severity": "info",
+            "system_version": "2.0.0",
+            "environment": "production",
+            "context": {}
+        },
+        {
+            "timestamp": "2026-03-24T03:59:34.128541",
+            "event_type": "PRE_DEPLOY_VERIFICATION",
+            "user": "admin",
+            "details": {
+                "result": "passed"
+            },
+            "severity": "info",
+            "system_version": "2.0.0",
+            "environment": "production",
+            "context": {}
+        },
+        {
+            "timestamp": "2026-03-24T03:59:34.126595",
+            "event_type": "SYSTEM_STARTUP",
+            "user": "system",
+            "details": {
+                "status": "success"
+            },
+            "severity": "info",
+            "system_version": "2.0.0",
+            "environment": "production",
+            "context": {}
+        },
+        {
+            "timestamp": "2026-03-24T03:59:12.603643",
+            "event_type": "TRIAL_EXECUTION",
+            "user": "trader_01",
+            "details": {
+                "symbol": "AAPL",
+                "qty": 1
+            },
+            "severity": "info",
+            "system_version": "2.0.0",
+            "environment": "production",
+            "context": {}
+        },
+        {
+            "timestamp": "2026-03-24T03:59:12.600988",
+            "event_type": "PRE_DEPLOY_VERIFICATION",
+            "user": "admin",
+            "details": {
+                "result": "passed"
+            },
+            "severity": "info",
+            "system_version": "2.0.0",
+            "environment": "production",
+            "context": {}
+        },
+        {
+            "timestamp": "2026-03-24T03:59:12.594764",
+            "event_type": "SYSTEM_STARTUP",
+            "user": "system",
+            "details": {
+                "status": "success"
+            },
+            "severity": "info",
+            "system_version": "2.0.0",
+            "environment": "production",
+            "context": {}
+        }
+    ]
+}
