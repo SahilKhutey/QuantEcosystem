@@ -100,7 +100,7 @@ class StorageEngine:
         conn.commit()
         conn.close()
 
-    def get_recent_trades((self, limit: int = 50) -> list):
+    def get_recent_trades(self, limit: int = 50) -> list:
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
