@@ -265,3 +265,16 @@ class APIClient:
     def get_marketplace_performance(self):
         """Get aggregated performance metrics for all strategies"""
         return self._get("marketplace/performance")
+
+    # --- AI Intelligence Methods ---
+    def get_ai_sentiment(self):
+        """Get latest sentiment history"""
+        return self._get("ai/sentiment")
+
+    def get_macro_context(self):
+        """Get latest macro indicators and regime status"""
+        return self._get("ai/macro")
+
+    def analyze_custom_news(self, text: str, symbol: str = "GLOBAL"):
+        """Run real-time sentiment analysis on custom text"""
+        return self._post("ai/analyze-news", {'text': text, 'symbol': symbol})

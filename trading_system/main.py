@@ -20,15 +20,19 @@ from trading_system.services.analytics.backtester import BacktestEngine
 from trading_system.services.analytics.risk_decomp import RiskDecomposition
 from trading_system.services.recovery.disaster_recovery import DisasterRecoverySystem
 from trading_system.services.trading.marketplace import StrategyMarketplace
+from trading_system.services.ai.sentiment_engine import SentimentEngine
+from trading_system.services.ai.macro_analyzer import MacroAnalyzer
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
 setup_logging()
 logger = logging.getLogger("Main")
 
-# Initialize Marketplace
+# Initialize Marketplace & AI
 marketplace = StrategyMarketplace()
 marketplace.load_strategies()
+sentiment_engine = SentimentEngine()
+macro_analyzer = MacroAnalyzer()
 
 # Initialize Services
 data_pipeline = DataPipeline()
@@ -426,6 +430,24 @@ async def deactivate_strategy(name: str):
 @app.get("/api/marketplace/performance")
 async def get_strategy_performance():
     return marketplace.get_strategy_performance()
+
+# --- AI Intelligence Endpoints ---
+
+@app.get("/api/ai/sentiment")
+async def get_sentiment_history():
+    return sentiment_engine.history
+
+@app.get("/api/ai/macro")
+async def get_macro_data():
+    return macro_analyzer.get_macro_context()
+
+@app.post("/api/ai/analyze-news")
+async def analyze_news_text():
+    data = request.json
+    text = data.get('text', '')
+    symbol = data.get('symbol', 'GLOBAL')
+    result = sentiment_engine.analyze_text(text, symbol)
+    return result
 
 if __name__ == "__main__":
     asyncio.run(main())
