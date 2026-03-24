@@ -1,68 +1,55 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trading-system
+  name: trading-dashboard
   labels:
-    app: trading-system
+    app: trading-dashboard
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: trading-system
+      app: trading-dashboard
   template:
     metadata:
       labels:
-        app: trading-system
+        app: trading-dashboard
     spec:
       containers:
-      - name: trading-system
-        image: trading-system:1.0
+      - name: trading-backend
+        image: trading-system:latest
+        command: ["python", "main.py"]
         env:
-          - name: API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: trading-system-secrets
-                key: alpaca-key
-          - name: API_SECRET
-            valueFrom:
-              secretKeyRef:
-                name: trading-system-secrets
-                key: alpaca-secret
-        resources:
-          requests:
-            cpu: "500m"
-            memory: "512Mi"
-          limits:
-            cpu: "1000m"
-            memory: "1024Mi"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 30
-          periodSeconds: 30
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 15
-        volumeMounts:
-          - name: config-volume
-            mountPath: /app/config
-      volumes:
-        - name: config-volume
-          configMap:
-            name: trading-system-config
+          - name: ALPACA_API_KEY
+            valueFrom: { secretKeyRef: { name: trading-system-secrets, key: alpaca-key } }
+          - name: ALPACA_SECRET_KEY
+            valueFrom: { secretKeyRef: { name: trading-system-secrets, key: alpaca-secret } }
+          - name: TWILIO_ACCOUNT_SID
+            valueFrom: { secretKeyRef: { name: trading-system-secrets, key: twilio-sid } }
+          - name: TWILIO_AUTH_TOKEN
+            valueFrom: { secretKeyRef: { name: trading-system-secrets, key: twilio-token } }
+        ports:
+          - containerPort: 5000
+      - name: trading-dashboard
+        image: trading-system:latest
+        command: ["streamlit", "run", "web/main.py"]
+        env:
+          - name: API_BASE_URL
+            value: "http://localhost:5000/api"
+        ports:
+          - containerPort: 8501
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: trading-system
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
-    - port: 8000
-      targetPort: 8000
+    - name: api
+      port: 5000
+      targetPort: 5000
+    - name: dashboard
+      port: 8501
+      targetPort: 8501
   selector:
-    app: trading-system
+    app: trading-dashboard

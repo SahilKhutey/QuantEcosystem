@@ -3,8 +3,9 @@ import logging
 import pandas as pd
 import numpy as np
 from dataclasses import dataclass
-from services.broker.broker_interface import GlobalBrokerRouter, OrderRequest
-from services.risk.manager import RiskManager
+from trading_system.services.broker.order_executor import OrderExecutor
+from trading_system.services.risk.manager import RiskManager
+from trading_system.services.broker.types import OrderRequest
 
 logger = logging.getLogger('SwingEngine')
 
@@ -152,7 +153,7 @@ class SwingTradingEngine:
         
         if position_size < 1:
             return
-        
+            
         # Create order request object
         order = OrderRequest(
             symbol=signal.symbol,

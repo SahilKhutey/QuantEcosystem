@@ -3,11 +3,11 @@ import logging
 import threading
 import queue
 from datetime import datetime
-from services.broker.broker_interface import GlobalBrokerRouter
-from services.risk.manager import RiskManager
-from services.trading.hft_engine import HFTScalpingEngine
-from services.trading.swing_engine import SwingTradingEngine
-from services.trading.intraday_engine import IntradayTradingEngine
+from trading_system.services.broker.order_executor import OrderExecutor
+from trading_system.services.risk.manager import RiskManager
+from trading_system.services.trading.hft_engine import HFTScalpingEngine
+from trading_system.services.trading.swing_engine import SwingTradingEngine
+from trading_system.services.trading.intraday_engine import IntradayTradingEngine
 
 logger = logging.getLogger('AutonomousEngine')
 

@@ -1,28 +1,31 @@
-from config.logging import logger
-from datetime import datetime, timedelta
+import logging
+from trading_system.config.settings import settings
 
 class CircuitBreaker:
-    def __init__(self, daily_loss_limit_pct: float = 0.05):
-        self.daily_loss_limit_pct = daily_loss_limit_pct
-        self.starting_equity = None
-        self.is_halted = False
-        self.halt_reason = ""
+    """
+    Critical safety system.
+    Automatically halts trading upon detection of catastrophic conditions.
+    """
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.halted = False
 
-    def check(self, current_equity: float):
-        if self.starting_equity is None:
-            self.starting_equity = current_equity
-            return True
-
-        drawdown = (self.starting_equity - current_equity) / self.starting_equity
-        if drawdown >= self.daily_loss_limit_pct:
-            self.is_halted = True
-            self.halt_reason = f"Daily loss limit of {self.daily_loss_limit_pct*100}% reached."
-            logger.critical(f"CIRCUIT BREAKER TRIGGERED: {self.halt_reason}")
-            return False
+    def check_conditions(self, daily_loss: float, drawdown: float) -> bool:
+        """
+        Check if any circuit breaker thresholds have been hit.
+        Returns True if trading should be HALTED.
+        """
+        if daily_loss >= settings.MAX_DAILY_LOSS:
+            self.logger.error("CIRCUIT BREAKER: Daily loss limit hit.")
+            self.halted = True
             
-        return True
+        if drawdown >= settings.MAX_DRAWDOWN:
+            self.logger.error("CIRCUIT BREAKER: Max drawdown threshold hit.")
+            self.halted = True
+            
+        return self.halted
 
-    def reset(self, new_equity: float):
-        self.starting_equity = new_equity
-        self.is_halted = False
-        logger.info("Circuit breaker reset for the new trading day.")
+    def emergency_halt(self):
+        """Immediately halts all system activity."""
+        self.halted = True
+        self.logger.critical("EMERGENCY HALT TRIGGERED MANUALLY.")

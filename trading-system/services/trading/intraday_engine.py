@@ -3,8 +3,9 @@ import logging
 import pandas as pd
 import numpy as np
 from dataclasses import dataclass
-from services.broker.broker_interface import GlobalBrokerRouter, OrderRequest
-from services.risk.manager import RiskManager
+from trading_system.services.broker.order_executor import OrderExecutor
+from trading_system.services.risk.manager import RiskManager
+from trading_system.services.broker.types import OrderRequest
 
 logger = logging.getLogger('IntradayEngine')
 
@@ -177,8 +178,9 @@ class IntradayTradingEngine:
         )
         position_size = min(position_size, self.max_position_size)
         
-        if position_size < 1: return
-        
+        if position_size < 1:
+            return
+            
         order = OrderRequest(
             symbol=signal.symbol,
             action=signal.action,

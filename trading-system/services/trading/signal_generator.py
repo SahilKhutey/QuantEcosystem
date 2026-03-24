@@ -1,60 +1,49 @@
-import numpy as np
 import pandas as pd
-import talib
+import numpy as np
 import logging
-from typing import Dict, List, Optional
-
-logger = logging.getLogger('SignalGenerator')
+from typing import List, Dict
+from trading_system.services.data.market_data import MarketDataService
 
 class SignalGenerator:
     """
-    Advanced Signal Generator using TA-Lib
+    Advanced signal generation engine.
+    Calculates technical indicators and generates buy/sell signals.
     """
     def __init__(self):
-        self.logger = logger
+        self.market_data = MarketDataService()
+        self.logger = logging.getLogger(__name__)
 
-    def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Calculate a comprehensive suite of technical indicators"""
-        if len(df) < 30:
-            return df
+    def generate_technical_signals(self, symbol: str) -> List[Dict]:
+        """Generates signals based on technical indicators (RSI, Moving Averages)."""
+        df = self.market_data.get_equity_data(symbol, period="1mo", interval="1d")
+        if df.empty:
+            return []
             
-        close = df['close'].values
-        high = df['high'].values
-        low = df['low'].values
+        signals = []
         
-        # Trend Indicators
-        df['sma_20'] = talib.SMA(close, timeperiod=20)
-        df['ema_9'] = talib.EMA(close, timeperiod=9)
-        df['ema_21'] = talib.EMA(close, timeperiod=21)
+        # Simple RSI implementation
+        delta = df['Close'].diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+        rs = gain / loss
+        df['RSI'] = 100 - (100 / (1 + rs))
         
-        # Momentum Indicators
-        df['rsi'] = talib.RSI(close, timeperiod=14)
-        macd, macdsignal, macdhist = talib.MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
-        df['macd'] = macd
-        df['macd_signal'] = macdsignal
-        df['macd_hist'] = macdhist
-        
-        # Volatility Indicators
-        upper, middle, lower = talib.BBANDS(close, timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
-        df['bb_upper'] = upper
-        df['bb_middle'] = middle
-        df['bb_lower'] = lower
-        df['atr'] = talib.ATR(high, low, close, timeperiod=14)
-        
-        return df
-
-    def get_rsi_signal(self, rsi: float) -> str:
-        """Simple RSI threshold signals"""
-        if rsi < 30:
-            return "BUY"
-        elif rsi > 70:
-            return "SELL"
-        return "HOLD"
-
-    def get_macd_crossover(self, macd: float, signal: float, prev_macd: float, prev_signal: float) -> str:
-        """MACD crossover signals"""
-        if prev_macd <= prev_signal and macd > signal:
-            return "BUY"
-        elif prev_macd >= prev_signal and macd < signal:
-            return "SELL"
-        return "HOLD"
+        latest_rsi = df['RSI'].iloc[-1]
+        if latest_rsi < 30:
+            signals.append({
+                'symbol': symbol,
+                'action': 'BUY',
+                'type': 'Technical',
+                'confidence': 0.75,
+                'reason': f'RSI Oversold ({latest_rsi:.2f})'
+            })
+        elif latest_rsi > 70:
+            signals.append({
+                'symbol': symbol,
+                'action': 'SELL',
+                'type': 'Technical',
+                'confidence': 0.75,
+                'reason': f'RSI Overbought ({latest_rsi:.2f})'
+            })
+            
+        return signals

@@ -1,314 +1,45 @@
-import requests
-import time
+import alpaca_trade_api as tradeapi
 import logging
-import json
-from dataclasses import dataclass
-from datetime import datetime
-from services.broker.broker_interface import BrokerAPI, OrderRequest
+from trading_system.config.settings import settings
 
-logger = logging.getLogger('AlpacaAPI')
+class AlpacaBroker:
+    """
+    Production-ready Alpaca integration for the Global Trading Terminal.
+    Handles order execution, account status, and position management.
+    """
+    def __init__(self):
+        self.api = tradeapi.REST(
+            settings.ALPACA_API_KEY,
+            settings.ALPACA_SECRET_KEY,
+            base_url='https://paper-api.alpaca.markets' if settings.ALPACA_PAPER else 'https://api.alpaca.markets'
+        )
+        self.logger = logging.getLogger(__name__)
 
-class AlpacaAPI(BrokerAPI):
-    """
-    Production-grade Alpaca API integration with global market support
-    """
-    
-    BASE_URL = "https://api.alpaca.markets"
-    DATA_URL = "https://data.alpaca.markets"
-    WEBSOCKET_URL = "wss://stream.data.alpaca.markets/v2"
-    
-    def __init__(self, api_key: str = None, api_secret: str = None):
-        self.api_key = api_key
-        self.api_secret = api_secret
-        self.rate_limit = {
-            'max_requests': 20,
-            'window_seconds': 60,
-            'current': 0,
-            'last_reset': time.time(),
-            'last_request': time.time()
-        }
-        self.logger = logger
-        self.order_id_prefix = f"ALP_{int(time.time())}_"
-        self.active_orders = {}
-        self.last_order_id = 0
-    
-    def _check_rate_limit(self):
-        """Enforce Alpaca's API rate limits (20 requests/minute)"""
-        current_time = time.time()
-        
-        # Reset counter if window has passed
-        if current_time - self.rate_limit['last_reset'] > self.rate_limit['window_seconds']:
-            self.rate_limit['current'] = 0
-            self.rate_limit['last_reset'] = current_time
-        
-        # Check if we're within limits
-        if self.rate_limit['current'] >= self.rate_limit['max_requests']:
-            wait_time = self.rate_limit['window_seconds'] - (current_time - self.rate_limit['last_reset'])
-            self.logger.warning(f"API rate limit hit. Waiting {wait_time:.1f} seconds...")
-            time.sleep(wait_time)
-            self.rate_limit['current'] = 0
-            self.rate_limit['last_reset'] = time.time()
-        
-        # Increment counter
-        self.rate_limit['current'] += 1
-        self.rate_limit['last_request'] = current_time
-    
-    def _get_headers(self):
-        """Get authentication headers for Alpaca API"""
-        return {
-            'APCA-API-KEY-ID': self.api_key,
-            'APCA-API-SECRET-KEY': self.api_secret,
-            'Content-Type': 'application/json'
-        }
-    
-    def submit_order(self, order: OrderRequest) -> dict:
-        """Submit an order to Alpaca with comprehensive risk management"""
-        self._check_rate_limit()
-        
-        # Generate unique client order ID if not provided
-        if not order.client_order_id:
-            self.last_order_id += 1
-            order.client_order_id = f"{self.order_id_prefix}{self.last_order_id}"
-        
-        # Prepare payload based on order type
-        payload = {
-            'symbol': order.symbol,
-            'qty': order.quantity,
-            'side': 'buy' if order.action == 'BUY' else 'sell',
-            'type': order.order_type,
-            'time_in_force': order.time_in_force,
-            'client_order_id': order.client_order_id,
-            'extended_hours': order.extended_hours
-        }
-        
-        # Add price parameters for limit/stop orders
-        if order.order_type == 'limit' and order.price:
-            payload['limit_price'] = order.price
-        elif order.order_type == 'stop' and order.stop_price:
-            payload['stop_price'] = order.stop_price
-        elif order.order_type == 'stop_limit':
-            if order.price and order.stop_price:
-                payload['limit_price'] = order.price
-                payload['stop_price'] = order.stop_price
-        
-        # Add order class if specified
-        if order.order_class:
-            payload['order_class'] = order.order_class
-            
-        # Add take profit and stop loss for OCO orders
-        if order.take_profit and order.stop_loss:
-            payload['take_profit'] = order.take_profit
-            payload['stop_loss'] = order.stop_loss
-        
+    def get_account_info(self):
+        """Returns account details and buying power."""
         try:
-            # Submit order to Alpaca
-            response = requests.post(
-                f"{self.BASE_URL}/v2/orders",
-                json=payload,
-                headers=self._get_headers()
-            )
-            
-            # Handle response
-            if response.status_code in (200, 201):
-                order_data = response.json()
-                self.active_orders[order_data['id']] = {
-                    'order': order,
-                    'status': 'pending',
-                    'timestamp': time.time(),
-                    'client_order_id': order_data['client_order_id']
-                }
-                self.logger.info(f"Order submitted: {order_data['id']} for {order.symbol}")
-                return order_data
-            
-            # Handle rate limit errors
-            if response.status_code == 429:
-                self.logger.error("API rate limit exceeded. Retrying after 1 second...")
-                time.sleep(1)
-                return self.submit_order(order)
-            
-            # Handle specific Alpaca errors
-            error = response.json()
-            error_code = error.get('code', 0)
-            
-            # 40310 - Order rejected (symbol not tradable)
-            if error_code == 40310:
-                self.logger.error(f"Order rejected: {error.get('message', 'Symbol not tradable')}")
-                return {
-                    'error': error.get('message', 'Symbol not tradable'),
-                    'status': 'rejected',
-                    'client_order_id': order.client_order_id,
-                    'rejection_code': error_code
-                }
-            
-            # 40302 - Order rejected (insufficient funds)
-            if error_code == 40302:
-                self.logger.error(f"Order rejected: {error.get('message', 'Insufficient funds')}")
-                return {
-                    'error': error.get('message', 'Insufficient funds'),
-                    'status': 'rejected',
-                    'client_order_id': order.client_order_id,
-                    'rejection_code': error_code
-                }
-            
-            # Other errors
-            self.logger.error(f"Order submission failed: {error.get('message', 'API error')}")
-            return {
-                'error': error.get('message', 'API error'),
-                'status': 'rejected',
-                'client_order_id': order.client_order_id,
-                'rejection_code': error_code
-            }
-            
+            return self.api.get_account()
         except Exception as e:
-            self.logger.exception("Order submission error")
-            return {
-                'error': str(e),
-                'status': 'rejected',
-                'client_order_id': order.client_order_id,
-                'rejection_code': 9999
-            }
-    
-    def get_order_status(self, order_id: str) -> dict:
-        """Get order status with proper error handling"""
-        self._check_rate_limit()
-        
+            self.logger.error(f"Error fetching Alpaca account: {e}")
+            return None
+
+    def execute_order(self, symbol, qty, side, type='market', time_in_force='day', limit_price=None):
+        """Executes a trade on Alpaca."""
         try:
-            response = requests.get(
-                f"{self.BASE_URL}/v2/orders/{order_id}",
-                headers=self._get_headers()
+            order = self.api.submit_order(
+                symbol=symbol,
+                qty=qty,
+                side=side,
+                type=type,
+                time_in_force=time_in_force,
+                limit_price=limit_price
             )
-            
-            if response.status_code == 200:
-                return response.json()
-            elif response.status_code == 404:
-                return {'error': 'Order not found', 'status': 'unknown'}
-            else:
-                error = response.json()
-                self.logger.error(f"Order status check failed: {error.get('message', 'API error')}")
-                return {'error': 'API error', 'status': 'unknown'}
-        
+            self.logger.info(f"Submitting {side} order for {qty} shares of {symbol}")
+            return order
         except Exception as e:
-            self.logger.exception("Error getting order status")
-            return {'error': str(e), 'status': 'unknown'}
-    
-    def cancel_order(self, order_id: str) -> bool:
-        """Cancel an order with rate limit handling"""
-        self._check_rate_limit()
-        
-        try:
-            response = requests.delete(
-                f"{self.BASE_URL}/v2/orders/{order_id}",
-                headers=self._get_headers()
-            )
-            
-            if response.status_code == 200 or response.status_code == 204:
-                # Update local order status
-                if order_id in self.active_orders:
-                    self.active_orders[order_id]['status'] = 'canceled'
-                self.logger.info(f"Order canceled: {order_id}")
-                return True
-            else:
-                error = response.json()
-                self.logger.error(f"Order cancellation failed: {error.get('message', 'API error')}")
-                return False
-        
-        except Exception as e:
-            self.logger.exception("Order cancellation error")
-            return False
-    
-    def get_positions(self) -> list:
-        """Get current positions with proper error handling"""
-        self._check_rate_limit()
-        
-        try:
-            response = requests.get(
-                f"{self.BASE_URL}/v2/positions",
-                headers=self._get_headers()
-            )
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                error = response.json()
-                self.logger.error(f"Positions request failed: {error.get('message', 'API error')}")
-                return []
-        
-        except Exception as e:
-            self.logger.exception("Positions request error")
-            return []
-    
-    def get_account(self) -> dict:
-        """Get account information with error handling"""
-        self._check_rate_limit()
-        
-        try:
-            response = requests.get(
-                f"{self.BASE_URL}/v2/account",
-                headers=self._get_headers()
-            )
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                error = response.json()
-                self.logger.error(f"Account information request failed: {error.get('message', 'API error')}")
-                return {'error': 'API error'}
-        
-        except Exception as e:
-            self.logger.exception("Account information error")
-            return {'error': str(e)}
-    
-    def get_historical_data(self, symbol: str, timeframe: str = '1D', 
-                          start: str = None, end: str = None) -> dict:
-        """Get historical market data from Alpaca Data API"""
-        self._check_rate_limit()
-        
-        try:
-            params = {
-                'symbol': symbol,
-                'timeframe': timeframe,
-                'limit': 1000
-            }
-            
-            if start:
-                params['start'] = start
-            if end:
-                params['end'] = end
-            
-            response = requests.get(
-                f"{self.DATA_URL}/v2/stocks/{symbol}/bars",
-                params=params,
-                headers=self._get_headers()
-            )
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                error = response.json()
-                self.logger.error(f"Historical data request failed: {error.get('message', 'API error')}")
-                return {'error': 'API error'}
-        
-        except Exception as e:
-            self.logger.exception("Historical data request error")
-            return {'error': str(e)}
-    
-    def get_real_time_data(self, symbol: str) -> dict:
-        """Get real-time market data from Alpaca Data API"""
-        self._check_rate_limit()
-        
-        try:
-            response = requests.get(
-                f"{self.DATA_URL}/v2/stocks/{symbol}/quotes/latest",
-                headers=self._get_headers()
-            )
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                error = response.json()
-                self.logger.error(f"Real-time data request failed: {error.get('message', 'API error')}")
-                return {'error': 'API error'}
-        
-        except Exception as e:
-            self.logger.exception("Real-time data request error")
-            return {'error': str(e)}
+            self.logger.error(f"Failed to execute Alpaca order: {e}")
+            return None
+
+    def get_positions(self):
+        """Returns all open positions."""
+        return self.api.list_positions()

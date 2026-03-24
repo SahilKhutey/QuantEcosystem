@@ -1,38 +1,34 @@
 import logging
 import sys
-import json
-from datetime import datetime
-from config.settings import settings
-
-class JSONFormatter(logging.Formatter):
-    def format(self, record):
-        log_record = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "level": record.levelname,
-            "message": record.getMessage(),
-            "module": record.module,
-            "filename": record.filename,
-            "lineno": record.lineno,
-        }
-        if record.exc_info:
-            log_record["exception"] = self.formatException(record.exc_info)
-        return json.dumps(log_record)
+from logging.handlers import RotatingFileHandler
+from trading_system.config.settings import settings
 
 def setup_logging():
+    """
+    Configures professional logging for the entire system.
+    Outputs to both console and a rotating log file.
+    """
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    
+    # Root logger
     logger = logging.getLogger()
-    logger.setLevel(settings.LOG_LEVEL)
+    logger.setLevel(logging.DEBUG if settings.DEBUG else logging.INFO)
     
-    # Console handler
-    handler = logging.StreamHandler(sys.stdout)
-    if settings.ENV == "production":
-        handler.setFormatter(JSONFormatter())
-    else:
-        # Professional standard formatting for dev
-        handler.setFormatter(logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        ))
+    # Console Handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(logging.Formatter(log_format))
+    logger.addHandler(console_handler)
     
-    logger.addHandler(handler)
-    return logger
+    # File Handler
+    file_handler = RotatingFileHandler(
+        'trading_system.log', 
+        maxBytes=10*1024*1024, 
+        backupCount=5
+    )
+    file_handler.setFormatter(logging.Formatter(log_format))
+    logger.addHandler(file_handler)
+    
+    logging.info(f"Logging initialized for {settings.PROJECT_NAME}")
 
-logger = setup_logging()
+if __name__ == "__main__":
+    setup_logging()

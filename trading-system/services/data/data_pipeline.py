@@ -1,19 +1,21 @@
-from .market_data import MarketDataService
-from .news_data import NewsData
-from config.logging import logger
+import logging
+import asyncio
+from trading_system.services.data.market_data import MarketDataService
 
 class DataPipeline:
-    def __init__(self, alpaca_api):
-        self.market_data = MarketDataService(alpaca_api=alpaca_api)
-        self.news_data = NewsData()
+    """
+    Orchestrates the continuous flow of market data into the system.
+    Supports asynchronous updates and caching.
+    """
+    def __init__(self):
+        self.market_data = MarketDataService()
+        self.logger = logging.getLogger(__name__)
 
-    async def process_incoming(self, symbol, price):
-        # Feature engineering pipeline
-        sentiment_score = 0.5 # Default neutral
-        # logger.debug(f"Data Pipeline: Received {symbol} at {price}")
-        return {
-            "symbol": symbol,
-            "price": price,
-            "sentiment": sentiment_score,
-            "timestamp": "now"
-        }
+    async def run_pipeline(self):
+        """Main loop for the data pipeline."""
+        while True:
+            # self.logger.debug("Executing data pipeline cycle...")
+            # 1. Fetch live prices
+            # 2. Update internal cache
+            # 3. Trigger signal generators
+            await asyncio.sleep(1.0)

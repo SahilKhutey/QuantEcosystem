@@ -1,15 +1,22 @@
 version: '3.8'
 
 services:
-  trading-system:
+  trading-backend:
     build: .
-    env_file:
-      - .env
     volumes:
       - .:/app
-    restart: always
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    environment:
+      - DEBUG=True
+      - ALPACA_API_KEY=${ALPACA_API_KEY}
+      - ALPACA_SECRET_KEY=${ALPACA_SECRET_KEY}
+    ports:
+      - "5000:5000"
+    command: python main.py
+
+  trading-ui:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8501:8501"
+    command: streamlit run web/main.py

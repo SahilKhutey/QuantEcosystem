@@ -3,8 +3,8 @@ import logging
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
-from services.broker.broker_interface import GlobalBrokerRouter
-from services.risk.manager import RiskManager
+from trading_system.services.broker.order_executor import OrderExecutor
+from trading_system.services.risk.manager import RiskManager
 
 logger = logging.getLogger('HFTScalper')
 
@@ -124,7 +124,6 @@ class HFTScalpingEngine:
             return
         
         # Create order request
-        from services.broker.broker_interface import OrderRequest
         order = OrderRequest(
             symbol=signal.symbol,
             action=signal.action,
