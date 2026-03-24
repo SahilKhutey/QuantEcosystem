@@ -437,3 +437,8 @@ class APIClient:
     def trigger_cb_recovery(self):
         """Verify the system recovery path after a simulated halt"""
         return self._post("risk/cb-test/recover")
+
+    # --- Robust Optimization Methods ---
+    def run_robust_optimization(self):
+        """Run the Black-Litterman model to rebalance strategy weights"""
+        return self._post("portfolio/robust-optimize")

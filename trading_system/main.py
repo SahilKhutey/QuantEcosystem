@@ -38,6 +38,7 @@ from trading_system.services.risk.refiner import RiskParamRefiner
 from trading_system.services.trading.execution_optimizer import ExecutionOptimizer
 from trading_system.services.compliance.automator import ComplianceAutomator
 from trading_system.services.risk.cb_tester import CircuitBreakerTester
+from trading_system.services.portfolio.robust_allocator import RobustAllocator
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -64,6 +65,7 @@ risk_refiner = RiskParamRefiner(system_monitor, position_sizer)
 execution_optimizer = ExecutionOptimizer(storage_engine)
 compliance_automator = ComplianceAutomator(storage_engine)
 cb_tester = CircuitBreakerTester(position_sizer, alert_manager)
+robust_allocator = RobustAllocator()
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -738,6 +740,23 @@ async def get_cb_test_history():
 @app.post("/api/risk/cb-test/recover")
 async def trigger_cb_recovery():
     return {"success": cb_tester.verify_recovery()}
+
+# --- Robust Portfolio Optimization Endpoints ---
+
+@app.post("/api/portfolio/robust-optimize")
+async def run_portfolio_optimization():
+    # In a real system, these would fetch from live services
+    market_priors = {"Momentum": 0.3, "Scalper": 0.2, "Gold": 0.2, "Wealth": 0.3}
+    strategy_views = {
+        "Momentum": {"expected_return": 0.15, "confidence": 0.8},
+        "Scalper": {"expected_return": 0.12, "confidence": 0.6},
+        "Gold": {"expected_return": 0.08, "confidence": 0.9},
+        "Wealth": {"expected_return": 0.10, "confidence": 1.0}
+    }
+    # Mock Covariance Matrix
+    cov = np.diag([0.05, 0.03, 0.04, 0.02])
+    
+    return robust_allocator.optimize_allocation(market_priors, strategy_views, cov)
 
 if __name__ == "__main__":
     asyncio.run(main())
