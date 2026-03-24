@@ -36,6 +36,7 @@ def setup_dashboard():
         "Strategy Marketplace",
         "AI Intelligence",
         "Social Trading",
+        "HFT Analytics",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -59,6 +60,8 @@ def setup_dashboard():
         render_ai_intelligence()
     elif page == "Social Trading":
         render_social_trading()
+    elif page == "HFT Analytics":
+        render_hft_analytics()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
@@ -989,6 +992,62 @@ def render_social_trading():
     if leaderboard:
         fig_followers = px.pie(df_leader, values='followers', names='name', title="Community Market Share by Strategy")
         st.plotly_chart(fig_followers, use_container_width=True)
+
+def render_hft_analytics():
+    """Render the High-Frequency Trading & OBI analytics suite"""
+    st.header("HFT Optimization & OBI Analytics")
+    st.info("Sub-second Order Book Imbalance (OBI) detection for institutional scalp signals.")
+    
+    # --- Real-time Metrics ---
+    metrics = api_client.get_hft_metrics()
+    if metrics:
+        col_m1, col_m2, col_m3 = st.columns(3)
+        with col_m1:
+            st.metric("Total HFT Signals", metrics['signal_count'])
+        with col_m2:
+            st.metric("Avg OBI Pressure", f"{metrics['avg_obi']:.4f}")
+        with col_m3:
+            st.metric("Last OBI reading", f"{metrics['last_obi']:.4f}")
+            
+    st.divider()
+    
+    # --- OBI Visualization & Signals ---
+    col_v1, col_v2 = st.columns([2, 1])
+    
+    with col_v1:
+        st.subheader("Order Book Pressure Stream")
+        signals = api_client.get_hft_signals()
+        if signals:
+            df_hft = pd.DataFrame(signals)
+            # Area chart for OBI pressure
+            fig_obi = px.area(df_hft, x='timestamp', y='obi', title="Real-time OBI Convergence",
+                             color_discrete_sequence=['#FF4B4B' if metrics['last_obi'] < 0 else '#00D4FF'])
+            st.plotly_chart(fig_obi, use_container_width=True)
+        else:
+            st.info("Scanning order books for micro-imbalances...")
+            
+    with col_v2:
+        st.subheader("⚡ Scalp Signals")
+        if signals:
+            for s in reversed(signals[-10:]):
+                color = "green" if "BUY" in s['action'] else "red" if "SELL" in s['action'] else "gray"
+                st.markdown(f"""
+                    <div style="border-left: 5px solid {color}; padding: 10px; margin-bottom: 5px; background-color: #f0f2f6;">
+                        <strong>{s['action']}</strong> | {s['symbol']}<br/>
+                        OBI: {s['obi']:.4f} | Confidence: {s['confidence']:.2%}
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.caption("No high-frequency signals detected yet.")
+
+    st.divider()
+    # Manual OBI Probe
+    st.subheader("Manual OBI Probe")
+    probe_symbol = st.text_input("Symbol to Probe", "AAPL")
+    if st.button("Run Instant Probe"):
+        res = api_client.get_symbol_obi(probe_symbol)
+        if res:
+            st.json(res)
 
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""
