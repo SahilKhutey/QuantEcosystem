@@ -1,22 +1,39 @@
 version: '3.8'
 
 services:
-  trading-backend:
+  # Institutional Trading Backend (FastAPI)
+  trading-engine:
     build: .
-    volumes:
-      - .:/app
+    container_name: trading-engine-prod
+    ports:
+      - "8000:8000"
     environment:
-      - DEBUG=True
       - ALPACA_API_KEY=${ALPACA_API_KEY}
       - ALPACA_SECRET_KEY=${ALPACA_SECRET_KEY}
-    ports:
-      - "5000:5000"
-    command: python main.py
-
-  trading-ui:
-    build: .
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+      - DEPLOYMENT_REGION=us-east-1
     volumes:
-      - .:/app
+      - ./trading_system.db:/app/trading_system.db
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/broker/alpaca"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Streamlit Intelligence Dashboard
+  dashboard:
+    build: .
+    container_name: trading-dashboard
+    command: streamlit run trading_system/web/main.py --server.port 8501 --server.address 0.0.0.0
     ports:
       - "8501:8501"
-    command: streamlit run web/main.py
+    environment:
+      - API_BASE_URL=http://trading-engine:8000/api
+    depends_on:
+      - trading-engine
+    restart: always
+
+networks:
+  default:
+    name: institutional-quant-net
