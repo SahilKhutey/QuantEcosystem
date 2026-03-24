@@ -821,6 +821,50 @@ def render_compliance_audit():
         All system actions, including trade executions and risk parameter modifications, are retained for a minimum of 365 days in encrypted audit logs according to institutional compliance standards.
         """)
 
+def render_strategy_marketplace():
+    """Render the strategy discovery and management marketplace"""
+    st.header("Strategy Marketplace")
+    st.info("Dynamically discover, monitor, and activate institutional trading strategies.")
+    
+    strategies = api_client.get_strategies()
+    if strategies:
+        # Metrics Overview
+        col_m1, col_m2, col_m3 = st.columns(3)
+        active_count = sum(1 for s in strategies.values() if s['active'])
+        with col_m1:
+            st.metric("Total Strategies", len(strategies))
+        with col_m2:
+            st.metric("Active Strategies", active_count)
+        with col_m3:
+            st.metric("System Load", f"{(active_count/len(strategies)*100):.0f}%")
+        
+        st.divider()
+        
+        # Strategy Cards
+        for name, data in strategies.items():
+            with st.expander(f"🔮 {name}", expanded=True):
+                c1, c2, c3 = st.columns([2, 2, 1])
+                
+                with c1:
+                    st.write(f"**Status**: {'✅ ACTIVE' if data['active'] else '⚪ STANDBY'}")
+                    st.write(f"**Trades**: {data['metrics']['total_trades']}")
+                    
+                with c2:
+                    st.metric("Win Rate", f"{data['metrics']['win_rate']:.1%}")
+                    st.metric("PnL", f"${data['metrics']['pnl']:.2f}")
+                
+                with c3:
+                    if data['active']:
+                        if st.button("Deactivate", key=f"deact_btn_{name}"):
+                            api_client.deactivate_strategy(name)
+                            st.rerun()
+                    else:
+                        if st.button("Activate", key=f"act_btn_{name}", type="primary"):
+                            api_client.activate_strategy(name)
+                            st.rerun()
+    else:
+        st.warning("No strategies discovered. Ensure strategies are placed in `trading_system/strategies/`.")
+
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""
     st.header("Strategy Performance Attribution")
