@@ -39,6 +39,7 @@ def setup_dashboard():
         "HFT Analytics",
         "Global Exposure",
         "Alert Center",
+        "Master Intelligence",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -68,6 +69,8 @@ def setup_dashboard():
         render_global_exposure()
     elif page == "Alert Center":
         render_alert_center()
+    elif page == "Master Intelligence":
+        render_master_intelligence()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
@@ -1111,6 +1114,73 @@ def render_alert_center():
                     st.caption(f"Time: {alert['timestamp'].split('T')[1][:8]}")
         else:
             st.info("No active alerts in the last 24 hours.")
+
+def render_master_intelligence():
+    """Render the unified Master Intelligence & Advanced Risk dashboard"""
+    st.header("Unified Master Alpha & Risk Control")
+    st.info("Cross-modality signal fusion (Sentiment + OBI + Macro) for institutional consensus.")
+    
+    # --- Signal Fusion Section ---
+    master_signal = api_client.get_master_fused_signal()
+    if master_signal:
+        col_s1, col_s2 = st.columns([1, 2])
+        
+        with col_s1:
+            st.subheader("Master Alpha Score")
+            score = master_signal['master_score']
+            confidence = master_signal['confidence']
+            action = master_signal['action']
+            
+            # Badge
+            color = "green" if "BUY" in action else "red" if "SELL" in action else "gray"
+            st.markdown(f"""
+                <div style="background-color: {color}; color: white; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h2 style="margin: 0;">{action}</h2>
+                    <h3 style="margin: 10px 0;">Score: {score:.4f}</h3>
+                    <p style="margin: 0;">Confidence: {confidence:.1%}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        with col_s2:
+            st.subheader("Component Weighting")
+            comp = master_signal['components']
+            df_comp = pd.DataFrame([
+                {"Component": "Sentiment", "Value": comp['sentiment']},
+                {"Component": "OBI Pressure", "Value": comp['obi']},
+                {"Component": "Macro Regime", "Value": 1.0 if comp['regime'] == "NORMAL" else 0.5}
+            ])
+            fig_comp = px.bar(df_comp, x="Component", y="Value", color="Component", 
+                             title="Alpha Contribution by Modality")
+            st.plotly_chart(fig_comp, use_container_width=True)
+            
+    st.divider()
+    
+    # --- Advanced Risk Control Section ---
+    st.subheader("Institutional Risk & Position Sizing")
+    
+    col_r1, col_r2 = st.columns(2)
+    
+    with col_r1:
+        st.write("**Risk Budgeting Simulator**")
+        sim_price = st.number_input("Last Price", value=150.0)
+        sim_vol = st.slider("Historical Volatility (%)", 0.1, 10.0, 2.0) / 100.0
+        sim_conf = st.slider("Signal Confidence (%)", 10, 100, 65) / 100.0
+        
+        if st.button("Calculate Optimal Size", type="primary"):
+            size_advice = api_client.get_position_sizing(sim_price, sim_vol, sim_conf)
+            if size_advice:
+                st.session_state['last_size_advice'] = size_advice
+                
+    with col_r2:
+        if 'last_size_advice' in st.session_state:
+            advice = st.session_state['last_size_advice']
+            st.write("**Recommended Exposure**")
+            st.metric("Units to Trade", advice['quantity'])
+            st.metric("Cash at Risk", f"${advice['cash_at_risk']:,.2f}")
+            st.write(f"**Kelly Fraction**: {advice['kelly_fraction']:.2%}")
+            st.write(f"**Volatility Factor**: {advice['vol_scale']:.2f}x")
+        else:
+            st.info("Configure risk parameters to see recommendations.")
 
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""
