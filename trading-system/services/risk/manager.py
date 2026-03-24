@@ -4,6 +4,7 @@ import json
 import numpy as np
 from datetime import datetime, timedelta
 from services.broker.broker_interface import BrokerAPI, OrderRequest
+from services.risk.bayesian_position_sizing import BayesianPositionSizer
 
 logger = logging.getLogger('RiskManager')
 
@@ -35,6 +36,9 @@ class RiskManager:
         self.account = None
         self.last_position_check = time.time()
         self.position_check_interval = 300  # 5 minutes
+        
+        # Initialize Bayesian Position Sizer
+        self.bayesian_sizer = BayesianPositionSizer(risk_per_trade=position_size)
         
         # Initialize account values
         self._init_account()
@@ -246,19 +250,32 @@ class RiskManager:
         self.daily_loss = 0.0
         self.logger.info(f"Daily metrics reset - Starting capital: ${self.daily_start_capital:,.2f}")
     
-    def get_position_size(self, symbol: str, entry_price: float, stop_loss: float) -> int:
+    def get_position_size(self, symbol: str, entry_price: float, stop_loss: float, use_bayesian: bool = False) -> int:
         """Get recommended position size based on risk parameters"""
+        if use_bayesian:
+            return self.bayesian_sizer.calculate_position_size(entry_price, stop_loss, self.current_capital)
+            
         # Calculate risk per share
         risk_per_share = abs(entry_price - stop_loss)
         
         # Calculate maximum position size based on risk
         max_position = min(
-            int((self.current_capital * 0.02) / risk_per_share) if risk_per_share > 0 else 0,
-            int(self.current_capital * 0.1)
+            int((self.current_capital * self.position_size) / risk_per_share) if risk_per_share > 0 else 0,
+            int(self.current_capital * self.max_position_allocation)
         )
         
         # Minimum position size is 1 share
         return max(1, max_position)
+
+    def update_market_regime(self, returns: list):
+        """Update the Bayesian market regime based on recent returns"""
+        self.bayesian_sizer.update_market_regime(returns)
+
+    def record_trade_result(self, profit_loss: float, confidence: float):
+        """Record trade result for Bayesian learning and update risk metrics"""
+        self.update_position(profit_loss)
+        self.bayesian_sizer.add_trade(profit_loss, confidence)
+        self.bayesian_sizer.update_regime_from_trades()
     
     def check_position_limits(self, symbol: str) -> tuple:
         """Check position limits for a symbol"""

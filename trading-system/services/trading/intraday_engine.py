@@ -24,11 +24,13 @@ class IntradayTradingEngine:
     """
     
     def __init__(self, broker: GlobalBrokerRouter, risk_manager: RiskManager,
-                 max_position_size: int = 200, max_trades_per_day: int = 5):
+                 max_position_size: int = 200, max_trades_per_day: int = 5,
+                 use_bayesian: bool = True):
         self.broker = broker
         self.risk = risk_manager
         self.max_position_size = max_position_size
         self.max_trades_per_day = max_trades_per_day
+        self.use_bayesian = use_bayesian
         self.logger = logger
         self.active_positions = {}
         self.trade_history = []
@@ -166,10 +168,13 @@ class IntradayTradingEngine:
         if not self.risk.check_circuit_breaker():
             return
             
-        risk_per_share = abs(signal.entry_price - signal.stop_loss)
-        if risk_per_share == 0: return
-        
-        position_size = int((self.risk.current_capital * self.position_sizing) / risk_per_share)
+        # Calculate position size
+        position_size = self.risk.get_position_size(
+            signal.symbol, 
+            signal.entry_price, 
+            signal.stop_loss, 
+            use_bayesian=self.use_bayesian
+        )
         position_size = min(position_size, self.max_position_size)
         
         if position_size < 1: return
@@ -243,7 +248,8 @@ class IntradayTradingEngine:
         pnl = (exit_price - trade['entry_price']) * trade['position_size'] if trade['order'].action == 'BUY' else \
               (trade['entry_price'] - exit_price) * trade['position_size']
         
-        self.risk.update_position(pnl)
+        # Update risk metrics with Bayesian feedback
+        self.risk.record_trade_result(pnl, trade['signal'].confidence)
         self.trade_history.append({
             'trade_id': trade_id,
             'symbol': trade['signal'].symbol,

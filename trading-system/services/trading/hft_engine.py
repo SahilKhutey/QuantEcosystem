@@ -25,12 +25,13 @@ class HFTScalpingEngine:
     
     def __init__(self, broker: GlobalBrokerRouter, risk_manager: RiskManager, 
                  min_spread: float = 0.05, max_position_size: int = 100, 
-                 max_trades_per_minute: int = 20):
+                 max_trades_per_minute: int = 20, use_bayesian: bool = True):
         self.broker = broker
         self.risk = risk_manager
         self.min_spread = min_spread
         self.max_position_size = max_position_size
         self.max_trades_per_minute = max_trades_per_minute
+        self.use_bayesian = use_bayesian
         self.logger = logger
         self.active_trades = {}
         self.trade_history = []
@@ -110,11 +111,14 @@ class HFTScalpingEngine:
             self.logger.warning("Circuit breaker active - no new trades allowed")
             return
         
-        # Calculate position size (small for HFT)
-        position_size = min(
-            self.max_position_size,
-            int(self.risk.current_capital * 0.005 / signal.price)  # 0.5% of capital
+        # Calculate position size
+        position_size = self.risk.get_position_size(
+            signal.symbol, 
+            signal.price, 
+            signal.price * 0.995, 
+            use_bayesian=self.use_bayesian
         )
+        position_size = min(position_size, self.max_position_size)
         
         if position_size < 1:
             return
@@ -194,8 +198,8 @@ class HFTScalpingEngine:
         else:
             profit_loss = (trade['entry_price'] - exit_price) * trade['position_size']
         
-        # Update risk metrics
-        self.risk.update_position(profit_loss)
+        # Update risk metrics with Bayesian feedback
+        self.risk.record_trade_result(profit_loss, trade['signal'].confidence)
         
         # Record trade
         self.trade_history.append({
