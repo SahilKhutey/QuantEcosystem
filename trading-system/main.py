@@ -1,18 +1,14 @@
 import time
 import logging
 import sys
-import signal
 import os
+import signal
 from config.settings import API_KEYS
 from services.broker.broker_interface import GlobalBrokerRouter
 from services.broker.alpaca_api import AlpacaAPI
 from services.broker.ib_api import IBAPI
 from services.broker.td_api import TDAPI
-from services.risk.manager import RiskManager
-from services.trading.hft_engine import HFTScalpingEngine
-from services.trading.swing_engine import SwingTradingEngine
-from services.trading.intraday_engine import IntradayTradingEngine
-from services.trading.autonomous_engine import AutonomousTradingEngine
+from services.core.system_integrator import SystemIntegrator
 
 def setup_logging():
     """Configure logging for production environment"""
@@ -40,13 +36,13 @@ def setup_logging():
     root.addHandler(file_handler)
     
     # Add process ID to logs for better tracking
-    logging.info(f"Starting trading system with PID: {os.getpid()}")
+    logging.info(f"Starting advanced trading system with PID: {os.getpid()}")
     return logging.getLogger("Main")
 
 def initialize_components():
-    """Initialize all trading system components"""
+    """Initialize all advanced trading system components"""
     logger = logging.getLogger("Main")
-    logger.info("Initializing trading system components")
+    logger.info("Initializing advanced trading system components")
     
     try:
         # Initialize broker router and add brokers
@@ -67,68 +63,26 @@ def initialize_components():
         
         # Add TD Ameritrade API
         td_api = TDAPI(
-            api_key=API_KEYS.get('tda_key'), # Fixed from 'td_key' to match settings.py
-            access_token=API_KEYS.get('tda_token') # Fixed from 'td_token'
+            api_key=API_KEYS.get('td_key'),
+            access_token=API_KEYS.get('td_token')
         )
         broker_router.add_broker("TD Ameritrade", td_api)
         logger.info("TD Ameritrade API initialized")
         
-        # Initialize risk manager
-        risk_manager = RiskManager(alpaca_api)
-        logger.info("Risk manager initialized")
-        
-        # Initialize trading engines
-        hft_engine = HFTScalpingEngine(
-            broker_router, 
-            risk_manager,
-            min_spread=0.05,
-            max_position_size=100,
-            max_trades_per_minute=20
-        )
-        logger.info("HFT scalping engine initialized")
-        
-        swing_engine = SwingTradingEngine(
-            broker_router,
-            risk_manager,
-            min_risk_reward=1.5,
-            max_position_size=500,
-            max_trades_per_day=3
-        )
-        logger.info("Swing trading engine initialized")
-        
-        intraday_engine = IntradayTradingEngine(
-            broker_router,
-            risk_manager,
-            max_position_size=200,
-            max_trades_per_day=5
-        )
-        logger.info("Intraday trading engine initialized")
-        
-        # Initialize autonomous trading engine
-        autonomous_engine = AutonomousTradingEngine(
-            broker_router,
-            risk_manager,
-            hft_engine,
-            swing_engine,
-            intraday_engine,
-            market_data_interval=1,
-            monitor_interval=5
-        )
-        logger.info("Autonomous trading engine initialized")
+        # Initialize advanced trading system
+        system_integrator = SystemIntegrator(broker_router)
+        system_integrator.initialize_components()
+        logger.info("Advanced trading system components initialized")
         
         return {
             'logger': logger,
             'broker_router': broker_router,
-            'risk_manager': risk_manager,
-            'hft_engine': hft_engine,
-            'swing_engine': swing_engine,
-            'intraday_engine': intraday_engine,
-            'autonomous_engine': autonomous_engine
+            'system_integrator': system_integrator
         }
     
     except Exception as e:
         logger = logging.getLogger("Main")
-        logger.exception("Error initializing trading system components")
+        logger.exception("Error initializing advanced trading system components")
         raise
 
 def handle_shutdown(signum, frame):
@@ -141,27 +95,26 @@ def handle_shutdown(signum, frame):
     if not components:
         sys.exit(0)
     
-    # Stop the autonomous engine
-    if components.get('autonomous_engine'):
-        components['autonomous_engine'].stop()
+    # Stop the advanced trading system
+    if components.get('system_integrator'):
+        components['system_integrator'].stop()
     
     # Clean up resources
-    logger.info("Shutting down trading system components")
+    logger.info("Shutting down advanced trading system components")
     time.sleep(2)  # Give time for components to shut down
     
-    logger.info("Trading system shutdown complete")
+    logger.info("Advanced trading system shutdown complete")
     sys.exit(0)
 
 def main():
     """Production trading system entry point"""
     # Setup logging
     logger = setup_logging()
-    logger.info("Starting production autonomous trading system")
+    logger.info("Starting production advanced trading system")
     
-    # Register signal handlers for graceful shutdown (SIGINT = Ctrl+C, SIGTERM = Termination)
+    # Register signal handlers for graceful shutdown
     signal.signal(signal.SIGINT, handle_shutdown)
-    if os.name != 'nt': # SIGTERM not fully supported on Windows via signal.signal in some contexts, but fine for docker
-        signal.signal(signal.SIGTERM, handle_shutdown)
+    signal.signal(signal.SIGTERM, handle_shutdown)
     
     system = None
     try:
@@ -172,36 +125,40 @@ def main():
         # Set system as global for shutdown handler
         sys.modules['__main__'].__dict__['system'] = system
         
-        # Start autonomous trading engine
-        system['autonomous_engine'].start()
-        logger.info("Autonomous trading engine started")
+        # Start advanced trading system
+        system['system_integrator'].start()
+        logger.info("Advanced trading system started")
         
         # Main loop - just wait for shutdown signal
         while True:
-            # Check system status periodically
-            status = system['autonomous_engine'].get_status()
-            logger.info(
-                f"System status: "
-                f"Active={status['system']['active']}, "
-                f"Market Open={status['system'].get('market_open', False)}, "
-                f"Circuit Breaker={status['system'].get('circuit_breaker', False)}"
-            )
+            # Check system status every minute
+            if int(time.time()) % 60 == 0:
+                status = system['system_integrator'].get_system_status()
+                logger.info(
+                    f"System status: "
+                    f"Active={status['active']}, "
+                    f"Components={len(status['components'])}"
+                )
+                time.sleep(1) # Prevent multiple logs in same second
             
-            time.sleep(60) # Log status every 60 seconds
+            time.sleep(0.5)
     
     except KeyboardInterrupt:
-        logger.info("Trading system stopped by user")
+        logger.info("Advanced trading system stopped by user")
         if system:
-            system['autonomous_engine'].stop()
+            system['system_integrator'].stop()
         sys.exit(0)
     except Exception as e:
         logger = logging.getLogger("Main")
-        logger.exception("Critical error in trading system")
+        logger.exception("Critical error in advanced trading system")
         if system:
-            system['autonomous_engine'].stop()
+            system['system_integrator'].stop()
         sys.exit(1)
     finally:
-        logger.info("Trading system process terminating")
+        # Clean up resources
+        logger = logging.getLogger("Main")
+        logger.info("Shutting down advanced trading system...")
+        logger.info("Advanced trading system shutdown complete")
 
 if __name__ == "__main__":
     main()
