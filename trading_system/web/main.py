@@ -42,6 +42,7 @@ def setup_dashboard():
         "Master Intelligence",
         "Wealth Management",
         "Production Ops",
+        "Continuous Improvement",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -77,6 +78,8 @@ def setup_dashboard():
         render_wealth_management()
     elif page == "Production Ops":
         render_production_ops()
+    elif page == "Continuous Improvement":
+        render_continuous_improvement()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
@@ -1254,6 +1257,46 @@ def render_production_ops():
     """Render the elite Production Operations monitoring framework"""
     prod_dashboard = ProductionDashboard(api_base_url="http://localhost:8000/api")
     prod_dashboard.render()
+
+def render_continuous_improvement():
+    """Render the Continuous Improvement & Optimization pipeline"""
+    st.header("Continuous Improvement & Optimization")
+    st.info("Automated performance feedback loops and recursive system optimization.")
+    
+    # --- Optimization Pipeline ---
+    pipeline = api_client.get_improvement_pipeline()
+    
+    st.subheader("Active Optimization Pipeline")
+    if pipeline:
+        for plan in reversed(pipeline):
+            color = "red" if plan['priority'] == "critical" else "orange" if plan['priority'] == "high" else "blue"
+            with st.expander(f"[{plan['priority'].upper()}] {plan['description']}", expanded=(plan['priority'] == 'critical')):
+                st.write(f"**Type**: {plan['type']}")
+                st.write("**Proposed Actions**:")
+                for action in plan['actions']:
+                    st.write(f"- {action}")
+                
+                st.write("**Estimated Impact**:")
+                st.json(plan['estimated_impact'])
+                st.caption(f"Plan ID: {plan['issue_id']}")
+    else:
+        st.success("System optimized. No active improvement plans in pipeline.")
+        
+    st.divider()
+    
+    # --- Performance Health ---
+    st.subheader("Performance Health Diagnostics")
+    metrics = api_client.get_prod_performance_metrics()
+    if metrics:
+        col_h1, col_h2, col_h3 = st.columns(3)
+        with col_h1:
+            st.metric("Win Rate Stability", f"{metrics['win_rate']:.2%}")
+        with col_h2:
+            st.metric("Risk-Adjusted Momentum", f"{metrics['sharpe_ratio']:.2f}")
+        with col_h3:
+            st.metric("Drawdown Perimeter", f"{metrics['max_drawdown']:.2%}")
+    
+    st.caption("Feedback loop runs every 30 minutes to check for micro-degradations.")
 
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""
