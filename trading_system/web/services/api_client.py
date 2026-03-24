@@ -344,6 +344,21 @@ class APIClient:
         """Simulate long-term wealth growth for a SIP"""
         return self._get(f"wealth/simulate-sip/{amount}/{years}/{rate}")
 
+    def simulate_swp(self, corpus: float, amount: float, years: int, rate: float, inflation: float):
+        """Simulate long-term wealth depletion for a SWP"""
+        return self._get(f"wealth/simulate-swp/{corpus}/{amount}/{years}/{rate}/{inflation}")
+
+    def get_active_swps(self):
+        """Get list of active systematic withdrawal plans"""
+        return self._get("wealth/swps")
+
+    def create_swp(self, symbol: str, corpus: float, amount: float, frequency: str = "MONTHLY", inflation_adj: bool = True):
+        """Initialize a new Systematic Withdrawal Plan"""
+        return self._post("wealth/swp", {
+            'symbol': symbol, 'corpus': corpus, 'amount': amount, 
+            'frequency': frequency, 'inflation_adj': inflation_adj
+        })
+
     # --- Continuous Improvement Methods ---
     def get_improvement_pipeline(self):
         """Get the active optimization pipeline"""

@@ -560,6 +560,25 @@ async def create_new_sip():
 async def simulate_sip_return(amount: float, years: int, rate: float):
     return wealth_manager.simulate_sip(amount, years, rate)
 
+@app.get("/api/wealth/simulate-swp/{corpus}/{amount}/{years}/{rate}/{inflation}")
+async def simulate_swp_depletion(corpus: float, amount: float, years: int, rate: float, inflation: float):
+    return wealth_manager.simulate_swp(corpus, amount, years, rate, inflation)
+
+@app.get("/api/wealth/swps")
+async def get_active_swps():
+    return wealth_manager.swps
+
+@app.post("/api/wealth/swp")
+async def create_new_swp():
+    data = request.json
+    return wealth_manager.create_swp(
+        data.get('symbol', 'SPY'),
+        data.get('corpus', 1000000),
+        data.get('amount', 4000),
+        data.get('frequency', 'MONTHLY'),
+        data.get('inflation_adj', True)
+    )
+
 # --- Production Operations Endpoints ---
 
 @app.get("/api/system/status")
