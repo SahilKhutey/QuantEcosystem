@@ -1300,6 +1300,61 @@ def render_wealth_management():
         else:
             st.info("No active SWPs found.")
 
+def render_strategy_center():
+    """Render the Multi-Strategy Operations & Attribution Center"""
+    st.header("Strategy Operations & Performance Attribution")
+    st.info("Centralized command for algorithm lifecycle management and active capital allocation.")
+    
+    # --- Strategy Performance Ledger ---
+    strategies = api_client.get_portfolio_strategies()
+    if strategies:
+        st.subheader("Algorithm Performance Ledger")
+        for name, data in strategies.items():
+            status_icon = "🟢" if data['status'] == "ACTIVE" else "🔴"
+            with st.expander(f"{status_icon} {name}"):
+                col_e1, col_e2, col_e3, col_e4 = st.columns(4)
+                with col_e1:
+                    st.metric("Capital", f"${data['capital']:,.0f}")
+                with col_e2:
+                    st.metric("PnL", f"${data['pnl']:,.0f}", delta=f"{data['pnl']/data['capital']*100:.2f}%")
+                with col_e3:
+                    st.metric("Max Drawdown", f"{data['drawdown']:.2%}")
+                with col_e4:
+                    if st.button(f"Toggle {name}", key=f"btn_{name}"):
+                        res = api_client.toggle_strategy(name)
+                        if res:
+                            st.experimental_rerun()
+    
+    st.divider()
+    
+    # --- Allocation & Attribution ---
+    col_a1, col_a2 = st.columns([1, 1.2])
+    
+    with col_a1:
+        st.subheader("Capital Allocation")
+        alloc_data = api_client.get_portfolio_allocation()
+        if alloc_data:
+            df_alloc = pd.DataFrame(alloc_data)
+            fig = px.pie(df_alloc, values='value', names='name', hole=0.4, 
+                         color_discrete_sequence=px.colors.sequential.Teal)
+            fig.update_layout(margin=dict(t=0, b=0, l=0, r=0))
+            st.plotly_chart(fig, use_container_width=True)
+            
+    with col_a2:
+        st.subheader("Performance Attribution (Brinson)")
+        attr = api_client.get_performance_attribution()
+        if attr:
+            df_attr = pd.DataFrame([
+                {"Metric": "Asset Selection", "Value": attr['selection_effect']},
+                {"Metric": "Capital Allocation", "Value": attr['allocation_effect']},
+                {"Metric": "Interaction", "Value": attr['interaction_effect']}
+            ])
+            fig_attr = px.bar(df_attr, x='Value', y='Metric', orientation='h', 
+                             color='Value', color_continuous_scale="Viridis")
+            fig_attr.update_layout(height=300, margin=dict(t=0, b=0, l=0, r=0))
+            st.plotly_chart(fig_attr, use_container_width=True)
+            st.caption(f"Total Portfolio Alpha: **{attr['total_alpha']*100:.2f}%**")
+
 def render_production_ops():
     """Render the elite Production Operations monitoring framework"""
     prod_dashboard = ProductionDashboard(api_base_url="http://localhost:8000/api")
