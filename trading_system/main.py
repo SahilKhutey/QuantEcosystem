@@ -42,6 +42,7 @@ from trading_system.services.portfolio.robust_allocator import RobustAllocator
 from trading_system.services.broker.asset_expander import AssetClassExpander
 from trading_system.services.ai.lstm_signal import LSTMSignalGenerator
 from trading_system.services.communication.mobile_bridge import MobileBridge
+from trading_system.services.analytics.walk_forward import WalkForwardEngine
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -72,6 +73,7 @@ robust_allocator = RobustAllocator()
 asset_expander = AssetClassExpander(position_sizer)
 lstm_signal = LSTMSignalGenerator()
 mobile_bridge = MobileBridge(alert_manager, lstm_signal)
+walk_forward_engine = WalkForwardEngine(storage_engine)
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -801,6 +803,13 @@ async def get_mobile_summary():
 async def register_mobile_device():
     data = request.json
     return mobile_bridge.register_device(data.get('token'))
+
+# --- Walk-Forward Backtesting Endpoints ---
+
+@app.post("/api/backtest/walk-forward")
+async def run_walk_forward():
+    data = request.json
+    return walk_forward_engine.run_wfo(data['strategy'], data['symbol'], data.get('params', {}))
 
 if __name__ == "__main__":
     asyncio.run(main())

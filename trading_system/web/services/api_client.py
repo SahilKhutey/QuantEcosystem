@@ -473,3 +473,8 @@ class APIClient:
     def register_mobile_device(self, token: str):
         """Link a mobile device for real-time risk alerts and AI signals"""
         return self._post("mobile/register", {"token": token})
+
+    # --- Walk-Forward Backtesting Methods ---
+    def run_walk_forward_test(self, strategy: str, symbol: str, params: dict = None):
+        """Run a robust walk-forward optimization to detect strategy over-fitting"""
+        return self._post("backtest/walk-forward", {'strategy': strategy, 'symbol': symbol, 'params': params or {}})
