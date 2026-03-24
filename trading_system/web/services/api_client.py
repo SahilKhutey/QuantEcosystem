@@ -291,3 +291,16 @@ class APIClient:
     def follow_strategy(self, strategy_name: str, user_id: str = "USER_1"):
         """Follow a master strategy for broadcast notifications"""
         return self._post(f"social/follow/{strategy_name}/{user_id}")
+
+    # --- HFT Optimization Methods ---
+    def get_hft_signals(self):
+        """Get latest high-frequency scalp signals"""
+        return self._get("hft/signals")
+
+    def get_hft_metrics(self):
+        """Get aggregated order book pressure metrics"""
+        return self._get("hft/metrics")
+
+    def get_symbol_obi(self, symbol: str):
+        """Get real-time OBI signal for a specific symbol"""
+        return self._get(f"hft/obi/{symbol}")
