@@ -49,6 +49,17 @@ def run_dry_run():
     except Exception as e:
         logger.error(f"❌ RealTimeMonitor failed: {e}")
 
+    # 5. Verify Data Integrity
+    try:
+        from trading_system.services.data.market_data import MarketDataService
+        ds = MarketDataService()
+        if ds.verify_data_integrity("AAPL"):
+            logger.info("✅ Data Integrity verified (Live vs Benchmark < 1%)")
+        else:
+            logger.warning("⚠️ Data Integrity check bypassed or failed.")
+    except Exception as e:
+        logger.error(f"❌ Data Integrity test failed: {e}")
+
     logger.info("======================================")
     logger.info("DASHBOARD ACCESSIBILITY: http://localhost:8502")
     logger.info("API ACCESSIBILITY: http://localhost:5000/api")

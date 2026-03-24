@@ -45,3 +45,32 @@ class MarketDataService:
         else:
             ticker = yf.Ticker(symbol)
             return ticker.fast_info['last_price']
+
+    def verify_data_integrity(self, symbol: str, threshold: float = 0.01) -> bool:
+        """
+        Validates real-time price against historical benchmarks.
+        Returns True if the deviation is within the allowed threshold (default 1%).
+        """
+        try:
+            # Get latest price
+            current_price = self.get_latest_price(symbol)
+            
+            # Get historical daily average (approximate benchmark)
+            hist = self.get_equity_data(symbol, period="1d", interval="1m")
+            if hist.empty:
+                return False
+                
+            benchmark_price = hist['Close'].iloc[-1]
+            
+            # Calculate deviation
+            deviation = abs(current_price - benchmark_price) / benchmark_price
+            
+            if deviation <= threshold:
+                self.logger.info(f"Data integrity verified for {symbol}: {deviation:.4%} deviation.")
+                return True
+            else:
+                self.logger.warning(f"Data integrity violation for {symbol}: {deviation:.4%} deviation exceeded {threshold:.2%}")
+                return False
+        except Exception as e:
+            self.logger.error(f"Data integrity check failed for {symbol}: {e}")
+            return False
