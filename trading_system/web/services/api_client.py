@@ -442,3 +442,16 @@ class APIClient:
     def run_robust_optimization(self):
         """Run the Black-Litterman model to rebalance strategy weights"""
         return self._post("portfolio/robust-optimize")
+
+    # --- Asset Class Expansion Methods ---
+    def get_asset_universe(self):
+        """Get the combined universe of Equities, Futures, and Forex"""
+        return self._get("broker/universe")
+
+    def get_asset_margin(self, symbol: str):
+        """Get specialized margin/leverage requirements for an asset"""
+        return self._get(f"broker/margin/{symbol}")
+
+    def prepare_multi_asset_order(self, symbol: str, side: str, qty: float):
+        """Format an order for the institutional brokering layer"""
+        return self._post("broker/prepare-order", {'symbol': symbol, 'side': side, 'qty': qty})

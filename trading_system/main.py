@@ -39,6 +39,7 @@ from trading_system.services.trading.execution_optimizer import ExecutionOptimiz
 from trading_system.services.compliance.automator import ComplianceAutomator
 from trading_system.services.risk.cb_tester import CircuitBreakerTester
 from trading_system.services.portfolio.robust_allocator import RobustAllocator
+from trading_system.services.broker.asset_expander import AssetClassExpander
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -66,6 +67,7 @@ execution_optimizer = ExecutionOptimizer(storage_engine)
 compliance_automator = ComplianceAutomator(storage_engine)
 cb_tester = CircuitBreakerTester(position_sizer, alert_manager)
 robust_allocator = RobustAllocator()
+asset_expander = AssetClassExpander(position_sizer)
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -757,6 +759,21 @@ async def run_portfolio_optimization():
     cov = np.diag([0.05, 0.03, 0.04, 0.02])
     
     return robust_allocator.optimize_allocation(market_priors, strategy_views, cov)
+
+# --- Asset Class Expansion Endpoints ---
+
+@app.get("/api/broker/universe")
+async def get_multi_asset_universe():
+    return asset_expander.get_supported_universe()
+
+@app.get("/api/broker/margin/{symbol}")
+async def get_asset_margin(symbol: str):
+    return asset_expander.get_margin_requirements(symbol)
+
+@app.post("/api/broker/prepare-order")
+async def prepare_multi_asset_order():
+    data = request.json
+    return asset_expander.prepare_order(data['symbol'], data['side'], data['qty'])
 
 if __name__ == "__main__":
     asyncio.run(main())
