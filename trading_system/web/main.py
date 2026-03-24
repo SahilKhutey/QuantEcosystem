@@ -41,6 +41,7 @@ def setup_dashboard():
         "Alert Center",
         "Master Intelligence",
         "Wealth Management",
+        "Production Ops",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -74,6 +75,8 @@ def setup_dashboard():
         render_master_intelligence()
     elif page == "Wealth Management":
         render_wealth_management()
+    elif page == "Production Ops":
+        render_production_ops()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
@@ -1246,6 +1249,11 @@ def render_wealth_management():
         st.dataframe(df_sips[['id', 'symbol', 'amount', 'frequency', 'start_date']], use_container_width=True)
     else:
         st.info("No active systematic plans found.")
+
+def render_production_ops():
+    """Render the elite Production Operations monitoring framework"""
+    prod_dashboard = ProductionDashboard(api_base_url="http://localhost:8000/api")
+    prod_dashboard.render()
 
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""

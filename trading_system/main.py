@@ -30,6 +30,7 @@ from trading_system.services.analytics.global_exposure import GlobalExposureTrac
 from trading_system.services.risk.position_sizer import PositionSizer
 from trading_system.services.ai.signal_fusion import SignalFusion
 from trading_system.services.wealth.wealth_manager import WealthManager
+from trading_system.services.monitoring.system_monitor import SystemMonitor
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -49,6 +50,7 @@ exposure_tracker = GlobalExposureTracker()
 position_sizer = PositionSizer()
 signal_fusion = SignalFusion()
 wealth_manager = WealthManager(storage_engine)
+system_monitor = SystemMonitor(storage_engine)
 
 # Initialize Services
 data_pipeline = DataPipeline()
@@ -552,6 +554,48 @@ async def create_new_sip():
 @app.get("/api/wealth/simulate-sip/{amount}/{years}/{rate}")
 async def simulate_sip_return(amount: float, years: int, rate: float):
     return wealth_manager.simulate_sip(amount, years, rate)
+
+# --- Production Operations Endpoints ---
+
+@app.get("/api/system/status")
+async def get_prod_system_status():
+    return system_monitor.get_system_status()
+
+@app.get("/api/risk/metrics")
+async def get_prod_risk_metrics():
+    return system_monitor.get_risk_metrics()
+
+@app.get("/api/system/performance")
+async def get_prod_performance_metrics():
+    return system_monitor.get_performance_metrics()
+
+@app.get("/api/trading/execution-metrics")
+async def get_prod_execution_metrics():
+    return system_monitor.get_execution_metrics()
+
+@app.get("/api/compliance/status")
+async def get_prod_compliance_status():
+    return system_monitor.get_compliance_status()
+
+@app.get("/api/monitoring/health")
+async def get_prod_health_metrics():
+    return system_monitor.get_health_metrics()
+
+@app.get("/api/system/performance/history")
+async def get_prod_performance_history():
+    return system_monitor.get_performance_history()
+
+@app.get("/api/trading/order-book/{symbol}")
+async def get_prod_order_book(symbol: str):
+    return system_monitor.get_order_book(symbol)
+
+@app.get("/api/compliance/timeline")
+async def get_prod_compliance_timeline():
+    return system_monitor.get_compliance_timeline()
+
+@app.get("/api/monitoring/health-timeline")
+async def get_prod_health_timeline():
+    return system_monitor.get_health_timeline()
 
 if __name__ == "__main__":
     asyncio.run(main())
