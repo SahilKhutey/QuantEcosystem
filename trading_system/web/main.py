@@ -34,6 +34,7 @@ def setup_dashboard():
         "Trading Terminal",
         "Signal Generator",
         "Strategy Marketplace",
+        "AI Intelligence",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -53,6 +54,8 @@ def setup_dashboard():
         render_signal_generator()
     elif page == "Strategy Marketplace":
         render_strategy_marketplace()
+    elif page == "AI Intelligence":
+        render_ai_intelligence()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
@@ -864,6 +867,76 @@ def render_strategy_marketplace():
                             st.rerun()
     else:
         st.warning("No strategies discovered. Ensure strategies are placed in `trading_system/strategies/`.")
+
+def render_ai_intelligence():
+    """Render the AI Signals & Macro Intelligence dashboard"""
+    st.header("AI Signals & Macro Intelligence")
+    
+    # --- Macro Regime Section ---
+    macro_context = api_client.get_macro_context()
+    if macro_context:
+        st.subheader("Global Market Regime")
+        regime = macro_context['regime']
+        
+        # Stylized Regime Badge
+        regime_colors = {
+            "NORMAL": "blue",
+            "RISK_OFF": "orange",
+            "HIGH_VOLATILITY": "red",
+            "LOW_VOLATILITY": "green"
+        }
+        color = regime_colors.get(regime, "gray")
+        st.markdown(f"""
+            <div style="background-color: {color}; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+                <h1 style="margin: 0;">{regime}</h1>
+                <p style="margin: 0;">Detected via Macro Structural Analysis</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Indicators
+        col_i1, col_i2, col_i3, col_i4 = st.columns(4)
+        indicators = macro_context['indicators']
+        with col_i1: st.metric("VIX", indicators.get('VIX'), delta_color="inverse")
+        with col_i2: st.metric("DXY", indicators.get('DXY'))
+        with col_i3: st.metric("US10Y", f"{indicators.get('US10Y')}%")
+        with col_i4: st.metric("GOLD", f"${indicators.get('GOLD')}")
+    
+    st.divider()
+    
+    # --- News Sentiment Section ---
+    st.subheader("Real-Time Sentiment Analysis")
+    
+    col_s1, col_s2 = st.columns([2, 1])
+    
+    with col_s2:
+        st.write("**Manual News Analysis**")
+        with st.form("sentiment_form"):
+            news_text = st.text_area("Paste News Headline/Article", height=100)
+            target_symbol = st.text_input("Target Symbol", "GLOBAL")
+            if st.form_submit_button("Analyze AI Sentiment"):
+                if news_text:
+                    res = api_client.analyze_custom_news(news_text, target_symbol)
+                    if res:
+                        st.success(f"Sentiment: {res['sentiment']:.2f} (Confidence: {res['confidence']:.2%})")
+                else:
+                    st.warning("Please enter text to analyze.")
+                    
+    with col_s1:
+        st.write("**Sentiment Alpha History**")
+        history = api_client.get_ai_sentiment()
+        if history:
+            df_hist = pd.DataFrame(history)
+            # Plot sentiment over time
+            fig_sent = px.scatter(df_hist, x='timestamp', y='sentiment', color='sentiment', 
+                                 size=[10]*len(df_hist), hover_data=['text'],
+                                 color_continuous_scale='RdYlGn', title="Sentiment Alpha Stream")
+            st.plotly_chart(fig_sent, use_container_width=True)
+            
+            # Latest sentiment table
+            st.dataframe(df_hist[['timestamp', 'symbol', 'sentiment', 'text']].sort_values('timestamp', ascending=False), 
+                         use_container_width=True)
+        else:
+            st.info("No sentiment history available. Analyze some news to begin.")
 
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""
