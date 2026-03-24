@@ -40,6 +40,7 @@ from trading_system.services.compliance.automator import ComplianceAutomator
 from trading_system.services.risk.cb_tester import CircuitBreakerTester
 from trading_system.services.portfolio.robust_allocator import RobustAllocator
 from trading_system.services.broker.asset_expander import AssetClassExpander
+from trading_system.services.ai.lstm_signal import LSTMSignalGenerator
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -68,6 +69,7 @@ compliance_automator = ComplianceAutomator(storage_engine)
 cb_tester = CircuitBreakerTester(position_sizer, alert_manager)
 robust_allocator = RobustAllocator()
 asset_expander = AssetClassExpander(position_sizer)
+lstm_signal = LSTMSignalGenerator()
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -774,6 +776,16 @@ async def get_asset_margin(symbol: str):
 async def prepare_multi_asset_order():
     data = request.json
     return asset_expander.prepare_order(data['symbol'], data['side'], data['qty'])
+
+# --- AI & ML Signal Endpoints ---
+
+@app.get("/api/ai/lstm/signal/{symbol}")
+async def get_lstm_signal(symbol: str):
+    return lstm_signal.generate_signal(symbol, [])
+
+@app.get("/api/ai/lstm/health")
+async def get_lstm_health():
+    return lstm_signal.get_model_health()
 
 if __name__ == "__main__":
     asyncio.run(main())

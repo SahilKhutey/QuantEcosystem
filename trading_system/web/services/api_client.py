@@ -455,3 +455,12 @@ class APIClient:
     def prepare_multi_asset_order(self, symbol: str, side: str, qty: float):
         """Format an order for the institutional brokering layer"""
         return self._post("broker/prepare-order", {'symbol': symbol, 'side': side, 'qty': qty})
+
+    # --- AI & ML Signal Methods ---
+    def get_ai_lstm_signal(self, symbol: str):
+        """Get a deep-learning based price prediction for an instrument"""
+        return self._get(f"ai/lstm/signal/{symbol}")
+
+    def get_ai_model_health(self):
+        """Get accuracy and latency metrics for the live ML models"""
+        return self._get("ai/lstm/health")
