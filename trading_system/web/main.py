@@ -33,6 +33,7 @@ def setup_dashboard():
         "Global Market View", 
         "Trading Terminal",
         "Signal Generator",
+        "Strategy Marketplace",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -50,6 +51,8 @@ def setup_dashboard():
         render_trading_terminal()
     elif page == "Signal Generator":
         render_signal_generator()
+    elif page == "Strategy Marketplace":
+        render_strategy_marketplace()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
