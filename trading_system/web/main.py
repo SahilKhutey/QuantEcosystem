@@ -1,0 +1,927 @@
+import streamlit as st
+import time
+import logging
+import requests
+import pandas as pd
+import numpy as np
+from datetime import datetime
+import plotly.express as px
+import plotly.graph_objects as go
+from web.services.api_client import APIClient
+from web.services.data_processor import DataProcessor
+
+# Configure Streamlit page
+st.set_page_config(
+    page_title="Global Trading Terminal",
+    page_icon="📈",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Initialize API client
+api_client = APIClient()
+data_processor = DataProcessor()
+
+def setup_dashboard():
+    """Set up the main dashboard"""
+    st.title("Global Trading Terminal")
+    
+    # Sidebar navigation
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Select Page", [
+        "Dashboard", 
+        "Global Market View", 
+        "Trading Terminal",
+        "Signal Generator",
+        "Risk Management",
+        "Portfolio Optimization",
+        "Compliance & Audit",
+        "Strategy Performance",
+        "Backtest Laboratory",
+        "Disaster Recovery"
+    ])
+    
+    # Main content area
+    if page == "Dashboard":
+        render_dashboard()
+    elif page == "Global Market View":
+        render_global_market_view()
+    elif page == "Trading Terminal":
+        render_trading_terminal()
+    elif page == "Signal Generator":
+        render_signal_generator()
+    elif page == "Risk Management":
+        render_risk_management()
+    elif page == "Portfolio Optimization":
+        render_portfolio_optimizer()
+    elif page == "Compliance & Audit":
+        render_compliance_audit()
+    elif page == "Strategy Performance":
+        render_strategy_performance()
+    elif page == "Backtest Laboratory":
+        render_backtest_laboratory()
+    elif page == "Disaster Recovery":
+        render_disaster_recovery()
+
+def render_dashboard():
+    """Render the main dashboard view with system overview"""
+    st.header("Global Trading Dashboard")
+    
+    # System status
+    system_status = api_client.get_system_status()
+    if system_status:
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("System Status", 
+                     "ACTIVE" if system_status['system']['active'] else "INACTIVE",
+                     "Online" if system_status['system']['active'] else "Offline")
+        
+        with col2:
+            st.metric("Market Status", 
+                     "OPEN" if system_status['system']['market_open'] else "CLOSED",
+                     "Market Hours" if system_status['system']['market_open'] else "After Hours")
+        
+        with col3:
+            st.metric("Circuit Breaker", 
+                     "ACTIVE" if system_status['system']['circuit_breaker'] else "INACTIVE",
+                     "Trading Suspended" if system_status['system']['circuit_breaker'] else "Trading Active")
+        
+        with col4:
+            st.metric("Trading Mode", 
+                     system_status['system']['mode'],
+                     "Live Trading" if system_status['system']['mode'] == 'LIVE' else "Paper Trading")
+    
+    # Trading performance
+    performance = api_client.get_performance_metrics()
+    if performance:
+        st.subheader("Performance Summary")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Total Profit", f"${performance['total_profit']:.2f}")
+            st.metric("Win Rate", f"{performance['win_rate']:.2%}")
+        
+        with col2:
+            st.metric("Sharpe Ratio", f"{performance['sharpe_ratio']:.2f}")
+            st.metric("Max Drawdown", f"{performance['max_drawdown']:.2%}")
+        
+        with col3:
+            st.metric("Total Trades", performance['total_trades'])
+            st.metric("Profit Factor", f"{performance['profit_factor']:.2f}")
+    
+    # System monitoring
+    st.subheader("Advanced System Monitoring")
+    col_mon1, col_mon2 = st.columns(2)
+    
+    with col_mon1:
+        st.write("Recent Alerts")
+        alerts = api_client.get_monitoring_alerts()
+        if alerts:
+            alert_list = []
+            for title, timestamp in alerts.items():
+                alert_list.append({"Alert": title, "Last Triggered": timestamp})
+            st.table(alert_list)
+        else:
+            st.success("No active alerts detected.")
+            
+    with col_mon2:
+        st.write("Execution Anomalies (Z-Score > 3)")
+        anomalies = api_client.get_execution_anomalies()
+        if anomalies:
+            # Simple visualization of latency/slippage history
+            fig_anomaly = go.Figure()
+            if 'latency' in anomalies:
+                fig_anomaly.add_trace(go.Scatter(y=anomalies['latency'], name="Latency (ms)"))
+            if 'slippage' in anomalies:
+                fig_anomaly.add_trace(go.Scatter(y=anomalies['slippage'], name="Slippage"))
+            fig_anomaly.update_layout(height=300, title="Execution Metrics History")
+            st.plotly_chart(fig_anomaly, use_container_width=True)
+        else:
+            st.info("Insufficient data for anomaly detection.")
+
+    # Circuit Breaker History
+    st.subheader("Circuit Breaker Log")
+    cb_history = api_client.get_breaker_history()
+    if cb_history:
+        st.table(cb_history)
+    else:
+        st.info("No circuit breaker events recorded.")
+
+    # Active trades
+    st.subheader("Active Trades")
+    active_trades = api_client.get_active_trades()
+    if active_trades:
+        trade_data = []
+        for trade in active_trades:
+            trade_data.append({
+                "Symbol": trade['symbol'],
+                "Action": trade['action'],
+                "Entry Price": f"${trade['entry_price']:.2f}",
+                "Current Price": f"${trade['current_price']:.2f}",
+                "P&L": f"${trade['pnl']:.2f}",
+                "Status": trade['status'],
+                "Confidence": f"{trade['confidence']:.2f}"
+            })
+        
+        st.dataframe(trade_data)
+    else:
+        st.info("No active trades")
+
+def render_global_market_view():
+    """Render the global market view with geospatial data"""
+    st.header("Global Market View")
+    
+    # Market status
+    market_status = api_client.get_market_status()
+    if market_status:
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("US Market", 
+                     market_status['us']['status'],
+                     f"Last: {market_status['us']['last_price']:.2f}")
+        
+        with col2:
+            st.metric("Europe Market", 
+                     market_status['europe']['status'],
+                     f"Last: {market_status['europe']['last_price']:.2f}")
+        
+        with col3:
+            st.metric("Asia Market", 
+                     market_status['asia']['status'],
+                     f"Last: {market_status['asia']['last_price']:.2f}")
+    
+    # Global market map
+    st.subheader("Global Market Activity")
+    
+    # Get market data
+    market_data = api_client.get_global_market_data()
+    if market_data:
+        # Process data for map visualization
+        map_data = []
+        for region in market_data['regions']:
+            map_data.append({
+                'region': region['name'],
+                'lat': region['lat'],
+                'lon': region['lng'],
+                'value': region['market_cap'],
+                'status': region['status'],
+                'change': region['change']
+            })
+        
+        # Create map
+        fig = px.scatter_mapbox(
+            map_data,
+            lat='lat',
+            lon='lon',
+            color='change',
+            size='value',
+            hover_name='region',
+            color_continuous_scale=px.colors.sequential.Viridis,
+            zoom=1,
+            mapbox_style='carto-positron',
+            title="Global Market Activity"
+        )
+        
+        # Customize map
+        fig.update_layout(
+            mapbox=dict(
+                center=dict(lat=20, lon=0),
+                zoom=1
+            ),
+            margin=dict(l=0, r=0, t=30, b=0)
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Market events
+    st.subheader("Global Market Events")
+    market_events = api_client.get_market_events()
+    if market_events:
+        event_data = []
+        for event in market_events:
+            event_data.append({
+                "Title": event['title'],
+                "Description": event['description'],
+                "Location": event['location'],
+                "Impact": event['impact'].capitalize(),
+                "Timestamp": event['timestamp']
+            })
+        
+        st.dataframe(event_data)
+
+def render_trading_terminal():
+    """Render the trading terminal with execution controls"""
+    st.header("Trading Terminal")
+    
+    # Trading controls
+    st.subheader("Manual Trading Controls")
+    
+    with st.form("trade_form"):
+        symbol = st.text_input("Symbol", "AAPL")
+        action = st.selectbox("Action", ["BUY", "SELL"])
+        quantity = st.number_input("Quantity", min_value=1, value=10)
+        order_type = st.selectbox("Order Type", ["Market", "Limit", "Stop"])
+        price = st.number_input("Price", min_value=0.01, value=150.0)
+        stop_price = st.number_input("Stop Price", min_value=0.01, value=145.0)
+        
+        submitted = st.form_submit_button("Execute Trade")
+        
+        if submitted:
+            # Execute trade
+            trade_response = api_client.execute_trade(
+                symbol=symbol,
+                action=action,
+                quantity=quantity,
+                order_type=order_type.lower(),
+                price=price,
+                stop_price=stop_price
+            )
+            
+            # Display response
+            if trade_response and 'status' in trade_response and trade_response['status'] == 'accepted':
+                st.success(f"Trade executed successfully: {symbol} {action} {quantity} @ ${price:.2f}")
+            else:
+                st.error(f"Trade execution failed: {trade_response.get('error', 'Unknown error')}")
+    
+    # Real-time execution metrics
+    st.subheader("Execution Performance")
+    
+    execution_metrics = api_client.get_execution_metrics()
+    if execution_metrics:
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Fill Rate", f"{execution_metrics['fill_rate']:.2%}")
+        
+        with col2:
+            st.metric("Average Slippage", f"{execution_metrics['slippage']:.4f}")
+        
+        with col3:
+            st.metric("Win Rate", f"{execution_metrics['win_rate']:.2%}")
+    
+    # Order book visualization
+    st.subheader("Order Book Visualization")
+    order_book = api_client.get_order_book("AAPL")
+    
+    if order_book:
+        # Create order book chart
+        bids = pd.DataFrame(order_book['bids'], columns=['price', 'quantity'])
+        asks = pd.DataFrame(order_book['asks'], columns=['price', 'quantity'])
+        
+        # Calculate cumulative quantities
+        bids['cumulative'] = bids['quantity'].cumsum()
+        asks['cumulative'] = asks['quantity'].cumsum()
+        
+        # Create the chart
+        fig = go.Figure()
+        
+        # Bids
+        fig.add_trace(go.Scatter(
+            x=bids['price'],
+            y=bids['cumulative'],
+            mode='lines',
+            name='Bids',
+            line=dict(color='green')
+        ))
+        
+        # Asks
+        fig.add_trace(go.Scatter(
+            x=asks['price'],
+            y=asks['cumulative'],
+            mode='lines',
+            name='Asks',
+            line=dict(color='red')
+        ))
+        
+        fig.update_layout(
+            title="Order Book Depth",
+            xaxis_title="Price",
+            yaxis_title="Cumulative Quantity",
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Active orders
+    st.subheader("Active Orders")
+    active_orders = api_client.get_active_orders()
+    if active_orders:
+        order_data = []
+        for order in active_orders:
+            order_data.append({
+                "ID": order['id'],
+                "Symbol": order['symbol'],
+                "Action": order['action'],
+                "Quantity": order['qty'],
+                "Price": f"${order['price']:.2f}",
+                "Status": order['status'].capitalize(),
+                "Time": order['timestamp']
+            })
+        
+        st.dataframe(order_data)
+
+def render_signal_generator():
+    """Render the signal generator with real-time signal processing"""
+    st.header("Signal Generator")
+    
+    # Signal processing controls
+    st.subheader("Signal Processing Controls")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        signal_types = st.multiselect(
+            "Signal Types", 
+            ["Technical", "News", "Sentiment", "Order Flow"],
+            default=["Technical", "Sentiment"]
+        )
+        refresh_interval = st.slider("Refresh Interval (seconds)", 1, 30, 5)
+    
+    with col2:
+        confidence_threshold = st.slider("Confidence Threshold", 0.0, 1.0, 0.7)
+        max_signals = st.slider("Max Signals", 1, 10, 5)
+    
+    # Real-time signal processing
+    st.subheader("Real-Time Signals")
+    
+    # Get signals from API
+    signals = api_client.get_trading_signals(
+        types=signal_types,
+        confidence_threshold=confidence_threshold,
+        max_signals=max_signals
+    )
+    
+    if signals:
+        signal_data = []
+        for signal in signals:
+            signal_data.append({
+                "Symbol": signal['symbol'],
+                "Action": signal['action'],
+                "Confidence": f"{signal['confidence']:.2f}",
+                "Type": signal['type'],
+                "Entry Price": f"${signal['price']:.2f}",
+                "Stop Loss": f"${signal['stop_loss']:.2f}",
+                "Target": f"${signal['target']:.2f}",
+                "Strength": signal['strength']
+            })
+        
+        st.dataframe(signal_data)
+    
+    # Signal quality metrics
+    st.subheader("Signal Quality Metrics")
+    
+    signal_metrics = api_client.get_signal_metrics()
+    if signal_metrics:
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Total Signals", signal_metrics['total_signals'])
+            st.metric("Win Rate", f"{signal_metrics['win_rate']:.2%}")
+        
+        with col2:
+            st.metric("Avg Confidence", f"{signal_metrics['avg_confidence']:.2f}")
+            st.metric("Best Signal", f"{signal_metrics['best_signal']:.2f}")
+        
+        with col3:
+            st.metric("Signal Diversity", f"{signal_metrics['diversity']:.2f}")
+            st.metric("Signal Consistency", f"{signal_metrics['consistency']:.2f}")
+    
+    # Signal generator performance
+    st.subheader("Signal Generator Performance")
+    
+    performance_data = api_client.get_signal_performance()
+    if performance_data:
+        fig = px.line(
+            performance_data,
+            x='timestamp',
+            y='accuracy',
+            title='Signal Generator Accuracy Over Time',
+            labels={'accuracy': 'Accuracy', 'timestamp': 'Time'}
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+def render_risk_management():
+    """Render the risk management interface with real-time risk metrics"""
+    st.header("Risk Management")
+    
+    # Risk metrics
+    st.subheader("Current Risk Metrics")
+    
+    risk_metrics = api_client.get_risk_metrics()
+    if risk_metrics:
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Daily Loss", f"${risk_metrics['daily_loss']:.2f}", 
+                     f"Limit: ${risk_metrics['max_daily_loss']:.2f}")
+        
+        with col2:
+            st.metric("Current Drawdown", f"{risk_metrics['drawdown']:.2%}", 
+                     f"Limit: {risk_metrics['max_drawdown']:.2%}")
+        
+        with col3:
+            st.metric("Position Risk", f"{risk_metrics['position_risk']:.2%}", 
+                     f"Limit: {risk_metrics['max_position_allocation']:.2%}")
+    
+    # Risk management controls
+    st.subheader("Risk Management Controls")
+    
+    risk_params = api_client.get_risk_parameters()
+    if risk_params:
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            new_daily_loss = st.number_input(
+                "Daily Loss Limit", 
+                min_value=0.01, 
+                value=risk_params['max_daily_loss'],
+                step=0.01
+            )
+        
+        with col2:
+            new_drawdown = st.number_input(
+                "Max Drawdown", 
+                min_value=0.05, 
+                value=risk_params['max_drawdown'],
+                step=0.01
+            )
+        
+        with col3:
+            new_position = st.number_input(
+                "Max Position Allocation", 
+                min_value=0.05, 
+                value=risk_params['max_position_allocation'],
+                step=0.01
+            )
+        
+        if st.button("Update Risk Parameters"):
+            api_client.update_risk_parameters(
+                max_daily_loss=new_daily_loss,
+                max_drawdown=new_drawdown,
+                max_position_allocation=new_position
+            )
+            st.success("Risk parameters updated successfully")
+    
+    # Position sizing
+    st.subheader("Position Sizing Calculator")
+    
+    with st.form("position_size_form"):
+        position_symbol = st.text_input("Symbol", "AAPL")
+        position_price = st.number_input("Entry Price", min_value=0.01, value=150.0)
+        position_stop = st.number_input("Stop Loss", min_value=0.01, value=145.0)
+        
+        submitted = st.form_submit_button("Calculate Position Size")
+        
+        if submitted:
+            position_size = api_client.calculate_position_size(
+                symbol=position_symbol,
+                entry_price=position_price,
+                stop_loss=position_stop
+            )
+            
+            if position_size:
+                st.success(f"Recommended position size: {position_size['size']} shares")
+                st.info(f"Position risk: {position_size['risk']:.2%} of account")
+    
+    # Risk monitoring
+    st.subheader("Risk Monitoring")
+    
+    risk_monitoring = api_client.get_risk_monitoring()
+    if risk_monitoring:
+        # Market regime
+        regime = risk_monitoring['current_regime']
+        st.write(f"Current Market Regime: **{regime['current_regime'].upper()}**")
+        
+        # Regime probabilities
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Bull Regime", f"{regime['regime_probs'][0]:.2%}")
+        with col2:
+            st.metric("Normal Regime", f"{regime['regime_probs'][1]:.2%}")
+        with col3:
+            st.metric("Bear Regime", f"{regime['regime_probs'][2]:.2%}")
+        
+        # Volatility metrics
+        vol_data = []
+        for i, region in enumerate(regime['regime_params']):
+            vol_data.append({
+                'Regime': ['Bull', 'Normal', 'Bear'][i],
+                'Volatility': np.sqrt(np.diag(region['sigma'])).mean()
+            })
+        
+        vol_df = pd.DataFrame(vol_data)
+        fig = px.bar(
+            vol_df,
+            x='Regime',
+            y='Volatility',
+            title='Regime Volatility Comparison',
+            color='Regime',
+            color_discrete_sequence=px.colors.qualitative.Pastel
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Circuit breaker status
+    st.subheader("Circuit Breaker System")
+    
+    circuit_breaker = api_client.get_circuit_breaker_status()
+    if circuit_breaker:
+        if circuit_breaker['active']:
+            st.error("CIRCUIT BREAKER ACTIVE - TRADING SUSPENDED")
+            st.warning("The system has detected critical risk conditions and has suspended trading.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Daily Loss", f"${circuit_breaker['daily_loss']:.2f}", 
+                         f"Threshold: ${circuit_breaker['max_daily_loss']:.2f}")
+            with col2:
+                st.metric("Drawdown", f"{circuit_breaker['drawdown']:.2%}", 
+                         f"Threshold: {circuit_breaker['max_drawdown']:.2%}")
+            
+            if st.button("Clear Circuit Breaker (Expert Only)"):
+                api_client.clear_circuit_breaker()
+                st.success("Circuit breaker cleared - trading resumed")
+        else:
+            st.success("Circuit Breaker Inactive - Trading Active")
+    
+    # Risk allocation
+    st.subheader("Portfolio Risk Allocation")
+    
+    risk_allocation = api_client.get_risk_allocation()
+    if risk_allocation:
+        # Convert to dataframe for visualization
+        allocation_data = []
+        for symbol, data in risk_allocation.items():
+            allocation_data.append({
+                'Symbol': symbol,
+                'Risk': data['risk_allocation'],
+                'Position Size': data['position_size'],
+                'Max Allowed': data['max_allocation']
+            })
+        
+        # Create a bar chart for risk allocation
+        fig = go.Figure()
+        
+        # Add risk allocation bars
+        fig.add_trace(go.Bar(
+            x=[d['Symbol'] for d in allocation_data],
+            y=[d['Risk'] for d in allocation_data],
+            name='Risk Allocation',
+            marker_color='blue'
+        ))
+        
+        # Add max allowed lines
+        fig.add_trace(go.Scatter(
+            x=[d['Symbol'] for d in allocation_data],
+            y=[d['Max Allowed'] for d in allocation_data],
+            mode='lines',
+            name='Max Allowed',
+            line=dict(color='red', width=2)
+        ))
+        
+        fig.update_layout(
+            title='Portfolio Risk Allocation',
+            xaxis_title='Symbol',
+            yaxis_title='Risk Allocation (%)',
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Show detailed allocation table
+        st.dataframe(allocation_data)
+
+def render_portfolio_optimizer():
+    """Render the portfolio optimizer with real-time optimization"""
+    st.header("Portfolio Optimization")
+    
+    # Current portfolio
+    st.subheader("Current Portfolio Allocation")
+    
+    portfolio = api_client.get_portfolio_allocation()
+    if portfolio:
+        # Prepare data for pie chart
+        pie_data = []
+        for symbol, allocation in portfolio['allocations'].items():
+            pie_data.append({
+                'Symbol': symbol,
+                'Allocation': allocation
+            })
+        
+        # Create pie chart
+        fig = px.pie(
+            pie_data,
+            values='Allocation',
+            names='Symbol',
+            title='Portfolio Allocation',
+            hole=0.3
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Show detailed allocation table
+        allocation_data = []
+        for symbol, data in portfolio['allocations'].items():
+            allocation_data.append({
+                'Symbol': symbol,
+                'Allocation': f"{data:.2%}",
+                'Current Price': f"${portfolio['prices'].get(symbol, 0):.2f}",
+                'P&L': f"{portfolio['pnl'].get(symbol, 0):.2%}"
+            })
+        
+        st.dataframe(allocation_data)
+    
+    # Optimization controls
+    st.subheader("Portfolio Optimization Controls")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        risk_aversion = st.slider("Risk Aversion", 1.0, 10.0, 3.0, 0.5)
+        optimization_type = st.selectbox("Optimization Type", ["Markowitz", "Robust", "Regime-Switching"])
+    
+    with col2:
+        lookback = st.slider("Lookback Period (days)", 30, 500, 252, 30)
+        rebalance_freq = st.slider("Rebalance Frequency (days)", 1, 90, 21, 1)
+    
+    if st.button("Optimize Portfolio"):
+        with st.spinner("Optimizing portfolio..."):
+            optimized = api_client.optimize_portfolio(
+                risk_aversion=risk_aversion,
+                optimization_type=optimization_type,
+                lookback=lookback,
+                rebalance_freq=rebalance_freq
+            )
+            
+            if optimized:
+                st.success("Portfolio optimization complete")
+                
+                # Display optimization results
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("New Allocation")
+                    new_allocation_data = []
+                    for symbol, allocation in optimized['new_allocations'].items():
+                        new_allocation_data.append({
+                            'Symbol': symbol,
+                            'New Allocation': f"{allocation:.2%}",
+                            'Current Allocation': f"{portfolio['allocations'].get(symbol, 0):.2%}",
+                            'Change': f"{allocation - portfolio['allocations'].get(symbol, 0):.2%}"
+                        })
+                    
+                    st.dataframe(new_allocation_data)
+                
+                with col2:
+                    st.subheader("Portfolio Metrics")
+                    metrics = optimized['metrics']
+                    st.metric("Expected Return", f"{metrics['expected_return']:.2%}")
+                    st.metric("Portfolio Volatility", f"{metrics['volatility']:.2%}")
+                    st.metric("Sharpe Ratio", f"{metrics['sharpe_ratio']:.2f}")
+                    st.metric("Max Drawdown", f"{metrics['max_drawdown']:.2%}")
+    
+    # Portfolio performance
+    st.subheader("Portfolio Performance")
+    
+    performance = api_client.get_portfolio_performance()
+    if performance:
+        # Prepare data for performance chart
+        performance_data = []
+        for entry in performance['history']:
+            performance_data.append({
+                'Date': entry['date'],
+                'Value': entry['value'],
+                'Return': entry['return']
+            })
+        
+        # Create performance chart
+        fig = px.line(
+            performance_data,
+            x='Date',
+            y='Value',
+            title='Portfolio Performance',
+            labels={'Value': 'Value', 'Date': 'Date'}
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Performance metrics
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Return", f"{performance['total_return']:.2%}")
+        with col2:
+            st.metric("Annualized Return", f"{performance['annual_return']:.2%}")
+        with col3:
+            st.metric("Sharpe Ratio", f"{performance['sharpe']:.2f}")
+        
+        # Drawdown chart
+        drawdown_data = []
+        for i, entry in enumerate(performance_data):
+            if i == 0:
+                peak = entry['Value']
+                drawdown = 0
+            else:
+                peak = max(peak, entry['Value'])
+                drawdown = (peak - entry['Value']) / peak
+            
+            drawdown_data.append({
+                'Date': entry['Date'],
+                'Drawdown': drawdown
+            })
+        
+        fig = px.line(
+            drawdown_data,
+            x='Date',
+            y='Drawdown',
+            title='Maximum Drawdown',
+            labels={'Drawdown': 'Drawdown', 'Date': 'Date'}
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+def render_compliance_audit():
+    """Render the compliance and audit trail interface"""
+    st.header("Compliance & Audit Center")
+    
+    # Audit trail table
+    st.subheader("System Audit Trail")
+    audit_data = api_client.get_audit_trail()
+    if audit_data:
+        df_audit = pd.DataFrame(audit_data)
+        # Select and reorder columns for better display
+        cols = ['timestamp', 'event_type', 'user', 'severity']
+        if 'details' in df_audit.columns:
+            df_audit['details_summary'] = df_audit['details'].apply(lambda x: str(x)[:100] + '...' if len(str(x)) > 100 else str(x))
+            cols.append('details_summary')
+        
+        st.dataframe(df_audit[cols], use_container_width=True)
+    else:
+        st.info("No audit logs found.")
+        
+    # Compliance reporting
+    st.divider()
+    st.subheader("Regulatory Compliance Reporting")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        report_type = st.selectbox("Report Type", ["Daily", "Weekly", "Monthly"])
+        if st.button("Generate Compliance Report"):
+            with st.spinner("Compiling regulatory data..."):
+                report = api_client.get_compliance_report(report_type.lower())
+                if report:
+                    st.success(f"Report {report['report_id']} generated successfully.")
+                    st.json(report)
+                else:
+                    st.error("Failed to generate compliance report.")
+                    
+    with col2:
+        st.info("""
+        **Data Retention Policy:**
+        All system actions, including trade executions and risk parameter modifications, are retained for a minimum of 365 days in encrypted audit logs according to institutional compliance standards.
+        """)
+
+def render_strategy_performance():
+    """Render the detailed strategy performance attribution page"""
+    st.header("Strategy Performance Attribution")
+    
+    attr_data = api_client.get_performance_attribution()
+    if attr_data:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("PNL by Strategy")
+            df_strat = pd.DataFrame(list(attr_data['by_strategy'].items()), columns=['Strategy', 'PNL'])
+            fig_strat = px.bar(df_strat, x='Strategy', y='PNL', color='Strategy', title="Strategy Attribution")
+            st.plotly_chart(fig_strat, use_container_width=True)
+            
+        with col2:
+            st.subheader("PNL by Sector")
+            df_sector = pd.DataFrame(list(attr_data['by_sector'].items()), columns=['Sector', 'PNL'])
+            fig_sector = px.pie(df_sector, values='PNL', names='Sector', title="Sector Attribution")
+            st.plotly_chart(fig_sector, use_container_width=True)
+            
+        st.divider()
+        st.subheader("Stress Test Scenarios")
+        scenario = st.selectbox("Select Scenario", ["market_crash", "interest_rate_spike", "sector_rotation"])
+        if st.button("Run Simulation"):
+            stress_data = api_client.run_stress_test(scenario)
+            if stress_data:
+                st.warning(f"Projected Impact: ${stress_data['total_impact']:.2f}")
+                st.table(pd.DataFrame(stress_data['breakdown']))
+
+def render_backtest_laboratory():
+    """Render the historical strategy simulation environment"""
+    st.header("Backtest Laboratory")
+    
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        st.subheader("Simulation Parameters")
+        strategy = st.selectbox("Strategy Logic", ["SMA Crossover", "RSI Mean Reversion", "Bollinger Breakout"])
+        initial_cap = st.number_input("Initial Capital", value=100000)
+        if st.button("Run Backtest"):
+            with st.spinner("Simulating historical data..."):
+                result = api_client.run_backtest({'strategy': strategy, 'capital': initial_cap})
+                if result:
+                    st.session_state['last_backtest'] = result
+                    st.success("Simulation Complete")
+                    
+    with col2:
+        if 'last_backtest' in st.session_state:
+            res = st.session_state['last_backtest']
+            st.metric("Total Return", f"{res['total_return']*100:.2f}%", f"${res['final_value']-initial_cap:.2f}")
+            
+            df_curve = pd.DataFrame(res['equity_curve'])
+            fig_curve = px.line(df_curve, x='timestamp', y='value', title="Equity Curve")
+            st.plotly_chart(fig_curve, use_container_width=True)
+            
+            with st.expander("Trade List"):
+                st.table(pd.DataFrame(res['trades']))
+        else:
+            st.info("Configure parameters and click 'Run Backtest' to see results.")
+
+def render_disaster_recovery():
+    """Render the Enterprise Disaster Recovery control center"""
+    st.header("Enterprise Disaster Recovery Control Center")
+    
+    status = api_client._get("recovery/status")
+    if status:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("DR State", status['state'].upper())
+        with col2:
+            st.metric("Primary Region", status['primary_region'])
+        with col3:
+            st.metric("Last Backup", status['last_backup'].split('T')[1][:8] if 'T' in status['last_backup'] else "N/A")
+            
+        st.divider()
+        
+        col_act1, col_act2 = st.columns(2)
+        with col_act1:
+            st.subheader("Manual Failover")
+            target_region = st.selectbox("Select Target Region", ["us-east-1", "us-west-2", "eu-west-1"])
+            if st.button("Trigger Manual Failover", type="primary"):
+                with st.spinner("Executing failover protocols..."):
+                    res = api_client.update_region(target_region)
+                    if res:
+                        st.success(f"Failover to {target_region} successful")
+                        st.balloons()
+                        
+        with col_act2:
+            st.subheader("Emergency Operations")
+            if st.button("Emergency STOP All Trading", type="primary"):
+                api_client.update_system_status(market_open=False)
+                api_client.cancel_all_orders()
+                st.error("Global Shutdown Triggered")
+                
+            if st.button("Trigger Immediate DR Backup"):
+                res = api_client._post("recovery/backup")
+                if res:
+                    st.info("On-demand backup initiated")
+
+        st.divider()
+        st.subheader("Regional Health Monitoring")
+        # Random health simulation results
+        st.write(f"🟢 **{status['primary_region']}** (Operational)")
+        st.write(f"🟡 **{status['secondary_region']}** (Warm Standby)")
+
+# Add the main application logic
+if __name__ == "__main__":
+    setup_dashboard()

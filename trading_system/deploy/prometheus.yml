@@ -1,0 +1,6 @@
+# Prometheus configuration (prometheus.yml)
+scrape_configs:
+  - job_name: 'trading-system'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['trading-system-service:8000']

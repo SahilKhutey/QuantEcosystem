@@ -1,0 +1,39 @@
+# Prometheus Alerting Rules for Trading System
+groups:
+  - name: trading-terminal-alerts
+    rules:
+      - alert: HighDailyLoss
+        expr: daily_loss > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High daily loss detected"
+          description: "Daily loss of {{ $value }}% exceeds the 5% threshold."
+      
+      - alert: MaxDrawdown
+        expr: drawdown > 0.15
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Maximum drawdown reached"
+          description: "Account drawdown of {{ $value }}% exceeds the 15% threshold."
+      
+      - alert: APIErrorRate
+        expr: api_error_rate > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API error rate"
+          description: "API error rate of {{ $value }}% exceeds the 5% threshold."
+
+      - alert: DataStale
+        expr: (time() - last_data_timestamp) > 300
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Market data is stale"
+          description: "No fresh market data received for over 5 minutes."

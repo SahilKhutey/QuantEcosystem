@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  trading-backend:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+      - ALPACA_API_KEY=${ALPACA_API_KEY}
+      - ALPACA_SECRET_KEY=${ALPACA_SECRET_KEY}
+    ports:
+      - "5000:5000"
+    command: python main.py
+
+  trading-ui:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8501:8501"
+    command: streamlit run web/main.py
