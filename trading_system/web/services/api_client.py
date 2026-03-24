@@ -464,3 +464,12 @@ class APIClient:
     def get_ai_model_health(self):
         """Get accuracy and latency metrics for the live ML models"""
         return self._get("ai/lstm/health")
+
+    # --- Mobile Bridge Methods ---
+    def get_mobile_summary(self):
+        """Get condensed, push-ready system summary for mobile app"""
+        return self._get("mobile/summary")
+
+    def register_mobile_device(self, token: str):
+        """Link a mobile device for real-time risk alerts and AI signals"""
+        return self._post("mobile/register", {"token": token})

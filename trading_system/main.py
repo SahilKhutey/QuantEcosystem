@@ -41,6 +41,7 @@ from trading_system.services.risk.cb_tester import CircuitBreakerTester
 from trading_system.services.portfolio.robust_allocator import RobustAllocator
 from trading_system.services.broker.asset_expander import AssetClassExpander
 from trading_system.services.ai.lstm_signal import LSTMSignalGenerator
+from trading_system.services.communication.mobile_bridge import MobileBridge
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -70,6 +71,7 @@ cb_tester = CircuitBreakerTester(position_sizer, alert_manager)
 robust_allocator = RobustAllocator()
 asset_expander = AssetClassExpander(position_sizer)
 lstm_signal = LSTMSignalGenerator()
+mobile_bridge = MobileBridge(alert_manager, lstm_signal)
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -786,6 +788,19 @@ async def get_lstm_signal(symbol: str):
 @app.get("/api/ai/lstm/health")
 async def get_lstm_health():
     return lstm_signal.get_model_health()
+
+# --- Mobile Bridge & Push Endpoints ---
+
+@app.get("/api/mobile/summary")
+async def get_mobile_summary():
+    # Mocking portfolio stats for mobile summary
+    stats = {"total_pnl": 154000, "max_drawdown": 0.015, "status": "OPTIMAL"}
+    return mobile_bridge.get_mobile_summary(stats)
+
+@app.post("/api/mobile/register")
+async def register_mobile_device():
+    data = request.json
+    return mobile_bridge.register_device(data.get('token'))
 
 if __name__ == "__main__":
     asyncio.run(main())
