@@ -32,6 +32,7 @@ from trading_system.services.ai.signal_fusion import SignalFusion
 from trading_system.services.wealth.wealth_manager import WealthManager
 from trading_system.services.monitoring.system_monitor import SystemMonitor
 from trading_system.services.continuous_improvement.feedback_loop import ContinuousImprovementFramework
+from trading_system.services.portfolio.aggregator import MultiStrategyAggregator
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -52,6 +53,7 @@ position_sizer = PositionSizer()
 signal_fusion = SignalFusion()
 wealth_manager = WealthManager(storage_engine)
 system_monitor = SystemMonitor(storage_engine)
+portfolio_aggregator = MultiStrategyAggregator(storage_engine)
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -638,6 +640,27 @@ async def run_feedback_loop():
     while True:
         improvement_framework.run_iteration()
         await asyncio.sleep(1800) # Every 30 mins
+
+# --- Strategy Operations Endpoints ---
+
+@app.get("/api/portfolio/strategies")
+async def get_portfolio_strategies():
+    return portfolio_aggregator.get_strategy_stats()
+
+@app.post("/api/portfolio/strategy/toggle")
+async def toggle_strategy_status():
+    data = request.json
+    name = data.get('name')
+    success = portfolio_aggregator.toggle_strategy(name)
+    return {"status": "success" if success else "failed"}
+
+@app.get("/api/portfolio/allocation")
+async def get_portfolio_allocation_data():
+    return portfolio_aggregator.get_portfolio_allocation()
+
+@app.get("/api/portfolio/attribution")
+async def get_performance_attribution():
+    return portfolio_aggregator.get_attribution_metrics()
 
 if __name__ == "__main__":
     asyncio.run(main())

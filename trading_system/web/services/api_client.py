@@ -363,3 +363,20 @@ class APIClient:
     def get_improvement_pipeline(self):
         """Get the active optimization pipeline"""
         return self._get("continuous-improvement/pipeline")
+
+    # --- Strategy Operations Methods ---
+    def get_portfolio_strategies(self):
+        """Get detailed stats for each active trading algorithm"""
+        return self._get("portfolio/strategies")
+
+    def toggle_strategy(self, name: str):
+        """Toggle a specific strategy (Active/Paused)"""
+        return self._post("portfolio/strategy/toggle", {'name': name})
+
+    def get_portfolio_allocation(self):
+        """Get capital allocation breakdown across strategies"""
+        return self._get("portfolio/allocation")
+
+    def get_performance_attribution(self):
+        """Get Brinson-Fachler attribution diagnostics"""
+        return self._get("portfolio/attribution")
