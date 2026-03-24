@@ -399,5 +399,28 @@ async def main():
         logger.critical(f"Catastrophic failure in main loop: {e}")
         execution_controller.stop_autonomous_trading()
 
+# --- Strategy Marketplace Endpoints ---
+
+@app.get("/api/marketplace/strategies")
+async def list_strategies():
+    return {name: {"active": s.is_active, "metrics": s.performance_metrics} 
+            for name, s in marketplace.strategies.items()}
+
+@app.post("/api/marketplace/activate/{name}")
+async def activate_strategy(name: str):
+    marketplace.activate_strategy(name)
+    audit_trail.log_event("STRATEGY_ACTIVATED", details={"strategy": name})
+    return {"status": "success", "strategy": name}
+
+@app.post("/api/marketplace/deactivate/{name}")
+async def deactivate_strategy(name: str):
+    marketplace.deactivate_strategy(name)
+    audit_trail.log_event("STRATEGY_DEACTIVATED", details={"strategy": name})
+    return {"status": "success", "strategy": name}
+
+@app.get("/api/marketplace/performance")
+async def get_strategy_performance():
+    return marketplace.get_strategy_performance()
+
 if __name__ == "__main__":
     asyncio.run(main())
