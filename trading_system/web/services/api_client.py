@@ -326,3 +326,20 @@ class APIClient:
     def get_position_sizing(self, price: float, volatility: float, confidence: float):
         """Get institutional position sizing advice"""
         return self._get(f"risk/position-size/{price}/{volatility}/{confidence}")
+
+    # --- Wealth Management Methods ---
+    def get_wealth_summary(self):
+        """Get summary of SIPs and long-term holdings"""
+        return self._get("wealth/summary")
+
+    def get_active_sips(self):
+        """Get list of active systematic investment plans"""
+        return self._get("wealth/sips")
+
+    def create_sip(self, symbol: str, amount: float, frequency: str = "MONTHLY"):
+        """Initialize a new Systematic Investment Plan"""
+        return self._post("wealth/sip", {'symbol': symbol, 'amount': amount, 'frequency': frequency})
+
+    def simulate_sip(self, amount: float, years: int, rate: float):
+        """Simulate long-term wealth growth for a SIP"""
+        return self._get(f"wealth/simulate-sip/{amount}/{years}/{rate}")

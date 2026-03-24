@@ -29,6 +29,7 @@ from trading_system.services.alerts.alert_manager import AlertManager
 from trading_system.services.analytics.global_exposure import GlobalExposureTracker
 from trading_system.services.risk.position_sizer import PositionSizer
 from trading_system.services.ai.signal_fusion import SignalFusion
+from trading_system.services.wealth.wealth_manager import WealthManager
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -47,6 +48,7 @@ alert_manager = AlertManager()
 exposure_tracker = GlobalExposureTracker()
 position_sizer = PositionSizer()
 signal_fusion = SignalFusion()
+wealth_manager = WealthManager(storage_engine)
 
 # Initialize Services
 data_pipeline = DataPipeline()
@@ -527,6 +529,29 @@ async def get_master_signal():
 @app.get("/api/risk/position-size/{price}/{volatility}/{confidence}")
 async def get_recommended_size(price: float, volatility: float, confidence: float):
     return position_sizer.calculate_size(price, volatility, confidence)
+
+# --- Wealth Management Endpoints ---
+
+@app.get("/api/wealth/summary")
+async def get_wealth_summary():
+    return wealth_manager.get_portfolio_summary()
+
+@app.get("/api/wealth/sips")
+async def get_active_sips():
+    return wealth_manager.sips
+
+@app.post("/api/wealth/sip")
+async def create_new_sip():
+    data = request.json
+    return wealth_manager.create_sip(
+        data.get('symbol', 'SPY'),
+        data.get('amount', 500),
+        data.get('frequency', 'MONTHLY')
+    )
+
+@app.get("/api/wealth/simulate-sip/{amount}/{years}/{rate}")
+async def simulate_sip_return(amount: float, years: int, rate: float):
+    return wealth_manager.simulate_sip(amount, years, rate)
 
 if __name__ == "__main__":
     asyncio.run(main())
