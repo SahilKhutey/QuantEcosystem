@@ -35,6 +35,7 @@ from trading_system.services.continuous_improvement.feedback_loop import Continu
 from trading_system.services.portfolio.aggregator import MultiStrategyAggregator
 from trading_system.services.api.developer_gateway import DeveloperAPIGateway
 from trading_system.services.risk.refiner import RiskParamRefiner
+from trading_system.services.trading.execution_optimizer import ExecutionOptimizer
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -57,8 +58,8 @@ wealth_manager = WealthManager(storage_engine)
 system_monitor = SystemMonitor(storage_engine)
 portfolio_aggregator = MultiStrategyAggregator(storage_engine)
 api_gateway = DeveloperAPIGateway()
-# Note: In a real system, risk_manager would be the live service
 risk_refiner = RiskParamRefiner(system_monitor, position_sizer) 
+execution_optimizer = ExecutionOptimizer(storage_engine)
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -693,6 +694,16 @@ async def analyze_risk_refinement():
 @app.get("/api/risk/refine/history")
 async def get_risk_refinement_history():
     return risk_refiner.get_refinement_history()
+
+# --- Execution Optimization Endpoints ---
+
+@app.get("/api/execution/optimize/{symbol}/{side}/{quantity}")
+async def get_execution_route(symbol: str, side: str, quantity: float):
+    return execution_optimizer.get_optimized_route(symbol, side, quantity)
+
+@app.get("/api/execution/top-stats")
+async def get_top_instrument_execution_stats():
+    return execution_optimizer.get_top_instrument_stats()
 
 if __name__ == "__main__":
     asyncio.run(main())

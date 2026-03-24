@@ -402,3 +402,12 @@ class APIClient:
     def get_risk_refinement_history(self):
         """Get the history of risk parameter adjustments"""
         return self._get("risk/refine/history")
+
+    # --- Execution Optimization Methods ---
+    def get_optimized_route(self, symbol: str, side: str, quantity: float):
+        """Get the best order type and routing for a trade"""
+        return self._get(f"execution/optimize/{symbol}/{side}/{quantity}")
+
+    def get_top_execution_stats(self):
+        """Get slippage and fill-rate metrics for top instruments"""
+        return self._get("execution/top-stats")
