@@ -411,3 +411,16 @@ class APIClient:
     def get_top_execution_stats(self):
         """Get slippage and fill-rate metrics for top instruments"""
         return self._get("execution/top-stats")
+
+    # --- Compliance Automation Methods ---
+    def get_compliance_reports(self):
+        """Get list of generated compliance reports"""
+        return self._get("compliance/reports")
+
+    def get_compliance_report(self, report_id: str):
+        """Get detailed breakdown of a specific compliance report"""
+        return self._get(f"compliance/reports/{report_id}")
+
+    def generate_compliance_report(self):
+        """Trigger the generation of a new weekly compliance report"""
+        return self._post("compliance/reports/generate")

@@ -36,6 +36,7 @@ from trading_system.services.portfolio.aggregator import MultiStrategyAggregator
 from trading_system.services.api.developer_gateway import DeveloperAPIGateway
 from trading_system.services.risk.refiner import RiskParamRefiner
 from trading_system.services.trading.execution_optimizer import ExecutionOptimizer
+from trading_system.services.compliance.automator import ComplianceAutomator
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -60,6 +61,7 @@ portfolio_aggregator = MultiStrategyAggregator(storage_engine)
 api_gateway = DeveloperAPIGateway()
 risk_refiner = RiskParamRefiner(system_monitor, position_sizer) 
 execution_optimizer = ExecutionOptimizer(storage_engine)
+compliance_automator = ComplianceAutomator(storage_engine)
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -704,6 +706,20 @@ async def get_execution_route(symbol: str, side: str, quantity: float):
 @app.get("/api/execution/top-stats")
 async def get_top_instrument_execution_stats():
     return execution_optimizer.get_top_instrument_stats()
+
+# --- Compliance Automation Endpoints ---
+
+@app.get("/api/compliance/reports")
+async def get_compliance_reports():
+    return compliance_automator.get_report_list()
+
+@app.get("/api/compliance/reports/{report_id}")
+async def get_compliance_report_detail(report_id: str):
+    return compliance_automator.get_report_by_id(report_id)
+
+@app.post("/api/compliance/reports/generate")
+async def trigger_compliance_report():
+    return compliance_automator.generate_weekly_report()
 
 if __name__ == "__main__":
     asyncio.run(main())
