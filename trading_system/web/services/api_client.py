@@ -317,3 +317,12 @@ class APIClient:
     def send_system_alert(self, message: str, severity: str = "INFO", channels: list = ["LOG"]):
         """Broadcast a manual system alert"""
         return self._post("alerts/send", {'message': message, 'severity': severity, 'channels': channels})
+
+    # --- Master Intelligence & Risk Methods ---
+    def get_master_fused_signal(self):
+        """Get the unified Master Alpha signal from all components"""
+        return self._get("intelligence/fusion")
+
+    def get_position_sizing(self, price: float, volatility: float, confidence: float):
+        """Get institutional position sizing advice"""
+        return self._get(f"risk/position-size/{price}/{volatility}/{confidence}")

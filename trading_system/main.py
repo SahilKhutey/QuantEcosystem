@@ -27,6 +27,8 @@ from trading_system.services.database.storage_engine import StorageEngine
 from trading_system.services.trading.hft_optimizer import HFTOptimizer
 from trading_system.services.alerts.alert_manager import AlertManager
 from trading_system.services.analytics.global_exposure import GlobalExposureTracker
+from trading_system.services.risk.position_sizer import PositionSizer
+from trading_system.services.ai.signal_fusion import SignalFusion
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -43,6 +45,8 @@ social_manager = SocialManager(marketplace)
 hft_optimizer = HFTOptimizer()
 alert_manager = AlertManager()
 exposure_tracker = GlobalExposureTracker()
+position_sizer = PositionSizer()
+signal_fusion = SignalFusion()
 
 # Initialize Services
 data_pipeline = DataPipeline()
@@ -509,6 +513,20 @@ async def broadcast_alert():
         data.get('severity', 'INFO'),
         data.get('channels', ['LOG'])
     )
+
+# --- Master Intelligence & Risk Endpoints ---
+
+@app.get("/api/intelligence/fusion")
+async def get_master_signal():
+    # Poll latest component data
+    sent = sentiment_engine.get_aggregate_sentiment("GLOBAL")
+    obi = hft_optimizer.get_hft_metrics()['last_obi']
+    regime = macro_analyzer.current_regime
+    return signal_fusion.fuse_signals(sent, obi, regime)
+
+@app.get("/api/risk/position-size/{price}/{volatility}/{confidence}")
+async def get_recommended_size(price: float, volatility: float, confidence: float):
+    return position_sizer.calculate_size(price, volatility, confidence)
 
 if __name__ == "__main__":
     asyncio.run(main())
