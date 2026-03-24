@@ -5,6 +5,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from services.broker.broker_interface import BrokerAPI, OrderRequest
 from services.risk.bayesian_position_sizing import BayesianPositionSizer
+from services.risk.evt_risk import EVTRiskManager
 
 logger = logging.getLogger('RiskManager')
 
@@ -39,6 +40,9 @@ class RiskManager:
         
         # Initialize Bayesian Position Sizer
         self.bayesian_sizer = BayesianPositionSizer(risk_per_trade=position_size)
+        
+        # Initialize EVT Risk Manager
+        self.evt_manager = EVTRiskManager()
         
         # Initialize account values
         self._init_account()
@@ -241,7 +245,8 @@ class RiskManager:
             'leverage': account_summary.get('leverage', 0),
             'position_allocation': account_summary.get('position_value', 0) / self.current_capital if self.current_capital > 0 else 0,
             'cash_balance': account_summary.get('cash_balance', 0),
-            'margin_ratio': account_summary.get('margin_ratio', 1.0)
+            'margin_ratio': account_summary.get('margin_ratio', 1.0),
+            'evt_metrics': self.evt_manager.get_risk_metrics()
         }
     
     def reset_daily(self):
@@ -272,10 +277,14 @@ class RiskManager:
         self.bayesian_sizer.update_market_regime(returns)
 
     def record_trade_result(self, profit_loss: float, confidence: float):
-        """Record trade result for Bayesian learning and update risk metrics"""
+        """Record trade result for learning and update risk metrics"""
         self.update_position(profit_loss)
         self.bayesian_sizer.add_trade(profit_loss, confidence)
         self.bayesian_sizer.update_regime_from_trades()
+        
+        # Update EVT returns
+        pnl_pct = profit_loss / self.current_capital if self.current_capital > 0 else 0
+        self.evt_manager.update_returns([pnl_pct])
     
     def check_position_limits(self, symbol: str) -> tuple:
         """Check position limits for a symbol"""
