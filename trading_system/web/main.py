@@ -1209,22 +1209,21 @@ def render_wealth_management():
             
     st.divider()
     
-    # --- SIP Management & Simulation ---
+    # --- SIP & SWP Management ---
     col_w1, col_w2 = st.columns([1, 1])
     
     with col_w1:
-        st.subheader("Plan a New SIP")
+        st.subheader("Accumulation: Plan a New SIP")
         with st.form("sip_form"):
-            symbol = st.text_input("Asset Symbol", "SPY")
-            amount = st.number_input("Monthly Investment ($)", value=500)
-            freq = st.selectbox("Frequency", ["DAILY", "WEEKLY", "MONTHLY", "QUARTERLY"], index=2)
+            sip_symbol = st.text_input("Asset Symbol", "SPY", key="sip_sym")
+            sip_amount = st.number_input("Monthly Investment ($)", value=500, key="sip_amt")
+            sip_freq = st.selectbox("Frequency", ["DAILY", "WEEKLY", "MONTHLY", "QUARTERLY"], index=2, key="sip_freq")
             if st.form_submit_button("Launch SIP"):
-                res = api_client.create_sip(symbol, amount, freq)
+                res = api_client.create_sip(sip_symbol, sip_amount, sip_freq)
                 if res:
-                    st.success(f"SIP {res} enabled for {symbol}")
-                    st.toast(f"SIP Activated: {symbol}")
+                    st.success(f"SIP {res} enabled for {sip_symbol}")
+                    st.toast(f"SIP Activated: {sip_symbol}")
                     
-    with col_w2:
         st.subheader("Wealth Growth Simulator")
         sim_amt = st.number_input("Monthly Savings ($)", value=1000)
         sim_years = st.slider("Time Horizon (Years)", 5, 40, 20)
@@ -1233,12 +1232,44 @@ def render_wealth_management():
         sim_res = api_client.simulate_sip(sim_amt, sim_years, sim_rate)
         if sim_res:
             st.markdown(f"""
-                <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px;">
+                <div style="background-color: #262730; padding: 20px; border-radius: 10px; border: 1px solid #00D4FF;">
                     <h2 style="color: #00D4FF;">${sim_res['future_value']:,.2f}</h2>
                     <p>Estimated Future Value</p>
                     <hr/>
                     <p>Total Invested: ${sim_res['total_invested']:,.2f}</p>
                     <p>Wealth Gain: <strong>${sim_res['wealth_gain']:,.2f}</strong></p>
+                </div>
+            """, unsafe_allow_html=True)
+                    
+    with col_w2:
+        st.subheader("Distribution: Plan a New SWP")
+        with st.form("swp_form"):
+            swp_symbol = st.text_input("Asset Symbol", "SPY", key="swp_sym")
+            swp_corpus = st.number_input("Initial Corpus ($)", value=1000000, key="swp_corp")
+            swp_amount = st.number_input("Monthly Withdrawal ($)", value=4000, key="swp_amt")
+            swp_inf = st.checkbox("Inflation Adjusted (6%)", value=True)
+            if st.form_submit_button("Launch SWP"):
+                res = api_client.create_swp(swp_symbol, swp_corpus, swp_amount, "MONTHLY", swp_inf)
+                if res:
+                    st.success(f"SWP {res} enabled for {swp_symbol}")
+                    st.toast(f"SWP Activated: {swp_symbol}")
+
+        st.subheader("Corpus Depletion Simulator")
+        swp_sim_corp = st.number_input("Corpus to Deplete ($)", value=1000000)
+        swp_sim_amt = st.number_input("Starting Monthly Withdrawal ($)", value=4000)
+        swp_sim_rate = st.slider("Portfolio Yield (%)", 2, 12, 7) / 100.0
+        swp_sim_inf = st.slider("Inflation Rate (%)", 0, 10, 6) / 100.0
+        
+        swp_sim_res = api_client.simulate_swp(swp_sim_corp, swp_sim_amt, 30, swp_sim_rate, swp_sim_inf)
+        if swp_sim_res:
+            status_color = "#00FF00" if swp_sim_res['is_sustainable'] else "#FF4B4B"
+            st.markdown(f"""
+                <div style="background-color: #262730; padding: 20px; border-radius: 10px; border: 1px solid {status_color};">
+                    <h2 style="color: {status_color};">{ "Sustainable" if swp_sim_res['is_sustainable'] else "Depletion Risk" }</h2>
+                    <p>30-Year Sustainability Status</p>
+                    <hr/>
+                    <p>Final Corpus: ${swp_sim_res['final_corpus']:,.2f}</p>
+                    { f"<p style='color: #FF4B4B;'>Depletes at Month: {swp_sim_res['depleted_at_month']}</p>" if not swp_sim_res['is_sustainable'] else "" }
                 </div>
             """, unsafe_allow_html=True)
             
@@ -1247,11 +1278,24 @@ def render_wealth_management():
     # --- Active Plans Table ---
     st.subheader("My Systematic Plans")
     active_sips = api_client.get_active_sips()
-    if active_sips:
-        df_sips = pd.DataFrame(active_sips.values())
-        st.dataframe(df_sips[['id', 'symbol', 'amount', 'frequency', 'start_date']], use_container_width=True)
-    else:
-        st.info("No active systematic plans found.")
+    active_swps = api_client.get_active_swps()
+    
+    col_t1, col_t2 = st.columns(2)
+    with col_t1:
+        st.markdown("**Active SIPs** (Accumulation)")
+        if active_sips:
+            df_sips = pd.DataFrame(active_sips.values())
+            st.dataframe(df_sips[['id', 'symbol', 'amount', 'frequency', 'start_date']], use_container_width=True)
+        else:
+            st.info("No active SIPs found.")
+            
+    with col_t2:
+        st.markdown("**Active SWPs** (Distribution)")
+        if active_swps:
+            df_swps = pd.DataFrame(active_swps.values())
+            st.dataframe(df_swps[['id', 'symbol', 'amount', 'is_safe', 'start_date']], use_container_width=True)
+        else:
+            st.info("No active SWPs found.")
 
 def render_production_ops():
     """Render the elite Production Operations monitoring framework"""
