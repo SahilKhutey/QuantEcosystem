@@ -278,3 +278,16 @@ class APIClient:
     def analyze_custom_news(self, text: str, symbol: str = "GLOBAL"):
         """Run real-time sentiment analysis on custom text"""
         return self._post("ai/analyze-news", {'text': text, 'symbol': symbol})
+
+    # --- Social Trading Methods ---
+    def get_social_leaderboard(self):
+        """Get ranked list of strategies and their follower counts"""
+        return self._get("social/leaderboard")
+
+    def get_social_signals(self):
+        """Get live stream of signal broadcasts"""
+        return self._get("social/signals")
+
+    def follow_strategy(self, strategy_name: str, user_id: str = "USER_1"):
+        """Follow a master strategy for broadcast notifications"""
+        return self._post(f"social/follow/{strategy_name}/{user_id}")

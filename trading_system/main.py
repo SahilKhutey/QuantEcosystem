@@ -22,17 +22,19 @@ from trading_system.services.recovery.disaster_recovery import DisasterRecoveryS
 from trading_system.services.trading.marketplace import StrategyMarketplace
 from trading_system.services.ai.sentiment_engine import SentimentEngine
 from trading_system.services.ai.macro_analyzer import MacroAnalyzer
+from trading_system.services.social.social_manager import SocialManager
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
 setup_logging()
 logger = logging.getLogger("Main")
 
-# Initialize Marketplace & AI
+# Initialize Core Services
 marketplace = StrategyMarketplace()
 marketplace.load_strategies()
 sentiment_engine = SentimentEngine()
 macro_analyzer = MacroAnalyzer()
+social_manager = SocialManager(marketplace)
 
 # Initialize Services
 data_pipeline = DataPipeline()
@@ -448,6 +450,21 @@ async def analyze_news_text():
     symbol = data.get('symbol', 'GLOBAL')
     result = sentiment_engine.analyze_text(text, symbol)
     return result
+
+# --- Social Trading Endpoints ---
+
+@app.get("/api/social/leaderboard")
+async def get_social_leaderboard():
+    return social_manager.get_leaderboard()
+
+@app.get("/api/social/signals")
+async def get_social_signals():
+    return social_manager.get_live_signals()
+
+@app.post("/api/social/follow/{strategy_name}/{follower_id}")
+async def follow_strategy(strategy_name: str, follower_id: str):
+    social_manager.follow_strategy(strategy_name, follower_id)
+    return {"status": "success", "strategy": strategy_name}
 
 if __name__ == "__main__":
     asyncio.run(main())
