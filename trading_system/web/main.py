@@ -41,6 +41,7 @@ def setup_dashboard():
         "Alert Center",
         "Master Intelligence",
         "Wealth Management",
+        "Strategy Center",
         "Production Ops",
         "Continuous Improvement",
         "Risk Management",
@@ -76,6 +77,8 @@ def setup_dashboard():
         render_master_intelligence()
     elif page == "Wealth Management":
         render_wealth_management()
+    elif page == "Strategy Center":
+        render_strategy_center()
     elif page == "Production Ops":
         render_production_ops()
     elif page == "Continuous Improvement":
