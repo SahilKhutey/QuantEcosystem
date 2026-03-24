@@ -23,13 +23,15 @@ from trading_system.services.trading.marketplace import StrategyMarketplace
 from trading_system.services.ai.sentiment_engine import SentimentEngine
 from trading_system.services.ai.macro_analyzer import MacroAnalyzer
 from trading_system.services.social.social_manager import SocialManager
+from trading_system.services.database.storage_engine import StorageEngine
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
 setup_logging()
 logger = logging.getLogger("Main")
 
-# Initialize Core Services
+# Initialize Persistence & Core Services
+storage_engine = StorageEngine()
 marketplace = StrategyMarketplace()
 marketplace.load_strategies()
 sentiment_engine = SentimentEngine()
