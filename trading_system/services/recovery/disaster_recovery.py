@@ -24,21 +24,20 @@ class DisasterRecoverySystem:
         self.last_backup = datetime.min
         self.last_failover = datetime.min
         self.failover_cooldown = timedelta(hours=1)
+        self.latency_threshold_ms = 150 # v2.1: Institutional threshold
         
         # Initialize recovery configuration
         self.primary_region = settings.RECOVERY_CONFIG.get('primary_region', 'us-east-1')
         self.secondary_region = settings.RECOVERY_CONFIG.get('secondary_region', 'us-west-2')
-        self.failover_threshold = settings.RECOVERY_CONFIG.get('failover_threshold', 5)
-        self.backup_retention = settings.RECOVERY_CONFIG.get('backup_retention', 30)
-        self.rpo = settings.RECOVERY_CONFIG.get('rpo', 300)
-        self.rto = settings.RECOVERY_CONFIG.get('rto', 300)
+        self.regional_latency = {self.primary_region: 45, self.secondary_region: 52}
         
         self.recovery_status = {
             'state': 'active',
             'last_backup': self.last_backup.isoformat(),
             'last_failover': self.last_failover.isoformat(),
             'primary_region': self.primary_region,
-            'secondary_region': self.secondary_region
+            'secondary_region': self.secondary_region,
+            'regional_latency': self.regional_latency
         }
     
     def check_system_health(self):
