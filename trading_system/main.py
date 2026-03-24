@@ -19,11 +19,16 @@ from trading_system.services.analytics.analytics_engine import AnalyticsEngine
 from trading_system.services.analytics.backtester import BacktestEngine
 from trading_system.services.analytics.risk_decomp import RiskDecomposition
 from trading_system.services.recovery.disaster_recovery import DisasterRecoverySystem
+from trading_system.services.trading.marketplace import StrategyMarketplace
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
 setup_logging()
 logger = logging.getLogger("Main")
+
+# Initialize Marketplace
+marketplace = StrategyMarketplace()
+marketplace.load_strategies()
 
 # Initialize Services
 data_pipeline = DataPipeline()

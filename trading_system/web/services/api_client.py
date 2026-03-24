@@ -248,3 +248,20 @@ class APIClient:
         if isinstance(perf, dict) and 'history' in perf:
             return perf['history']
         return perf or []
+
+    # --- Strategy Marketplace Methods ---
+    def get_strategies(self):
+        """Get list of all discovered strategies and their status"""
+        return self._get("marketplace/strategies")
+
+    def activate_strategy(self, name: str):
+        """Enable a specific strategy"""
+        return self._post(f"marketplace/activate/{name}")
+
+    def deactivate_strategy(self, name: str):
+        """Disable a specific strategy"""
+        return self._post(f"marketplace/deactivate/{name}")
+
+    def get_marketplace_performance(self):
+        """Get aggregated performance metrics for all strategies"""
+        return self._get("marketplace/performance")
