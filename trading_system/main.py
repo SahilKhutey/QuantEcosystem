@@ -33,6 +33,8 @@ from trading_system.services.wealth.wealth_manager import WealthManager
 from trading_system.services.monitoring.system_monitor import SystemMonitor
 from trading_system.services.continuous_improvement.feedback_loop import ContinuousImprovementFramework
 from trading_system.services.portfolio.aggregator import MultiStrategyAggregator
+from trading_system.services.api.developer_gateway import DeveloperAPIGateway
+from trading_system.services.risk.refiner import RiskParamRefiner
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -54,6 +56,9 @@ signal_fusion = SignalFusion()
 wealth_manager = WealthManager(storage_engine)
 system_monitor = SystemMonitor(storage_engine)
 portfolio_aggregator = MultiStrategyAggregator(storage_engine)
+api_gateway = DeveloperAPIGateway()
+# Note: In a real system, risk_manager would be the live service
+risk_refiner = RiskParamRefiner(system_monitor, position_sizer) 
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -661,6 +666,33 @@ async def get_portfolio_allocation_data():
 @app.get("/api/portfolio/attribution")
 async def get_performance_attribution():
     return portfolio_aggregator.get_attribution_metrics()
+
+# --- Developer API Gateway Endpoints ---
+
+@app.get("/api/developer/status")
+async def get_gateway_status():
+    return api_gateway.get_api_status()
+
+@app.get("/api/developer/keys")
+async def get_api_keys():
+    return api_gateway.get_key_ledger()
+
+@app.post("/api/developer/keys/generate")
+async def generate_key():
+    data = request.json
+    owner = data.get('owner', 'Institutional_Client')
+    key = api_gateway.generate_api_key(owner)
+    return {"api_key": key}
+
+# --- Risk Refinement Endpoints ---
+
+@app.get("/api/risk/refine/analyze")
+async def analyze_risk_refinement():
+    return risk_refiner.analyze_and_refine()
+
+@app.get("/api/risk/refine/history")
+async def get_risk_refinement_history():
+    return risk_refiner.get_refinement_history()
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -380,3 +380,25 @@ class APIClient:
     def get_performance_attribution(self):
         """Get Brinson-Fachler attribution diagnostics"""
         return self._get("portfolio/attribution")
+
+    # --- Developer API Gateway Methods ---
+    def get_developer_status(self):
+        """Get the operational status of the API Gateway"""
+        return self._get("developer/status")
+
+    def get_api_keys(self):
+        """Get the list of active institutional API keys"""
+        return self._get("developer/keys")
+
+    def generate_api_key(self, owner: str):
+        """Generate a new secure API key for an institutional partner"""
+        return self._post("developer/keys/generate", {'owner': owner})
+
+    # --- Risk Refinement Methods ---
+    def analyze_risk_refinement(self):
+        """Trigger an analysis of live performance for risk limit tuning"""
+        return self._get("risk/refine/analyze")
+
+    def get_risk_refinement_history(self):
+        """Get the history of risk parameter adjustments"""
+        return self._get("risk/refine/history")
