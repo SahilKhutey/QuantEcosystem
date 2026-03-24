@@ -31,6 +31,7 @@ from trading_system.services.risk.position_sizer import PositionSizer
 from trading_system.services.ai.signal_fusion import SignalFusion
 from trading_system.services.wealth.wealth_manager import WealthManager
 from trading_system.services.monitoring.system_monitor import SystemMonitor
+from trading_system.services.continuous_improvement.feedback_loop import ContinuousImprovementFramework
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -51,6 +52,10 @@ position_sizer = PositionSizer()
 signal_fusion = SignalFusion()
 wealth_manager = WealthManager(storage_engine)
 system_monitor = SystemMonitor(storage_engine)
+
+# Continuous Improvement Setup
+improvement_plans = []
+improvement_framework = ContinuousImprovementFramework(system_monitor)
 
 # Initialize Services
 data_pipeline = DataPipeline()
@@ -596,6 +601,24 @@ async def get_prod_compliance_timeline():
 @app.get("/api/monitoring/health-timeline")
 async def get_prod_health_timeline():
     return system_monitor.get_health_timeline()
+
+# --- Continuous Improvement Endpoints ---
+
+@app.post("/api/continuous-improvement/plan")
+async def save_improvement_plan():
+    plan = request.json
+    improvement_plans.append(plan)
+    return {"status": "success"}
+
+@app.get("/api/continuous-improvement/pipeline")
+async def get_improvement_pipeline():
+    return improvement_plans
+
+async def run_feedback_loop():
+    """Background task for continuous improvement"""
+    while True:
+        improvement_framework.run_iteration()
+        await asyncio.sleep(1800) # Every 30 mins
 
 if __name__ == "__main__":
     asyncio.run(main())

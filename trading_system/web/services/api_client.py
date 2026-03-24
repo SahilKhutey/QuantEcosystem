@@ -343,3 +343,8 @@ class APIClient:
     def simulate_sip(self, amount: float, years: int, rate: float):
         """Simulate long-term wealth growth for a SIP"""
         return self._get(f"wealth/simulate-sip/{amount}/{years}/{rate}")
+
+    # --- Continuous Improvement Methods ---
+    def get_improvement_pipeline(self):
+        """Get the active optimization pipeline"""
+        return self._get("continuous-improvement/pipeline")
