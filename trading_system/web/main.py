@@ -37,6 +37,8 @@ def setup_dashboard():
         "AI Intelligence",
         "Social Trading",
         "HFT Analytics",
+        "Global Exposure",
+        "Alert Center",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -62,6 +64,10 @@ def setup_dashboard():
         render_social_trading()
     elif page == "HFT Analytics":
         render_hft_analytics()
+    elif page == "Global Exposure":
+        render_global_exposure()
+    elif page == "Alert Center":
+        render_alert_center()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
@@ -1048,6 +1054,63 @@ def render_hft_analytics():
         res = api_client.get_symbol_obi(probe_symbol)
         if res:
             st.json(res)
+
+def render_global_exposure():
+    """Render the 3D Global Portfolio Exposure visualization"""
+    st.header("Global Portfolio Exposure (3D)")
+    st.info("Real-time geographic and sectoral exposure analysis across multiple regional exchanges.")
+    
+    exposure_data = api_client.get_global_exposure()
+    if exposure_data:
+        df_exp = pd.DataFrame(exposure_data)
+        
+        # 3D Scatter Plot for Exposure
+        fig_3d = px.scatter_3d(df_exp, x='exchange', y='sector', z='exposure',
+                               color='risk_factor', size='exposure',
+                               title="Global Exposure Matrix",
+                               labels={'exposure': 'Value ($)', 'risk_factor': 'Risk Score'},
+                               color_continuous_scale='Viridis')
+        
+        fig_3d.update_layout(margin=dict(l=0, r=0, b=0, t=40))
+        st.plotly_chart(fig_3d, use_container_width=True)
+        
+        # Exposure breakdown table
+        st.subheader("Sub-Regional Breakdown")
+        st.dataframe(df_exp.sort_values('exposure', ascending=False), use_container_width=True)
+    else:
+        st.info("Aggregating global position data...")
+
+def render_alert_center():
+    """Render the central Alert & Notification hub"""
+    st.header("Institutional Alert Center")
+    
+    col_a1, col_a2 = st.columns([2, 1])
+    
+    with col_a2:
+        st.subheader("Broadcast Manual Alert")
+        with st.form("manual_alert"):
+            msg = st.text_area("Alert Message")
+            sev = st.selectbox("Severity", ["INFO", "WARNING", "CRITICAL"])
+            chan = st.multiselect("Channels", ["LOG", "DISCORD", "SMS"], default=["LOG"])
+            if st.form_submit_button("Send Broadcast"):
+                if msg:
+                    api_client.send_system_alert(msg, sev, chan)
+                    st.success("Alert Broadcasted")
+                else:
+                    st.warning("Message cannot be empty")
+                    
+    with col_a1:
+        st.subheader("System Alert Stream")
+        history = api_client.get_alert_history()
+        if history:
+            for alert in reversed(history):
+                color = "red" if alert['severity'] == "CRITICAL" else "orange" if alert['severity'] == "WARNING" else "blue"
+                with st.expander(f"[{alert['severity']}] {alert['message'][:50]}...", expanded=(alert['severity'] == "CRITICAL")):
+                    st.write(f"**Full Message**: {alert['message']}")
+                    st.write(f"**Channels**: {', '.join(alert['channels'])}")
+                    st.caption(f"Time: {alert['timestamp'].split('T')[1][:8]}")
+        else:
+            st.info("No active alerts in the last 24 hours.")
 
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""
