@@ -304,3 +304,16 @@ class APIClient:
     def get_symbol_obi(self, symbol: str):
         """Get real-time OBI signal for a specific symbol"""
         return self._get(f"hft/obi/{symbol}")
+
+    # --- Exposure & Alerts Methods ---
+    def get_global_exposure(self):
+        """Get multi-regional exposure map for 3D visualization"""
+        return self._get("analytics/exposure")
+
+    def get_alert_history(self):
+        """Get latest system alerts"""
+        return self._get("alerts/history")
+
+    def send_system_alert(self, message: str, severity: str = "INFO", channels: list = ["LOG"]):
+        """Broadcast a manual system alert"""
+        return self._post("alerts/send", {'message': message, 'severity': severity, 'channels': channels})

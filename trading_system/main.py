@@ -25,6 +25,8 @@ from trading_system.services.ai.macro_analyzer import MacroAnalyzer
 from trading_system.services.social.social_manager import SocialManager
 from trading_system.services.database.storage_engine import StorageEngine
 from trading_system.services.trading.hft_optimizer import HFTOptimizer
+from trading_system.services.alerts.alert_manager import AlertManager
+from trading_system.services.analytics.global_exposure import GlobalExposureTracker
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -39,6 +41,8 @@ sentiment_engine = SentimentEngine()
 macro_analyzer = MacroAnalyzer()
 social_manager = SocialManager(marketplace)
 hft_optimizer = HFTOptimizer()
+alert_manager = AlertManager()
+exposure_tracker = GlobalExposureTracker()
 
 # Initialize Services
 data_pipeline = DataPipeline()
@@ -486,6 +490,25 @@ async def get_symbol_obi(symbol: str):
     bids = [[150.1, random.uniform(100, 500)] for _ in range(5)]
     asks = [[150.3, random.uniform(100, 500)] for _ in range(5)]
     return hft_optimizer.generate_hft_signal(symbol, bids, asks)
+
+# --- Global Exposure & Alerts Endpoints ---
+
+@app.get("/api/analytics/exposure")
+async def get_global_exposure():
+    return exposure_tracker.get_exposure_map()
+
+@app.get("/api/alerts/history")
+async def get_alert_history():
+    return alert_manager.get_alert_history()
+
+@app.post("/api/alerts/send")
+async def broadcast_alert():
+    data = request.json
+    return alert_manager.send_alert(
+        data.get('message', ''),
+        data.get('severity', 'INFO'),
+        data.get('channels', ['LOG'])
+    )
 
 if __name__ == "__main__":
     asyncio.run(main())
