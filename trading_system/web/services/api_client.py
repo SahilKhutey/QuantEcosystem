@@ -424,3 +424,16 @@ class APIClient:
     def generate_compliance_report(self):
         """Trigger the generation of a new weekly compliance report"""
         return self._post("compliance/reports/generate")
+
+    # --- Circuit Breaker Test Methods ---
+    def run_cb_test(self, scenario: str):
+        """Run a simulated risk stress test to verify circuit breakers"""
+        return self._post("risk/cb-test/run", {'scenario': scenario})
+
+    def get_cb_test_history(self):
+        """Get the history of system safety tests"""
+        return self._get("risk/cb-test/history")
+
+    def trigger_cb_recovery(self):
+        """Verify the system recovery path after a simulated halt"""
+        return self._post("risk/cb-test/recover")

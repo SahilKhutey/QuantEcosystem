@@ -37,6 +37,7 @@ from trading_system.services.api.developer_gateway import DeveloperAPIGateway
 from trading_system.services.risk.refiner import RiskParamRefiner
 from trading_system.services.trading.execution_optimizer import ExecutionOptimizer
 from trading_system.services.compliance.automator import ComplianceAutomator
+from trading_system.services.risk.cb_tester import CircuitBreakerTester
 from trading_system.web.services.api_client import APIClient
 
 # Initialize Logging
@@ -62,6 +63,7 @@ api_gateway = DeveloperAPIGateway()
 risk_refiner = RiskParamRefiner(system_monitor, position_sizer) 
 execution_optimizer = ExecutionOptimizer(storage_engine)
 compliance_automator = ComplianceAutomator(storage_engine)
+cb_tester = CircuitBreakerTester(position_sizer, alert_manager)
 
 # Continuous Improvement Setup
 improvement_plans = []
@@ -720,6 +722,22 @@ async def get_compliance_report_detail(report_id: str):
 @app.post("/api/compliance/reports/generate")
 async def trigger_compliance_report():
     return compliance_automator.generate_weekly_report()
+
+# --- Circuit Breaker Test Endpoints ---
+
+@app.post("/api/risk/cb-test/run")
+async def run_cb_stress_test():
+    data = request.json
+    scenario = data.get('scenario', 'extreme_drawdown')
+    return cb_tester.run_stress_test(scenario)
+
+@app.get("/api/risk/cb-test/history")
+async def get_cb_test_history():
+    return cb_tester.get_test_history()
+
+@app.post("/api/risk/cb-test/recover")
+async def trigger_cb_recovery():
+    return {"success": cb_tester.verify_recovery()}
 
 if __name__ == "__main__":
     asyncio.run(main())
