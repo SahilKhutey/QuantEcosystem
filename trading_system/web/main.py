@@ -40,6 +40,7 @@ def setup_dashboard():
         "Global Exposure",
         "Alert Center",
         "Master Intelligence",
+        "Wealth Management",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -71,6 +72,8 @@ def setup_dashboard():
         render_alert_center()
     elif page == "Master Intelligence":
         render_master_intelligence()
+    elif page == "Wealth Management":
+        render_wealth_management()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
@@ -1181,6 +1184,68 @@ def render_master_intelligence():
             st.write(f"**Volatility Factor**: {advice['vol_scale']:.2f}x")
         else:
             st.info("Configure risk parameters to see recommendations.")
+
+def render_wealth_management():
+    """Render the Wealth Management & Systematic Investment suite"""
+    st.header("Wealth Management & Systematic Planning")
+    st.info("Long-term capital appreciation through Systematic Investment (SIP) and Withdrawal (SWP) plans.")
+    
+    # --- Portfolio Summary ---
+    summary = api_client.get_wealth_summary()
+    if summary:
+        col_s1, col_s2, col_s3 = st.columns(3)
+        with col_s1:
+            st.metric("Active SIPs", summary['active_sips'])
+        with col_s2:
+            st.metric("Monthly Sip Total", f"${summary['total_sip_notional']:,.2f}")
+        with col_s3:
+            st.metric("Active SWPs", summary['active_swps'])
+            
+    st.divider()
+    
+    # --- SIP Management & Simulation ---
+    col_w1, col_w2 = st.columns([1, 1])
+    
+    with col_w1:
+        st.subheader("Plan a New SIP")
+        with st.form("sip_form"):
+            symbol = st.text_input("Asset Symbol", "SPY")
+            amount = st.number_input("Monthly Investment ($)", value=500)
+            freq = st.selectbox("Frequency", ["DAILY", "WEEKLY", "MONTHLY", "QUARTERLY"], index=2)
+            if st.form_submit_button("Launch SIP"):
+                res = api_client.create_sip(symbol, amount, freq)
+                if res:
+                    st.success(f"SIP {res} enabled for {symbol}")
+                    st.toast(f"SIP Activated: {symbol}")
+                    
+    with col_w2:
+        st.subheader("Wealth Growth Simulator")
+        sim_amt = st.number_input("Monthly Savings ($)", value=1000)
+        sim_years = st.slider("Time Horizon (Years)", 5, 40, 20)
+        sim_rate = st.slider("Expected Annual Return (%)", 5, 20, 12) / 100.0
+        
+        sim_res = api_client.simulate_sip(sim_amt, sim_years, sim_rate)
+        if sim_res:
+            st.markdown(f"""
+                <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px;">
+                    <h2 style="color: #00D4FF;">${sim_res['future_value']:,.2f}</h2>
+                    <p>Estimated Future Value</p>
+                    <hr/>
+                    <p>Total Invested: ${sim_res['total_invested']:,.2f}</p>
+                    <p>Wealth Gain: <strong>${sim_res['wealth_gain']:,.2f}</strong></p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+    st.divider()
+    
+    # --- Active Plans Table ---
+    st.subheader("My Systematic Plans")
+    active_sips = api_client.get_active_sips()
+    if active_sips:
+        df_sips = pd.DataFrame(active_sips.values())
+        st.dataframe(df_sips[['id', 'symbol', 'amount', 'frequency', 'start_date']], use_container_width=True)
+    else:
+        st.info("No active systematic plans found.")
 
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""
