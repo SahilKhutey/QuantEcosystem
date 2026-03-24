@@ -35,6 +35,7 @@ def setup_dashboard():
         "Signal Generator",
         "Strategy Marketplace",
         "AI Intelligence",
+        "Social Trading",
         "Risk Management",
         "Portfolio Optimization",
         "Compliance & Audit",
@@ -56,6 +57,8 @@ def setup_dashboard():
         render_strategy_marketplace()
     elif page == "AI Intelligence":
         render_ai_intelligence()
+    elif page == "Social Trading":
+        render_social_trading()
     elif page == "Risk Management":
         render_risk_management()
     elif page == "Portfolio Optimization":
@@ -937,6 +940,55 @@ def render_ai_intelligence():
                          use_container_width=True)
         else:
             st.info("No sentiment history available. Analyze some news to begin.")
+
+def render_social_trading():
+    """Render the Social Trading & Signal Leaderboard"""
+    st.header("Social Trading & Signal Leaderboard")
+    
+    col_l1, col_l2 = st.columns([2, 1])
+    
+    with col_l1:
+        st.subheader("🏆 Institutional Strategy Leaderboard")
+        leaderboard = api_client.get_social_leaderboard()
+        if leaderboard:
+            df_leader = pd.DataFrame(leaderboard)
+            # Stylize display
+            st.dataframe(df_leader.rename(columns={
+                'name': 'Strategy',
+                'pnl': 'PnL ($)',
+                'win_rate': 'Win Rate',
+                'trades': 'Total Trades',
+                'followers': 'Followers'
+            }), use_container_width=True)
+            
+            # Follow actions
+            st.write("**Quick Follow**")
+            follow_col1, follow_col2 = st.columns(2)
+            strat_to_follow = follow_col1.selectbox("Select Strategy to Follow", [s['name'] for s in leaderboard])
+            if follow_col2.button("Follow Strategy", type="primary"):
+                api_client.follow_strategy(strat_to_follow)
+                st.success(f"Successfully following {strat_to_follow}!")
+                st.toast(f"Notifications enabled for {strat_to_follow}")
+        else:
+            st.info("Leaderboard is being compiled...")
+
+    with col_l2:
+        st.subheader("📡 Live Signal Stream")
+        signals = api_client.get_social_signals()
+        if signals:
+            for sig in reversed(signals):
+                with st.expander(f"{sig['strategy']} | {sig['signal']['action']} {sig['signal']['symbol']}", expanded=True):
+                    st.write(f"**Price**: ${sig['signal']['price']}")
+                    st.write(f"**Followers Notified**: {sig['followers_notified']}")
+                    st.caption(f"Broadcast at: {sig['timestamp'].split('T')[1][:8]}")
+        else:
+            st.info("Waiting for institutional signals...")
+
+    st.divider()
+    st.subheader("Community Performance Attribution")
+    if leaderboard:
+        fig_followers = px.pie(df_leader, values='followers', names='name', title="Community Market Share by Strategy")
+        st.plotly_chart(fig_followers, use_container_width=True)
 
 def render_strategy_performance():
     """Render the detailed strategy performance attribution page"""
