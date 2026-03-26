@@ -47,7 +47,8 @@ import {
   FilterOutlined,
   SearchOutlined,
   ExclamationCircleOutlined,
-  EyeOutlined
+  EyeOutlined,
+  DotChartOutlined
 } from '@ant-design/icons';
 import { Line, Column, Pie, Heatmap, DualAxes } from '@ant-design/plots';
 import { tradingEngineAPI } from '../services/api/tradingEngine';
@@ -735,6 +736,44 @@ const TradingEnginePage = () => {
                     <Statistic title="Threads" value={resourceMetrics.activeThreads} />
                     <Statistic title="Connections" value={resourceMetrics.activeConnections} />
                  </Card>
+              </Col>
+            </Row>
+          </TabPane>
+          {/* Strategy Intel Tab */}
+          <TabPane 
+            tab={
+              <span>
+                <DotChartOutlined />
+                Strategy Intel
+              </span>
+            } 
+            key="strategy-intel"
+          >
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={12}>
+                <Card title="Strategy Yield Comparison (Daily)">
+                  <Table 
+                    pagination={false}
+                    dataSource={[
+                      { key: '1', strategy: 'RL Adaptive Trader', pnl: '+4.2%', sharpe: '2.85', status: 'Running' },
+                      { key: '2', strategy: 'Trend Follower', pnl: '+1.5%', sharpe: '1.92', status: 'Running' },
+                      { key: '3', strategy: 'Mean Reversion', pnl: '-0.8%', sharpe: '0.45', status: 'Paused' }
+                    ]}
+                    columns={[
+                      { title: 'Strategy', dataIndex: 'strategy', key: 'strategy' },
+                      { title: 'P&L', dataIndex: 'pnl', key: 'pnl', render: (val) => <span style={{ color: val.startsWith('+') ? '#52c41a' : '#f5222d' }}>{val}</span> },
+                      { title: 'Sharpe', dataIndex: 'sharpe', key: 'sharpe' },
+                      { title: 'Status', dataIndex: 'status', key: 'status', render: (val) => <Tag color={val === 'Running' ? 'green' : 'gray'}>{val}</Tag> }
+                    ]}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} lg={12}>
+                <Card title="Strategy Risk Matrix">
+                  <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafafa', border: '1px dashed #d9d9d9' }}>
+                    <Statistic title="Aggregate Drawdown" value={1.4} suffix="%" precision={2} valueStyle={{ color: '#cf1322' }} />
+                  </div>
+                </Card>
               </Col>
             </Row>
           </TabPane>

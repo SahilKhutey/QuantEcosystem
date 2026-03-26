@@ -1,9 +1,10 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+// src/api/globalMarket.js
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export const globalMarketAPI = {
-  // Get global market overview
-  getGlobalOverview: async () => {
-    const response = await fetch(`${API_BASE_URL}/global-market/overview`, {
+  // Get global market data
+  getGlobalMarketData: async (timeframe = '24h') => {
+    const response = await fetch(`${API_BASE_URL}/global-market/data?timeframe=${timeframe}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -12,13 +13,9 @@ export const globalMarketAPI = {
     return response.json();
   },
 
-  // Get asset correlations
-  getAssetCorrelations: async (assets = [], timeframe = '30d') => {
-    const queryParams = new URLSearchParams({
-      assets: assets.join(','),
-      timeframe
-    }).toString();
-    const response = await fetch(`${API_BASE_URL}/global-market/correlations?${queryParams}`, {
+  // Get market sentiment by region
+  getMarketSentiment: async (region = 'global', timeframe = '24h') => {
+    const response = await fetch(`${API_BASE_URL}/global-market/sentiment?region=${region}&timeframe=${timeframe}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -27,10 +24,9 @@ export const globalMarketAPI = {
     return response.json();
   },
 
-  // Get macroeconomic indicators
-  getMacroeconomicData: async (countries = ['US', 'EU', 'JP', 'CN']) => {
-    const queryParams = new URLSearchParams({ countries: countries.join(',') }).toString();
-    const response = await fetch(`${API_BASE_URL}/global-market/macroeconomic?${queryParams}`, {
+  // Get historical market data
+  getHistoricalData: async (region = 'global', timeframe = '24h') => {
+    const response = await fetch(`${API_BASE_URL}/global-market/history?region=${region}&timeframe=${timeframe}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -39,66 +35,9 @@ export const globalMarketAPI = {
     return response.json();
   },
 
-  // Get market sentiment
-  getMarketSentiment: async (assets = []) => {
-    const queryParams = new URLSearchParams({ assets: assets.join(',') }).toString();
-    const response = await fetch(`${API_BASE_URL}/global-market/sentiment?${queryParams}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get economic calendar
-  getEconomicCalendar: async (dateRange = 'week') => {
-    const response = await fetch(`${API_BASE_URL}/global-market/economic-calendar?range=${dateRange}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get sector performance
-  getSectorPerformance: async (region = 'global') => {
-    const response = await fetch(`${API_BASE_URL}/global-market/sectors?region=${region}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get commodity prices
-  getCommodityPrices: async () => {
-    const response = await fetch(`${API_BASE_URL}/global-market/commodities`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get currency data
-  getCurrencyData: async () => {
-    const response = await fetch(`${API_BASE_URL}/global-market/currencies`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get bond yields
-  getBondYields: async (countries = ['US', 'DE', 'JP', 'GB']) => {
-    const queryParams = new URLSearchParams({ countries: countries.join(',') }).toString();
-    const response = await fetch(`${API_BASE_URL}/global-market/bonds?${queryParams}`, {
+  // Get market correlations
+  getMarketCorrelations: async (region = 'global') => {
+    const response = await fetch(`${API_BASE_URL}/global-market/correlations?region=${region}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -117,27 +56,5 @@ export const globalMarketAPI = {
     };
 
     return ws;
-  },
-
-  // Get volatility surface data
-  getVolatilitySurface: async (asset = 'SPY') => {
-    const response = await fetch(`${API_BASE_URL}/global-market/volatility/${asset}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get central bank policies
-  getCentralBankPolicies: async () => {
-    const response = await fetch(`${API_BASE_URL}/global-market/central-banks`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
   }
 };

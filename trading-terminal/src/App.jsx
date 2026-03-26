@@ -25,6 +25,33 @@ import GlobalWealthPage from './pages/GlobalWealthPage.jsx';
 import SIPDashboard from './pages/SIPDashboard.jsx';
 import SWPDashboard from './pages/SWPDashboard.jsx';
 import EquityAnalysisPage from './pages/EquityAnalysisPage.jsx';
+import MultiStrategyPage from './pages/MultiStrategyPage.jsx';
+import OptionsPage from './pages/OptionsPage.jsx';
+import DeveloperPortalPage from './pages/DeveloperPortalPage.jsx';
+import SystemHealthPage from './pages/SystemHealthPage.jsx';
+import OptimizationPage from './pages/OptimizationPage.jsx';
+import DRLStudioPage from './pages/DRLStudioPage.jsx';
+import AdvancedEvaluationPage from './pages/AdvancedEvaluationPage.jsx';
+import CommoditiesPage from './pages/CommoditiesPage.jsx';
+import MacroPage from './pages/MacroPage.jsx';
+import DevOpsPage from './pages/DevOpsPage.jsx';
+import PerformanceAuditPage from './pages/PerformanceAuditPage.jsx';
+import PipelinePage from './pages/PipelinePage.jsx';
+import BacktestStudioPage from './pages/BacktestStudioPage.jsx';
+import AllocatorPage from './pages/AllocatorPage.jsx';
+import OrchestratorPage from './pages/OrchestratorPage.jsx';
+import StressTestPage from './pages/StressTestPage.jsx';
+import CommodityAlphaPage from './pages/CommodityAlphaPage.jsx';
+import ModelZooPage from './pages/ModelZooPage.jsx';
+import SentimentTopologyPage from './pages/SentimentTopologyPage.jsx';
+import RLAgentStudioPage from './pages/RLAgentStudioPage.jsx';
+import HFTBacktestPage from './pages/HFTBacktestPage.jsx';
+import AIResearchPage from './pages/AIResearchPage.jsx';
+import AssetAllocationPage from './pages/AssetAllocationPage.jsx';
+import SignalMonitorPage from './pages/SignalMonitorPage.jsx';
+import MacroHubPage from './pages/MacroHubPage.jsx';
+import SovereignRiskPage from './pages/SovereignRiskPage.jsx';
+import DeploymentPage from './pages/DeploymentPage.jsx';
 
 const AppContainer = styled.div`
   display: flex;
@@ -98,6 +125,35 @@ function App() {
                 <Route path="/wealth/sip" element={<SIPDashboard />} />
                 <Route path="/wealth/swp" element={<SWPDashboard />} />
                 <Route path="/wealth/equity" element={<EquityAnalysisPage />} />
+                
+                {/* Advanced Strategy Execution */}
+                <Route path="/multi-strategy" element={<MultiStrategyPage />} />
+                <Route path="/options" element={<OptionsPage />} />
+                <Route path="/developer" element={<DeveloperPortalPage />} />
+                <Route path="/system-health" element={<SystemHealthPage />} />
+                <Route path="/optimization" element={<OptimizationPage />} />
+                <Route path="/drl-studio" element={<DRLStudioPage />} />
+                <Route path="/advanced-eval" element={<AdvancedEvaluationPage />} />
+                <Route path="/commodities" element={<CommoditiesPage />} />
+                <Route path="/macro" element={<MacroPage />} />
+                <Route path="/devops" element={<DevOpsPage />} />
+                <Route path="/performance-audit" element={<PerformanceAuditPage />} />
+                <Route path="/pipeline" element={<PipelinePage />} />
+                <Route path="/backtest-studio" element={<BacktestStudioPage />} />
+                <Route path="/allocator" element={<AllocatorPage />} />
+                <Route path="/orchestrator" element={<OrchestratorPage />} />
+                <Route path="/stress-test" element={<StressTestPage />} />
+                <Route path="/commodity-alpha" element={<CommodityAlphaPage />} />
+                <Route path="/model-zoo" element={<ModelZooPage />} />
+                <Route path="/sentiment-topology" element={<SentimentTopologyPage />} />
+                <Route path="/rl-agent-studio" element={<RLAgentStudioPage />} />
+                <Route path="/hft-backtest-lab" element={<HFTBacktestPage />} />
+                <Route path="/ai-research" element={<AIResearchPage />} />
+                <Route path="/asset-allocation-lab" element={<AssetAllocationPage />} />
+                <Route path="/signal-monitor" element={<SignalMonitorPage />} />
+                <Route path="/macro-hub" element={<MacroHubPage />} />
+                <Route path="/sovereign-risk" element={<SovereignRiskPage />} />
+                <Route path="/infrastructure" element={<DeploymentPage />} />
               </Routes>
             </Content>
           </Layout>

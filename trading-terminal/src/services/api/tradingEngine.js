@@ -111,9 +111,44 @@ export const tradingEngineAPI = {
     return response.json();
   },
 
-  // Subscribe to real-time system updates
-  subscribeToSystemUpdates: (onUpdate) => {
-    const ws = new WebSocket(`${API_BASE_URL.replace('http', 'ws')}/ws/trading-engine`);
+  // Get multi-strategy performance telemetry
+  getStrategyMetrics: async (strategyId = 'all') => {
+    const response = await fetch(`${API_BASE_URL}/strategies/metrics?id=${strategyId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.json();
+  },
+
+  // Get strategy allocation and risk data
+  getStrategyAllocation: async () => {
+    const response = await fetch(`${API_BASE_URL}/strategies/allocation`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.json();
+  },
+
+  // Control strategy execution (start/stop)
+  toggleStrategy: async (strategyId, action) => {
+    const response = await fetch(`${API_BASE_URL}/strategies/control`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ strategyId, action })
+    });
+    return response.json();
+  },
+
+  // Subscribe to real-time system and strategy updates
+  subscribeToUpdates: (onUpdate) => {
+    const ws = new WebSocket(`${API_BASE_URL.replace('http', 'ws')}/ws/unified-telemetry`);
     
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);

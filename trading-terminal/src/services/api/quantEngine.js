@@ -143,9 +143,54 @@ export const quantEngineAPI = {
     return response.json();
   },
 
+  // Get RL training metrics
+  getRLTrainingMetrics: async (agentId = 'default') => {
+    const response = await fetch(`${API_BASE_URL}/quant-engine/rl/metrics/${agentId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.json();
+  },
+
+  // Get signal convergence (multi-modal fusion)
+  getSignalConvergence: async (symbol) => {
+    const response = await fetch(`${API_BASE_URL}/quant-engine/signals/convergence?symbol=${symbol}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.json();
+  },
+
+  // Get Monte Carlo simulation results
+  getMonteCarloResults: async (backtestId) => {
+    const response = await fetch(`${API_BASE_URL}/quant-engine/backtesting/${backtestId}/monte-carlo`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.json();
+  },
+
   // Subscribe to real-time backtesting updates
   subscribeToBacktestingUpdates: (onUpdate) => {
     const ws = new WebSocket(`${API_BASE_URL.replace('http', 'ws')}/ws/quant-engine`);
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      onUpdate(data);
+    };
+
+    return ws;
+  },
+
+  // Subscribe to real-time RL training updates
+  subscribeToRLUpdates: (agentId, onUpdate) => {
+    const ws = new WebSocket(`${API_BASE_URL.replace('http', 'ws')}/ws/rl-training/${agentId}`);
     
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);

@@ -1,129 +1,65 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+// src/api/news.js
 
 export const newsAPI = {
-  // Get sentiment-analyzed news feed
-  getNewsFeed: async (filters = {}) => {
-    const queryParams = new URLSearchParams(filters).toString();
-    const response = await fetch(`${API_BASE_URL}/news/feed?${queryParams}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get social media trends
-  getSocialTrends: async (platform = 'all', timeframe = '24h') => {
-    const response = await fetch(`${API_BASE_URL}/news/social-trends?platform=${platform}&timeframe=${timeframe}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get sentiment analysis for specific assets
-  getAssetSentiment: async (symbols = []) => {
-    const response = await fetch(`${API_BASE_URL}/news/asset-sentiment`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+  getNews: async ({ source, sentiment, timeframe } = {}) => {
+    // Mock data for news
+    const news = [
+      {
+        id: '1',
+        title: 'Fed Signals Potential Rate Cut in Upcoming Meeting',
+        summary: 'Economic indicators suggest a softening inflation trend, leading analysts to predict a policy shift.',
+        source: 'bloomberg',
+        sentiment: 0.85,
+        urgency: 'high',
+        tags: ['FED', 'Interest Rates', 'Economy'],
+        timestamp: new Date().toISOString(),
+        url: '#'
       },
-      body: JSON.stringify({ symbols })
-    });
-    return response.json();
-  },
-
-  // Get market-moving news
-  getMarketMovingNews: async (impact = 'high') => {
-    const response = await fetch(`${API_BASE_URL}/news/market-moving?impact=${impact}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+      {
+        id: '2',
+        title: 'Tech Giants Face New Antitrust Scrutiny in EU',
+        summary: 'Regulators are investigating data privacy and market dominance concerns among major software providers.',
+        source: 'reuters',
+        sentiment: 0.15,
+        urgency: 'medium',
+        tags: ['Tech', 'EU', 'Regulation'],
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        url: '#'
+      },
+      {
+        id: '3',
+        title: 'Global Manufacturing Output Hits 2-Year High',
+        summary: 'Supply chain stabilization and increased demand drive growth across major industrial hubs.',
+        source: 'wsj',
+        sentiment: 0.72,
+        urgency: 'low',
+        tags: ['Manufacturing', 'Growth', 'GDP'],
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        url: '#'
+      },
+      {
+        id: '4',
+        title: 'Oil Prices Stabilize After Brief Volatility',
+        summary: 'Geopolitical tensions and OPEC production targets keep energy markets in a narrow range.',
+        source: 'cnbc',
+        sentiment: 0.52,
+        urgency: 'low',
+        tags: ['Energy', 'Oil', 'Commodities'],
+        timestamp: new Date(Date.now() - 10800000).toISOString(),
+        url: '#'
       }
-    });
-    return response.json();
-  },
+    ];
 
-  // Get news sentiment timeline
-  getSentimentTimeline: async (symbol, timeframe = '7d') => {
-    const response = await fetch(`${API_BASE_URL}/news/sentiment-timeline/${symbol}?timeframe=${timeframe}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
+    let filteredNews = [...news];
+    if (source && source !== 'all') {
+      filteredNews = filteredNews.filter(n => n.source === source);
+    }
+    if (sentiment && sentiment !== 'all') {
+      if (sentiment === 'positive') filteredNews = filteredNews.filter(n => n.sentiment > 0.6);
+      else if (sentiment === 'neutral') filteredNews = filteredNews.filter(n => n.sentiment >= 0.4 && n.sentiment <= 0.6);
+      else if (sentiment === 'negative') filteredNews = filteredNews.filter(n => n.sentiment < 0.4);
+    }
 
-  // Get news sources and credibility scores
-  getNewsSources: async () => {
-    const response = await fetch(`${API_BASE_URL}/news/sources`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Search news articles
-  searchNews: async (query, filters = {}) => {
-    const queryParams = new URLSearchParams({ q: query, ...filters }).toString();
-    const response = await fetch(`${API_BASE_URL}/news/search?${queryParams}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get news categories
-  getNewsCategories: async () => {
-    const response = await fetch(`${API_BASE_URL}/news/categories`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Subscribe to real-time news updates
-  subscribeToNewsUpdates: (onUpdate) => {
-    const ws = new WebSocket(`${API_BASE_URL.replace('http', 'ws')}/ws/news`);
-    
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      onUpdate(data);
-    };
-
-    return ws;
-  },
-
-  // Get trending topics
-  getTrendingTopics: async (timeframe = '24h') => {
-    const response = await fetch(`${API_BASE_URL}/news/trending-topics?timeframe=${timeframe}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  },
-
-  // Get news impact analysis
-  getNewsImpact: async (newsId) => {
-    const response = await fetch(`${API_BASE_URL}/news/impact/${newsId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
+    return { data: filteredNews };
   }
 };

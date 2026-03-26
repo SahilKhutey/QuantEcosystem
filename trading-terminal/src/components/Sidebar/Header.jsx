@@ -1,12 +1,15 @@
-// src/components/Sidebar/Header.jsx
-import React, { useState, useEffect } from 'react';
-import { Layout, Button, Space, Typography, Tag, Divider } from 'antd';
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   SearchOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  UserOutlined,
+  BellOutlined,
+  SettingOutlined,
+  LogoutOutlined
 } from '@ant-design/icons';
+import { Layout, Button, Space, Typography, Tag, Divider, Avatar, Dropdown, Breadcrumb } from 'antd';
+import { useLocation, Link } from 'react-router-dom';
 import UserMenu from './UserMenu';
 import SystemStatus from './SystemStatus';
 import NotificationBell from './NotificationBell';
@@ -25,6 +28,9 @@ const Header = ({
   const [isCollapsed, setIsCollapsed] = useState(collapsed);
   const [searchToggle, setSearchToggle] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const location = useLocation();
+
+  const pathnames = location.pathname.split('/').filter((x) => x);
 
   useEffect(() => {
     setIsCollapsed(collapsed);
@@ -50,6 +56,23 @@ const Header = ({
           }}
         />
         <Text strong style={{ fontSize: '18px' }}>{title}</Text>
+        <Divider type="vertical" />
+        <Breadcrumb style={{ fontSize: '12px' }}>
+          <Breadcrumb.Item><Link to="/">Terminal</Link></Breadcrumb.Item>
+          {pathnames.map((name, index) => {
+            const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
+            const isLast = index === pathnames.length - 1;
+            return (
+              <Breadcrumb.Item key={name}>
+                {isLast ? (
+                  <span style={{ textTransform: 'capitalize' }}>{name.replace(/-/g, ' ')}</span>
+                ) : (
+                  <Link to={routeTo} style={{ textTransform: 'capitalize' }}>{name.replace(/-/g, ' ')}</Link>
+                )}
+              </Breadcrumb.Item>
+            );
+          })}
+        </Breadcrumb>
       </Space>
 
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '32px' }}>
@@ -82,13 +105,22 @@ const Header = ({
           </Space>
         )}
       </div>
-            <Button type="text" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px' }}>
-              <Avatar src={user.avatar} icon={<UserOutlined />} size="small" />
-              <span style={{ fontSize: '12px', fontWeight: 600 }}>{user.name}</span>
-            </Button>
-          </Dropdown>
-        </Space>
-      </div>
+      <Space size={16}>
+        <NotificationBell />
+        <Dropdown 
+          overlay={
+            <UserMenu 
+              user={{ name: 'Institutional Trader', avatar: 'https://joeschmoe.io/api/v1/random' }} 
+            />
+          } 
+          trigger={['click']}
+        >
+          <Button type="text" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px' }}>
+            <Avatar icon={<UserOutlined />} size="small" />
+            <span style={{ fontSize: '12px', fontWeight: 600 }}>Trader #001</span>
+          </Button>
+        </Dropdown>
+      </Space>
     </AntdHeader>
   );
 };

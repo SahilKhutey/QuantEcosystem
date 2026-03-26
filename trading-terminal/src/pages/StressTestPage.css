@@ -1,0 +1,43 @@
+.stress-test-page {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.stress-header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stress-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+  color: #001529;
+}
+
+.stress-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: #fff;
+}
+
+.scenario-item:hover {
+  background: #f0f7ff;
+}
+
+.scenario-item.active {
+  background: #e6f7ff;
+  border: 1px solid #1890ff;
+}
+
+.shadow-sm {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ant-statistic-title {
+  font-size: 12px;
+  color: #8c8c8c;
+}

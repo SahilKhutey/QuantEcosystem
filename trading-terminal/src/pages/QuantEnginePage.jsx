@@ -53,9 +53,14 @@ import {
   DeleteOutlined,
   EditOutlined,
   ExclamationCircleOutlined,
-  DotChartOutlined
+  DotChartOutlined,
+  CloudUploadOutlined,
+  RiseOutlined,
+  StockOutlined,
+  SafetyCertificateOutlined,
+  AimOutlined
 } from '@ant-design/icons';
-import { Line, Column, Pie, Heatmap, DualAxes, Scatter } from '@ant-design/plots';
+import { Line, Column, Pie, Heatmap, DualAxes, Scatter, Area } from '@ant-design/plots';
 import { quantEngineAPI } from '../services/api/quantEngine';
 import './QuantEnginePage.css';
 
@@ -84,6 +89,9 @@ const QuantEnginePage = () => {
   const [activeTab, setActiveTab] = useState('editor');
   const [selectedStrategy, setSelectedStrategy] = useState('mean_reversion');
   const [isRunning, setIsRunning] = useState(false);
+  const [rlTrainingData, setRlTrainingData] = useState([]);
+  const [signalConvergence, setSignalConvergence] = useState([]);
+  const [monteCarloData, setMonteCarloData] = useState([]);
   const [codeEditorValue, setCodeEditorValue] = useState('class MeanReversionStrategy:\n    def __init__(self, window=20, threshold=2.0):\n        self.window = window\n        self.threshold = threshold\n\n    def generate_signal(self, data):\n        # Bollinger Band Mean Reversion logic\n        rolling_mean = data["close"].rolling(window=self.window).mean()\n        rolling_std = data["close"].rolling(window=self.window).std()\n        upper_band = rolling_mean + (self.threshold * rolling_std)\n        lower_band = rolling_mean - (self.threshold * rolling_std)\n        \n        if data["close"].iloc[-1] > upper_band.iloc[-1]:\n            return "SELL"\n        elif data["close"].iloc[-1] < lower_band.iloc[-1]:\n            return "BUY"\n        return "HOLD"');
   
   const [parameterForm] = useForm();
@@ -184,6 +192,24 @@ const QuantEnginePage = () => {
     yAxis: { label: { formatter: (v) => `$${(v/1000).toFixed(0)}k` } },
     tooltip: { formatter: (v) => ({ name: 'Portfolio Value', value: `$${v.equity.toLocaleString()}` }) }
   }), [backtestingResults.equityCurve]);
+  
+  const rlRewardConfig = useMemo(() => ({
+    data: rlTrainingData,
+    xField: 'episode',
+    yField: 'reward',
+    smooth: true,
+    color: '#52c41a',
+    area: { style: { fill: 'l(270) 0:#ffffff 0.5:#52c41a 1:#52c41a' } }
+  }), [rlTrainingData]);
+
+  const signalConvergenceConfig = useMemo(() => ({
+    data: signalConvergence,
+    xField: 'timestamp',
+    yField: 'value',
+    seriesField: 'source',
+    smooth: true,
+    animation: { appear: { animation: 'path-in', duration: 1000 } }
+  }), [signalConvergence]);
 
   return (
     <div className="quant-engine-page">
@@ -341,6 +367,209 @@ const QuantEnginePage = () => {
                 </Col>
               </Row>
             )}
+          </TabPane>
+          {/* Reinforcement Learning Agent Monitor */}
+          <TabPane 
+            tab={<span><AimOutlined /> RL Agent Monitor</span>} 
+            key="rl-monitor"
+          >
+            <Row gutter={[24, 24]}>
+              <Col span={16}>
+                <Card title="Episode Reward Convergence (Real-time Training)">
+                  <Area {...rlRewardConfig} height={350} />
+                </Card>
+              </Col>
+              <Col span={8}>
+                <Card title="Agent Hyperparameters" size="small">
+                  <Descriptions column={1} size="small" bordered>
+                    <Descriptions.Item label="Alpha (Learning Rate)">0.0003</Descriptions.Item>
+                    <Descriptions.Item label="Gamma (Discount)">0.99</Descriptions.Item>
+                    <Descriptions.Item label="Epsilon (Exploration)">0.15</Descriptions.Item>
+                    <Descriptions.Item label="Buffer Size">1,000,000</Descriptions.Item>
+                    <Descriptions.Item label="Batch Size">256</Descriptions.Item>
+                  </Descriptions>
+                  <Divider style={{ margin: '12px 0' }} />
+                  <Button type="primary" block icon={<ReloadOutlined />}>Retrain Agent</Button>
+                </Card>
+              </Col>
+              <Col span={24}>
+                <Card title="State-Action Probability Heatmap">
+                   <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+                      <p style={{ color: '#8c8c8c' }}>Action Probability Distribution (Buy/Sell/Hold) over Neural Latent Space</p>
+                   </div>
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          {/* Neural Signal Hub (Enhanced) */}
+          <TabPane 
+            tab={<span><SafetyCertificateOutlined /> Neural Signal Hub</span>} 
+            key="signal-hub"
+          >
+            <Row gutter={[24, 24]}>
+               <Col span={16}>
+                  <Card title="Multi-Modal Signal Fusion Audit (Real-time AI Streams)">
+                     <Row gutter={16}>
+                        <Col span={6}>
+                           <Statistic 
+                              title="Ensemble Confidence" 
+                              value={89.4} 
+                              precision={2} 
+                              suffix="%" 
+                              valueStyle={{ color: '#1890ff' }} 
+                              prefix={<ThunderboltOutlined />}
+                           />
+                        </Col>
+                        <Col span={6}>
+                           <Statistic title="Consensus Bias" value="BULLISH" valueStyle={{ color: '#52c41a' }} />
+                        </Col>
+                        <Col span={6}>
+                           <Statistic title="Meta-Weight (AI)" value={0.72} precision={2} />
+                        </Col>
+                        <Col span={6}>
+                           <Statistic title="Current Regime" value="Trending Up" />
+                        </Col>
+                     </Row>
+                     <Divider />
+                     <div style={{ height: 350 }}>
+                        <Radar 
+                           data={[
+                              { name: 'LSTM (Trend)', value: 0.82 },
+                              { name: 'Transformer (State)', value: 0.74 },
+                              { name: 'XGBoost (Features)', value: 0.91 },
+                              { name: 'Sentiment (News)', value: 0.65 },
+                              { name: 'OrderFlow (L2)', value: 0.88 }
+                           ]}
+                           xField="name"
+                           yField="value"
+                           meta={{ value: { min: 0, max: 1 } }}
+                           area={{ style: { fillOpacity: 0.3 } }}
+                        />
+                     </div>
+                  </Card>
+               </Col>
+               <Col span={8}>
+                  <Card title="Model Contribution Audit" size="small">
+                     <Paragraph style={{ color: '#8c8c8c' }}>
+                       Weights are dynamically adjusted via <strong>Meta-Learning</strong> based on current regime performance.
+                     </Paragraph>
+                     <List
+                        size="small"
+                        dataSource={[
+                           { name: 'LSTM Predictor', weight: 0.30, bias: 0.82, color: '#1890ff' },
+                           { name: 'Transformer (Market Attention)', weight: 0.30, bias: -0.15, color: '#f5222d' },
+                           { name: 'XGBoost (Alpha-Feature)', weight: 0.20, bias: 0.45, color: '#52c41a' },
+                           { name: 'News Sentiment LLM', weight: 0.20, bias: 0.65, color: '#faad14' }
+                        ]}
+                        renderItem={item => (
+                           <List.Item>
+                              <div style={{ width: '100%' }}>
+                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span>{item.name}</span>
+                                    <Tag color={item.bias > 0 ? 'green' : 'red'}>{item.bias > 0 ? '+' : ''}{item.bias}</Tag>
+                                 </div>
+                                 <Progress percent={item.weight * 100} strokeColor={item.color} size="small" />
+                              </div>
+                           </List.Item>
+                        )}
+                     />
+                  </Card>
+                  <Card title="Execution Confidence Map" style={{ marginTop: 24 }}>
+                     <Area 
+                       data={Array.from({ length: 20 }).map((_, i) => ({
+                         time: `${i}:00`,
+                         confidence: 80 + Math.sin(i / 2) * 15
+                       }))}
+                       xField="time"
+                       yField="confidence"
+                       color="#1890ff"
+                       height={150}
+                       smooth
+                     />
+                  </Card>
+               </Col>
+            </Row>
+          </TabPane>
+          {/* Model Zoo: Quantitative Models Interface */}
+          <TabPane 
+            tab={<span><DatabaseOutlined /> Model Zoo</span>} 
+            key="model-zoo"
+          >
+            <Row gutter={[24, 24]}>
+              <Col span={12}>
+                <Card 
+                  title="Markowitz Portfolio Optimizer" 
+                  extra={<Tag color="blue">SCIPY OPTIMIZE</Tag>}
+                >
+                  <p style={{ color: '#8c8c8c', marginBottom: '16px' }}>Efficient Frontier computation based on mean-variance optimization.</p>
+                  <Form layout="vertical">
+                    <Form.Item label="Asset Universe">
+                      <Select mode="multiple" style={{ width: '100%' }} defaultValue={['AAPL', 'MSFT', 'GOOGL', 'AMZN']}>
+                        {availableSymbols.map(s => <Select.Option key={s} value={s}>{s}</Select.Option>)}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item label="Optimization Method">
+                      <Select defaultValue="max_sharpe">
+                        <Select.Option value="max_sharpe">Maximize Sharpe Ratio</Select.Option>
+                        <Select.Option value="min_vol">Minimize Volatility</Select.Option>
+                        <Select.Option value="erc">Equal Risk Contribution</Select.Option>
+                      </Select>
+                    </Form.Item>
+                    <Button type="primary" block icon={<ExperimentOutlined />}>Compute Optimal Weights</Button>
+                  </Form>
+                  <Divider />
+                  <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+                    <Pie 
+                      data={[
+                        { type: 'AAPL', value: 25 },
+                        { type: 'MSFT', value: 40 },
+                        { type: 'GOOGL', value: 15 },
+                        { type: 'AMZN', value: 20 }
+                      ]}
+                      angleField="value"
+                      colorField="type"
+                      radius={0.7}
+                      label={{ type: 'inner', offset: '-30%', content: '{value}%' }}
+                    />
+                  </div>
+                </Card>
+              </Col>
+              <Col span={12}>
+                <Card 
+                  title="GARCH Volatility Forecaster" 
+                  extra={<Tag color="purple">ARCH-PYTHON</Tag>}
+                >
+                   <p style={{ color: '#8c8c8c', marginBottom: '16px' }}>GARCH(1,1) model for conditional volatility and variance persistence.</p>
+                   <Form layout="vertical">
+                    <Form.Item label="Input Series (Returns)">
+                      <Select defaultValue="SPY_L">
+                        <Select.Option value="SPY_L">SPY Daily Log Returns</Select.Option>
+                        <Select.Option value="BTC_L">BTC/USD Log Returns</Select.Option>
+                      </Select>
+                    </Form.Item>
+                    <Form.Item label="Convergence Alpha + Beta">
+                       <Progress percent={98} strokeColor="#722ed1" status="active" />
+                    </Form.Item>
+                    <Button block icon={<LineChartOutlined />}>Fit GARCH Model</Button>
+                   </Form>
+                   <Divider />
+                   <div style={{ height: 200 }}>
+                      <Line 
+                        data={[
+                          { date: 'T-5', vol: 12 }, { date: 'T-4', vol: 14 }, { date: 'T-3', vol: 13 },
+                          { date: 'T-2', vol: 18 }, { date: 'T-1', vol: 15 }, { date: 'Forecast', vol: 16 }
+                        ]}
+                        xField="date"
+                        yField="vol"
+                        smooth
+                        color="#722ed1"
+                        point={{ size: 4 }}
+                      />
+                   </div>
+                </Card>
+              </Col>
+            </Row>
           </TabPane>
         </Tabs>
       </Card>

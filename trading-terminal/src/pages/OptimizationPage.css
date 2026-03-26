@@ -1,0 +1,48 @@
+.optimization-page {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.optimization-header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.optimization-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+  color: #001529;
+}
+
+.optimization-content-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.ant-statistic-title {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 700;
+}
+
+/* Custom Micro-Animations */
+.optimization-content-card:hover {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.endpoint-item {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+  border: 1px solid #f0f0f0;
+}

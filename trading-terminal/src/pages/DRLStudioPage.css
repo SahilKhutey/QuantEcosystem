@@ -1,0 +1,39 @@
+.drl-studio-page {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.drl-header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drl-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+  color: #001529;
+}
+
+.drl-content-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.ant-statistic-title {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.ant-list-item {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Institutional Grade Styles */
+.ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 700;
+}

@@ -50,6 +50,34 @@ export const riskAPI = {
   },
 
   /**
+   * Fetches Conditional Value at Risk (CVaR / Expected Shortfall).
+   */
+  getCVaR: async (method = 'historical', confidence = 95, timeframe = '1d') => {
+    const response = await fetch(`${API_BASE_URL}/risk/cvar?method=${method}&confidence=${confidence}&timeframe=${timeframe}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch CVaR analysis');
+    return response.json();
+  },
+
+  /**
+   * Fetches current market risk regime (Risk-On/Risk-Off).
+   */
+  getRiskRegime: async () => {
+    const response = await fetch(`${API_BASE_URL}/risk/regime`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch risk regime');
+    return response.json();
+  },
+
+  /**
    * Fetches stress testing scenarios and results.
    */
   getStressTests: async (scenario = 'all') => {

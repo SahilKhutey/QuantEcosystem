@@ -1,0 +1,43 @@
+.model-zoo-page {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.zoo-header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zoo-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+  color: #001529;
+}
+
+.zoo-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: #fff;
+}
+
+.model-item:hover {
+  background: #f0f7ff;
+}
+
+.model-item.active {
+  background: #e6f7ff;
+  border: 1px solid #1890ff;
+}
+
+.shadow-sm {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ant-statistic-title {
+  font-size: 12px;
+  color: #8c8c8c;
+}

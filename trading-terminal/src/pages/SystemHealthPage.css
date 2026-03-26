@@ -1,0 +1,46 @@
+.system-health-page {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.health-header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.health-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+  color: #001529;
+}
+
+.health-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.deployment-stats span {
+  font-size: 12px;
+  color: #8c8c8c;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ant-timeline-item-label {
+  font-size: 11px;
+  color: #8c8c8c;
+}
+
+/* Institutional Grade Styles */
+.ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 700;
+}
+
+.ant-list-item {
+  border-bottom: 1px solid #f0f0f0;
+}

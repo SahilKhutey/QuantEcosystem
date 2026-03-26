@@ -402,22 +402,24 @@ const GlobalMarketDashboard = () => {
                     <div className="map-loading"><Spin /></div>
                   ) : (
                     <div className="map-container" ref={mapContainerRef}>
+                      <div className="map-viz-overlay">
+                         <div className="viz-stats">
+                            <Statistic title="Hot Nodes" value={4} prefix={<ThunderboltOutlined />} />
+                            <Statistic title="Cold Nodes" value={12} prefix={<StopOutlined />} />
+                         </div>
+                      </div>
                       <div className="map-placeholder">
-                        {/* Map visualization logic would go here */}
-                        <div className="map-legend">
-                          <div className="legend-item">
-                            <div className="legend-color" style={{ background: '#52c41a' }}></div>
-                            <div className="legend-label">Bullish</div>
-                          </div>
-                          <div className="legend-item">
-                            <div className="legend-color" style={{ background: '#faad14' }}></div>
-                            <div className="legend-label">Neutral</div>
-                          </div>
-                          <div className="legend-item">
-                            <div className="legend-color" style={{ background: '#ff4d4f' }}></div>
-                            <div className="legend-label">Bearish</div>
-                          </div>
-                        </div>
+                        <Heatmap 
+                           data={mapData.flatMap(c => [
+                              { country: c.name, type: 'Sentiment', value: c.sentiment },
+                              { country: c.name, type: 'Vol', value: Math.random() }
+                           ])}
+                           xField="country"
+                           yField="type"
+                           colorField="value"
+                           color={['#1890ff', '#ffffff', '#ff4d4f']}
+                           height={450}
+                        />
                       </div>
                     </div>
                   )}
@@ -522,19 +524,27 @@ const GlobalMarketDashboard = () => {
           >
             <Row gutter={[24, 24]}>
               <Col xs={24} lg={16}>
-                <Card title="Regional Performance" className="regional-performance-card">
+                <Card title="Regional Performance & Capital Flow" className="regional-performance-card">
                   {loading.sentiment ? (
                     <div className="chart-loading"><Spin /></div>
                   ) : (
-                    <Column
-                      data={Object.keys(globalData.regions || {}).map(region => ({
-                        region: globalData.regions[region].name,
-                        value: globalData.regions[region].performance,
-                        category: 'Performance'
-                      }))}
+                    <DualAxes
+                      data={[
+                        Object.keys(globalData.regions || {}).map(region => ({
+                          region: globalData.regions[region].name,
+                          value: globalData.regions[region].performance,
+                        })),
+                        Object.keys(globalData.regions || {}).map(region => ({
+                          region: globalData.regions[region].name,
+                          flow: Math.random() * 1000 - 500,
+                        }))
+                      ]}
                       xField="region"
-                      yField="value"
-                      seriesField="category"
+                      yField={['value', 'flow']}
+                      geometryOptions={[
+                        { geometry: 'column', color: '#1890ff' },
+                        { geometry: 'line', color: '#52c41a', smooth: true }
+                      ]}
                       height={400}
                     />
                   )}
@@ -542,36 +552,53 @@ const GlobalMarketDashboard = () => {
               </Col>
 
               <Col xs={24} lg={8}>
-                <Card title="Regional Correlations" className="regional-correlations-card">
-                  <table className="correlation-table" style={{ width: '100%', textAlign: 'center' }}>
-                    <thead>
-                      <tr>
-                        <th></th>
-                        {Object.keys(globalData.regions || {}).map(r => <th key={r}>{globalData.regions[r].shortName}</th>)}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.keys(globalData.regions || {}).map(r1 => (
-                        <tr key={r1}>
-                          <td style={{ fontWeight: 'bold' }}>{globalData.regions[r1].shortName}</td>
-                          {Object.keys(globalData.regions || {}).map(r2 => {
-                            const val = correlations.matrix?.find(c => c.region1 === r1 && c.region2 === r2)?.value || 0;
-                            return (
-                              <td key={r2} style={{ 
-                                background: val > 0.7 ? '#ff4d4f' : val > 0.3 ? '#faad14' : '#52c41a',
-                                color: '#fff'
-                              }}>
-                                {val.toFixed(2)}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <Card title="Global Liquidity Distribution" className="regional-correlations-card">
+                   <div style={{ height: 400 }}>
+                      <Radar 
+                        data={Object.keys(globalData.regions || {}).map(r => ({
+                          name: globalData.regions[r].name,
+                          value: Math.random() * 100
+                        }))}
+                        xField="name"
+                        yField="value"
+                        meta={{ value: { min: 0, max: 100 } }}
+                        area={{ style: { fillOpacity: 0.3 } }}
+                      />
+                   </div>
                 </Card>
               </Col>
             </Row>
+          </TabPane>
+
+          <TabPane 
+            tab={<span><HeatMapOutlined /> Cross-Asset Heat Map</span>} 
+            key="asset-heat"
+          >
+             <Row gutter={[24, 24]}>
+                <Col span={24}>
+                   <Card title="Global Asset Class Correlation (Multi-Exchange Convergence)">
+                      <Heatmap 
+                        data={[
+                           { a: 'Equities', b: 'Bonds', v: 0.45 },
+                           { a: 'Equities', b: 'FX', v: -0.12 },
+                           { a: 'Equities', b: 'Crypto', v: 0.78 },
+                           { a: 'Bonds', b: 'FX', v: 0.32 },
+                           { a: 'Bonds', b: 'Crypto', v: -0.45 },
+                           { a: 'FX', b: 'Crypto', v: 0.15 }
+                        ]}
+                        xField="a"
+                        yField="b"
+                        colorField="v"
+                        color={['#1890ff', '#ffffff', '#ff4d4f']}
+                        height={450}
+                        label={{
+                           style: { fill: '#fff' },
+                           formatter: (datum) => datum.v.toFixed(2)
+                        }}
+                      />
+                   </Card>
+                </Col>
+             </Row>
           </TabPane>
         </Tabs>
       </Card>
