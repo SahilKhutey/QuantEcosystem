@@ -1,0 +1,452 @@
+/* src/pages/TradingEnginePage.css */
+.trading-engine-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.engine-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.engine-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.status-cards {
+  margin-bottom: 24px;
+}
+
+.status-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.status-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.status-change {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.engine-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.system-health-card, .components-card, .alerts-card, 
+.latency-distribution-card, .latency-metrics-card, 
+.latency-asset-card, .order-status-card, 
+.execution-quality-card, .routing-card, 
+.resource-utilization-card, .system-metrics-card, 
+.system-logs-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.system-health-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.health-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.health-metric {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.metric-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.metric-value {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.components-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.component-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.component-item:last-child {
+  border-bottom: none;
+}
+
+.component-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.component-name {
+  font-weight: 500;
+}
+
+.component-type {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.component-status {
+  font-weight: 500;
+}
+
+.alert-item.critical {
+  border-left: 4px solid #ff4d4f;
+  background-color: #fff1f0;
+}
+
+.alert-item.warning {
+  border-left: 4px solid #faad14;
+  background-color: #fffbe6;
+}
+
+.alert-item.info {
+  border-left: 4px solid #1890ff;
+  background-color: #e6f7ff;
+}
+
+.alert-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-severity.critical {
+  background-color: #ff4d4f;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.alert-severity.warning {
+  background-color: #faad14;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.alert-severity.info {
+  background-color: #1890ff;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.alert-description {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alert-message {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.alert-timestamp {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.latency-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.latency-assets {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.asset-latency {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.asset-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.asset-name {
+  font-weight: 500;
+}
+
+.asset-latency {
+  font-weight: 600;
+}
+
+.status-charts {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.status-chart {
+  flex: 1;
+}
+
+.status-metrics {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.execution-quality {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.routing-destinations {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.destination-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.destination-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.destination-name {
+  font-weight: 500;
+}
+
+.destination-rate {
+  font-weight: 600;
+}
+
+.resource-utilization {
+  padding: 16px;
+}
+
+.resource-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.system-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.system-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.log-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.log-timestamp {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.log-message {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.performance-trends {
+  padding: 16px;
+}
+
+.trend-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.trend-chart {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.trend-chart h3 {
+  margin: 0 0 16px 0;
+  text-align: center;
+}
+
+.alert-detail {
+  padding: 16px;
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.alert-severity {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.severity-badge.critical {
+  background-color: #ff4d4f;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.severity-badge.warning {
+  background-color: #faad14;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.severity-badge.info {
+  background-color: #1890ff;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.alert-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.alert-content h3 {
+  margin: 0 0 8px 0;
+  color: #1a1a1a;
+}
+
+.technical-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.technical-metric {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.chart-loading, .table-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .trading-engine-page {
+    background-color: #141414;
+    color: #ffffff;
+  }
+  
+  .status-card, .engine-content-card, .system-health-card, 
+  .components-card, .alerts-card, .latency-distribution-card, 
+  .latency-metrics-card, .latency-asset-card, .order-status-card, 
+  .execution-quality-card, .routing-card, .resource-utilization-card, 
+  .system-metrics-card, .system-logs-card {
+    background-color: #1f1f1f !important;
+    border-color: #303030;
+    color: #ffffff;
+  }
+  
+  .component-item, .alert-item, .asset-latency, 
+  .destination-item, .log-item, .technical-metric {
+    background-color: #1f1f1f;
+    border-color: #303030;
+    color: #ffffff;
+  }
+  
+  .component-item:hover, .destination-item:hover, .log-item:hover {
+    background-color: #262626;
+  }
+  
+  .alert-item.critical { background-color: #2a1215 !important; }
+  .alert-item.warning { background-color: #2b2111 !important; }
+  .alert-item.info { background-color: #111b26 !important; }
+  
+  .metric-label, .component-name, .destination-name, 
+  .log-timestamp, .alert-message, .alert-timestamp {
+    color: #bfbfbf;
+  }
+  
+  .component-type, .log-message, .alert-message {
+    color: #8c8c8c;
+  }
+}

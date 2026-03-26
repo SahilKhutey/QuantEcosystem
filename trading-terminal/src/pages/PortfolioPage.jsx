@@ -1,258 +1,292 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FiPieChart, FiTrendingUp, FiBriefcase, FiArrowUpRight, FiArrowDownRight, FiDollarSign } from 'react-icons/fi';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Statistic, 
+  Table, 
+  Tabs, 
+  Select, 
+  Button, 
+  Spin, 
+  Alert,
+  Progress,
+  Tag,
+  Space,
+  Dropdown,
+  Tooltip,
+  DatePicker,
+  Input,
+  Typography
+} from 'antd';
+import { 
+  PieChartOutlined, 
+  BarChartOutlined,
+  LineChartOutlined,
+  DownloadOutlined,
+  SyncOutlined,
+  InfoCircleOutlined,
+  DollarCircleOutlined,
+  RiseOutlined,
+  FallOutlined,
+  DownOutlined,
+  HistoryOutlined
+} from '@ant-design/icons';
+import { Pie, Line } from '@ant-design/plots';
+import { portfolioAPI } from '../services/api/portfolio';
+import './PortfolioPage.css';
 
-const PortfolioContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto 1fr;
-  gap: 20px;
-  height: 100%;
-  
-  .stats-row {
-    grid-column: 1 / span 2;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-  }
-  
-  .chart-card {
-    background: var(--secondary-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .holdings-card {
-    grid-column: 1 / span 2;
-    background: var(--secondary-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-  }
-`;
-
-const StatCard = styled.div`
-  background: var(--secondary-dark);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 20px;
-  
-  .label { color: var(--text-tertiary); font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
-  .value { font-size: 24px; font-weight: 700; color: var(--text-primary); }
-  .change { 
-    display: flex; 
-    align-items: center; 
-    gap: 4px; 
-    font-size: 14px; 
-    margin-top: 8px;
-    
-    &.positive { color: var(--accent-green); }
-    &.negative { color: var(--accent-red); }
-  }
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-primary);
-  
-  svg { color: var(--accent-blue); }
-`;
-
-const HoldingsTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  
-  th { text-align: left; color: var(--text-tertiary); font-weight: 500; font-size: 13px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
-  td { padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-  
-  .symbol { font-weight: 600; }
-  .name { color: var(--text-tertiary); font-size: 12px; }
-  .positive { color: var(--accent-green); }
-  .negative { color: var(--accent-red); }
-`;
-
-import useAppStore from '../services/store/appStore';
-import { useMarketData } from '../services/data/marketData';
+const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
+const { Search } = Input;
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 const PortfolioPage = () => {
-  const { portfolio, removeFromPortfolio, clearPortfolio } = useAppStore();
-  const { prices, getLatestPrice } = useMarketData();
-  const [performanceData, setPerformanceData] = useState([]);
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  // State Management
+  const [portfolioData, setPortfolioData] = useState({});
+  const [allocationData, setAllocationData] = useState([]);
+  const [pnlData, setPnlData] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [riskMetrics, setRiskMetrics] = useState({});
+  const [loading, setLoading] = useState({
+    summary: true, allocation: true, pnl: true,
+    positions: true, transactions: true, risk: true
+  });
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [allocationGroupBy, setAllocationGroupBy] = useState('asset');
+  const [pnlTimeframe, setPnlTimeframe] = useState('30d');
+  const [positionFilters, setPositionFilters] = useState({ status: 'all', search: '' });
+  const [transactionFilters, setTransactionFilters] = useState({ dateRange: [], type: 'all', search: '' });
 
-  // Calculate live portfolio metrics
-  const totalInvested = portfolio.reduce((acc, h) => acc + (h.qty * h.avg), 0);
-  const currentValue = portfolio.reduce((acc, h) => acc + (h.qty * (prices[h.symbol] || h.avg)), 0);
-  const totalPnL = currentValue - totalInvested;
-  const pnlPct = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
+  const fetchData = useCallback(async () => {
+    setLoading({
+      summary: true, allocation: true, pnl: true,
+      positions: true, transactions: true, risk: true
+    });
+    setError(null);
+
+    try {
+      const responses = await Promise.allSettled([
+        portfolioAPI.getPortfolioSummary(),
+        portfolioAPI.getAssetAllocation(allocationGroupBy),
+        portfolioAPI.getPnLAnalysis(pnlTimeframe),
+        portfolioAPI.getPositions(positionFilters),
+        portfolioAPI.getTransactions(transactionFilters),
+        portfolioAPI.getRiskMetrics()
+      ]);
+
+      if (responses[0].status === 'fulfilled') setPortfolioData(responses[0].value.data);
+      if (responses[1].status === 'fulfilled') setAllocationData(responses[1].value.data);
+      if (responses[2].status === 'fulfilled') setPnlData(responses[2].value.data.history || []);
+      if (responses[3].status === 'fulfilled') setPositions(responses[3].value.data);
+      if (responses[4].status === 'fulfilled') setTransactions(responses[4].value.data);
+      if (responses[5].status === 'fulfilled') setRiskMetrics(responses[5].value.data);
+
+      setLoading({
+        summary: false, allocation: false, pnl: false,
+        positions: false, transactions: false, risk: false
+      });
+    } catch (err) {
+      setError('Failed to load portfolio data');
+    }
+  }, [allocationGroupBy, pnlTimeframe, positionFilters, transactionFilters]);
 
   useEffect(() => {
-    // Fetch latest prices for all holdings
-    portfolio.forEach(h => {
-      getLatestPrice(h.symbol);
+    fetchData();
+  }, [fetchData]);
+
+  // Export Portfolio Data
+  const handleExport = async (format) => {
+    try {
+      const blob = await portfolioAPI.exportPortfolioData(format);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `portfolio-export.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError('Failed to export data');
+    }
+  };
+
+  // Filter Logic
+  const filteredPositions = useMemo(() => {
+    return positions.filter(p => {
+      const matchesSearch = !positionFilters.search || p.symbol.toLowerCase().includes(positionFilters.search.toLowerCase());
+      return (positionFilters.status === 'all' || p.status === positionFilters.status) && matchesSearch;
     });
+  }, [positions, positionFilters]);
 
-    // Mock performance history based on portfolio size
-    const data = Array.from({ length: 30 }, (_, i) => ({
-      date: `Week ${i + 1}`,
-      value: (totalInvested || 2000000) + (Math.random() - 0.2) * 50000 + (i * 10000)
-    }));
-    setPerformanceData(data);
-  }, [portfolio]);
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      const matchesSearch = !transactionFilters.search || t.symbol.toLowerCase().includes(transactionFilters.search.toLowerCase());
+      return (transactionFilters.type === 'all' || t.type === transactionFilters.type) && matchesSearch;
+    });
+  }, [transactions, transactionFilters]);
 
-  const allocationData = portfolio.length > 0 
-    ? portfolio.map(h => ({ name: h.symbol, value: Math.round((h.qty * (prices[h.symbol] || h.avg) / (currentValue || 1)) * 100) }))
-    : [{ name: 'Empty', value: 100 }];
+  // Chart Configs
+  const allocationConfig = useMemo(() => ({
+    data: allocationData,
+    angleField: 'value',
+    colorField: 'name',
+    radius: 0.8,
+    innerRadius: 0.6,
+    label: { type: 'spider', content: '{name}: {percentage}%' },
+  }), [allocationData]);
+
+  const riskDistributionConfig = useMemo(() => ({
+    data: [
+      { type: 'Low Risk', value: 60 },
+      { type: 'Medium Risk', value: 30 },
+      { type: 'High Risk', value: 10 }
+    ],
+    angleField: 'value',
+    colorField: 'type',
+    radius: 0.8,
+    color: ['#52c41a', '#faad14', '#ff4d4f'],
+  }), []);
+
+  const pnlConfig = useMemo(() => ({
+    data: pnlData,
+    xField: 'date',
+    yField: 'pnl',
+    smooth: true,
+    yAxis: { label: { formatter: (v) => `$${v}` } },
+  }), [pnlData]);
+
+  // Column Definitions
+  const positionColumns = [
+    { title: 'Asset', dataIndex: 'symbol', key: 'symbol', render: (s) => <strong>{s}</strong> },
+    { title: 'Quantity', dataIndex: 'qty', align: 'right', render: (q) => q.toFixed(4) },
+    { title: 'Avg Price', dataIndex: 'avg_entry_price', align: 'right', render: (p) => `$${p?.toLocaleString()}` },
+    { title: 'Market Value', dataIndex: 'market_value', align: 'right', render: (v) => `$${v?.toLocaleString()}` },
+    { title: 'P&L', dataIndex: 'pnl_unrealized', align: 'right', render: (pnl, r) => (
+      <Text type={pnl >= 0 ? "success" : "danger"}>${pnl?.toLocaleString()} ({r.pnl_pct?.toFixed(2)}%)</Text>
+    )},
+    { title: 'Allocation', dataIndex: 'allocation', render: (_, r) => <Progress percent={Math.round((r.market_value / (portfolioData.total_value || 1)) * 100)} size="small" /> }
+  ];
+
+  const transactionColumns = [
+    { title: 'Date', dataIndex: 'timestamp', render: (t) => new Date(t).toLocaleDateString() },
+    { title: 'Asset', dataIndex: 'symbol' },
+    { title: 'Type', dataIndex: 'type', render: (t) => <Tag color={t === 'buy' ? 'green' : 'red'}>{t.toUpperCase()}</Tag> },
+    { title: 'Price', dataIndex: 'price', align: 'right', render: (p) => `$${p?.toLocaleString()}` },
+    { title: 'Status', dataIndex: 'status', render: (s = 'completed') => <Tag color="green">{s.toUpperCase()}</Tag> }
+  ];
 
   return (
-    <PortfolioContainer className="page-container">
-      <div className="stats-row">
-        <StatCard>
-          <div className="label">Total Portfolio Value</div>
-          <div className="value">₹{currentValue.toLocaleString()}</div>
-          <div className="change {totalPnL >= 0 ? 'positive' : 'negative'}">
-            {totalPnL >= 0 ? <FiArrowUpRight /> : <FiArrowDownRight />}
-            ₹{Math.abs(totalPnL).toLocaleString()} ({pnlPct.toFixed(2)}%)
-          </div>
-        </StatCard>
-        <StatCard>
-          <div className="label">Invested Value</div>
-          <div className="value">₹{totalInvested.toLocaleString()}</div>
-          <div className="change" style={{ color: 'var(--text-tertiary)' }}>Across {portfolio.length} assets</div>
-        </StatCard>
-        <StatCard>
-          <div className="label">Available Cash</div>
-          <div className="value">₹12,45,000</div>
-          <div className="change positive"><FiTrendingUp /> Healthy Coverage</div>
-        </StatCard>
-        <StatCard>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="label">Management</div>
-            <button 
-              onClick={clearPortfolio}
-              style={{ background: 'rgba(255,59,48,0.1)', border: '1px solid var(--accent-red)', color: 'var(--accent-red)', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer' }}
-            >Ditch All</button>
-          </div>
-          <div className="value" style={{ fontSize: '18px', marginTop: '5px' }}>Self-Directed</div>
-          <div className="change" style={{ color: 'var(--text-tertiary)' }}>Personalized Strategy</div>
-        </StatCard>
-      </div>
-      
-      <div className="chart-card">
-        <SectionTitle><FiTrendingUp /> Cumulative Performance</SectionTitle>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={performanceData}>
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0088FE" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#0088FE" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-            <XAxis dataKey="date" hide />
-            <YAxis domain={['auto', 'auto']} stroke="#666" fontSize={11} />
-            <Tooltip contentStyle={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '4px' }} />
-            <Area type="monotone" dataKey="value" stroke="#0088FE" fillOpacity={1} fill="url(#colorValue)" strokeWidth={2} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-      
-      <div className="chart-card">
-        <SectionTitle><FiPieChart /> Asset Allocation</SectionTitle>
-        <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-          <ResponsiveContainer width="50%" height={250}>
-            <PieChart>
-              <Pie
-                data={allocationData}
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {allocationData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ flex: 1, paddingLeft: '20px' }}>
-            {allocationData.length > 0 && allocationData[0].name !== 'Empty' ? allocationData.map((item, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: COLORS[i % COLORS.length] }}></div>
-                  {item.name}
-                </span>
-                <span style={{ fontWeight: '600' }}>{item.value}%</span>
-              </div>
-            )) : <div style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>Add assets to see allocation</div>}
-          </div>
+    <div className="portfolio-page">
+      <div className="portfolio-header">
+        <Title level={2}>Portfolio Overview</Title>
+        <div className="header-controls">
+          <Dropdown menu={{ items: [
+            { key: 'csv', label: 'Export as CSV', onClick: () => handleExport('csv') },
+            { key: 'pdf', label: 'Export as PDF', onClick: () => handleExport('pdf') }
+          ] }}>
+            <Button icon={<DownloadOutlined />}>Export <DownOutlined /></Button>
+          </Dropdown>
+          <Button icon={<SyncOutlined />} onClick={fetchData} loading={Object.values(loading).some(l => l)}>Refresh</Button>
         </div>
       </div>
+
+      {!loading.summary ? (
+        <Row gutter={[24, 24]} className="summary-cards">
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="summary-card">
+              <Statistic title="Total Value" value={portfolioData.total_value} precision={2} prefix={<DollarCircleOutlined />} />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="summary-card">
+              <Statistic title="Daily P&L" value={portfolioData.unrealized_pnl} precision={2} suffix="%" valueStyle={{ color: portfolioData.unrealized_pnl >= 0 ? '#52c41a' : '#ff4d4f' }} />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="summary-card">
+              <Statistic title="Cash Balance" value={portfolioData.cash_balance} precision={2} />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="summary-card">
+              <Statistic title="Sharpe Ratio" value={riskMetrics.sharpe_ratio} precision={2} />
+            </Card>
+          </Col>
+        </Row>
+      ) : <Spin size="large" className="loading-container" />}
+
+      <Card className="portfolio-content-card">
+        <Tabs activeKey={activeTab} onChange={setActiveTab} tabBarExtraContent={
+          <Space>
+            {activeTab === 'overview' && <Select value={allocationGroupBy} onChange={setAllocationGroupBy} options={[{ value: 'asset', label: 'By Asset' }]} />}
+            {activeTab === 'pnl' && <Select value={pnlTimeframe} onChange={setPnlTimeframe} options={[{ value: '30d', label: 'Last 30 Days' }]} />}
+            {(activeTab === 'positions' || activeTab === 'transactions') && <Search placeholder="Search..." onSearch={(v) => activeTab === 'positions' ? setPositionFilters(p => ({ ...p, search: v })) : setTransactionFilters(p => ({ ...p, search: v }))} />}
+          </Space>
+        }>
+          <TabPane tab={<span><PieChartOutlined />Overview</span>} key="overview">
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={12}><Card title="Asset Allocation">{loading.allocation ? <Spin /> : <Pie {...allocationConfig} height={300} />}</Card></Col>
+              <Col xs={24} lg={12}>
+                <Card title="Risk Distribution">
+                  {loading.risk ? <Spin /> : (
+                    <div className="risk-charts">
+                      <Pie {...riskDistributionConfig} height={200} />
+                      <div className="risk-metrics" style={{ marginTop: 16 }}>
+                        <Space direction="vertical" style={{ width: '100%' }}>
+                          <div className="risk-item"><span>Sharpe:</span> <strong>{riskMetrics.sharpe_ratio?.toFixed(2)}</strong></div>
+                          <div className="risk-item"><span>Max Drawdown:</span> <strong style={{ color: '#ff4d4f' }}>{riskMetrics.max_drawdown?.toFixed(2)}%</strong></div>
+                          <div className="risk-item"><span>VaR (95%):</span> <strong>${riskMetrics.var_95?.toLocaleString()}</strong></div>
+                        </Space>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              </Col>
+              <Col xs={24}>
+                <Card title="Performance Summary">
+                  <Row gutter={16} style={{ textAlign: 'center' }}>
+                    <Col span={6}><Statistic title="1 Month" value={5.2} suffix="%" valueStyle={{ color: '#3f8600' }} /></Col>
+                    <Col span={6}><Statistic title="3 Month" value={12.4} suffix="%" valueStyle={{ color: '#3f8600' }} /></Col>
+                    <Col span={6}><Statistic title="YTD" value={18.1} suffix="%" valueStyle={{ color: '#3f8600' }} /></Col>
+                    <Col span={6}><Statistic title="Annualized" value={22.5} suffix="%" valueStyle={{ color: '#3f8600' }} /></Col>
+                  </Row>
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          <TabPane tab={<span><LineChartOutlined />P&L Analysis</span>} key="pnl">
+            <Row gutter={[24, 24]}>
+              <Col xs={24}><Card title="Portfolio Performance Over Time">{loading.pnl ? <Spin /> : <Line {...pnlConfig} height={400} />}</Card></Col>
+              <Col xs={24} lg={12}>
+                <Card title="Top Performers">
+                  <Table dataSource={positions.filter(p => p.pnl_unrealized > 0).sort((a,b) => b.pnl_unrealized - a.pnl_unrealized).slice(0, 5)} columns={[{ title: 'Asset', dataIndex: 'symbol' }, { title: 'P&L', dataIndex: 'pnl_unrealized', render: v => <Text type="success">+${v?.toLocaleString()}</Text> }]} pagination={false} size="small" />
+                </Card>
+              </Col>
+              <Col xs={24} lg={12}>
+                <Card title="Underperformers">
+                  <Table dataSource={positions.filter(p => p.pnl_unrealized < 0).sort((a,b) => a.pnl_unrealized - b.pnl_unrealized).slice(0, 5)} columns={[{ title: 'Asset', dataIndex: 'symbol' }, { title: 'P&L', dataIndex: 'pnl_unrealized', render: v => <Text type="danger">${v?.toLocaleString()}</Text> }]} pagination={false} size="small" />
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          <TabPane tab={<span><BarChartOutlined />Positions</span>} key="positions">
+             <Table columns={positionColumns} dataSource={filteredPositions} rowKey="symbol" />
+          </TabPane>
+          <TabPane tab={<span><HistoryOutlined />Transactions</span>} key="transactions">
+            <Table columns={transactionColumns} dataSource={filteredTransactions} rowKey="id" />
+          </TabPane>
+        </Tabs>
+      </Card>
       
-      <div className="holdings-card">
-        <SectionTitle><FiBriefcase /> Your Tracked Portfolio</SectionTitle>
-        {portfolio.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-tertiary)' }}>
-            <FiBriefcase size={40} style={{ marginBottom: '15px' }} />
-            <p>Your portfolio is empty. Add stocks from the trading terminal.</p>
-          </div>
-        ) : (
-          <HoldingsTable>
-            <thead>
-              <tr>
-                <th>Instrument</th>
-                <th>Qty</th>
-                <th>Avg. Cost</th>
-                <th>Current Price</th>
-                <th>P&L</th>
-                <th>P&L %</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {portfolio.map((h, i) => {
-                const current = prices[h.symbol] || h.avg;
-                const pnl = (current - h.avg) * h.qty;
-                const pnlP = ((current - h.avg) / h.avg) * 100;
-                return (
-                  <tr key={h.symbol}>
-                    <td>
-                      <div className="symbol">{h.symbol}</div>
-                      <div className="name">User Selected Asset</div>
-                    </td>
-                    <td>{h.qty}</td>
-                    <td>₹{h.avg.toLocaleString()}</td>
-                    <td>₹{current.toLocaleString()}</td>
-                    <td className={pnl >= 0 ? 'positive' : 'negative'}>
-                      {pnl >= 0 ? '+' : ''}₹{Math.abs(pnl).toLocaleString()}
-                    </td>
-                    <td className={pnl >= 0 ? 'positive' : 'negative'}>
-                      {pnlP >= 0 ? '+' : ''}{pnlP.toFixed(2)}%
-                    </td>
-                    <td>
-                      <button 
-                        onClick={() => removeFromPortfolio(h.symbol)}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--accent-red)', cursor: 'pointer' }}
-                      >Remove</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </HoldingsTable>
-        )}
-      </div>
-    </PortfolioContainer>
+      {error && <Alert message="Error" description={error} type="error" showIcon closable onClose={() => setError(null)} style={{ marginTop: 16 }} />}
+    </div>
   );
 };
 

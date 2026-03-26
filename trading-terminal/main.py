@@ -2,6 +2,13 @@ import logging
 from flask import Flask, jsonify
 from flask_cors import CORS
 from api.endpoints.market import market_bp
+from api.endpoints.dashboard import dashboard_bp
+from api.endpoints.trading import trading_bp
+from api.endpoints.portfolio import portfolio_bp
+from api.endpoints.risk import risk_bp
+from api.endpoints.signals import signals_bp
+from api.endpoints.global_market import global_market_bp
+from api.endpoints.wealth import wealth_bp
 from api.endpoints.backtest import backtest_bp
 from api.endpoints.backtrader import backtrader_bp
 from api.endpoints.zipline_api import zipline_bp
@@ -28,12 +35,33 @@ from api.endpoints.indian_brokers_api import indian_brokers_bp
 from api.endpoints.alerts_api import alerts_bp
 from api.endpoints.copilot_api import copilot_bp
 from api.endpoints.autonomous import autonomous_bp
+from api.endpoints.analytics import analytics_bp
+from api.endpoints.news import news_bp
+from api.endpoints.stock_analysis import stock_analysis_bp
+from api.endpoints.trading_engine import trading_engine_bp
+from api.endpoints.quant_engine import quant_engine_bp
+from api.endpoints.ai_agent import ai_agent_bp
+from api.endpoints.settings import settings_bp
+from api.endpoints.sip import sip_bp
 
 app = Flask(__name__)
 CORS(app)
 
 # Register Blueprints
 app.register_blueprint(market_bp, url_prefix='/api')
+app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
+app.register_blueprint(trading_bp, url_prefix='/api/trading')
+app.register_blueprint(portfolio_bp, url_prefix='/api/portfolio')
+app.register_blueprint(risk_bp, url_prefix='/api/risk')
+app.register_blueprint(stock_analysis_bp, url_prefix='/api/stocks')
+app.register_blueprint(trading_engine_bp, url_prefix='/api/trading-engine')
+app.register_blueprint(quant_engine_bp, url_prefix='/api/quant-engine')
+app.register_blueprint(ai_agent_bp, url_prefix='/api/ai-agent')
+app.register_blueprint(settings_bp, url_prefix='/api/settings')
+app.register_blueprint(sip_bp, url_prefix='/api/sip')
+app.register_blueprint(signals_bp, url_prefix='/api/signals')
+app.register_blueprint(global_market_bp, url_prefix='/api/global-market')
+app.register_blueprint(wealth_bp, url_prefix='/api/wealth')
 app.register_blueprint(autonomous_bp, url_prefix='/api/autonomous')
 app.register_blueprint(backtest_bp, url_prefix='/api/backtest')
 app.register_blueprint(backtrader_bp, url_prefix='/api/backtrader')

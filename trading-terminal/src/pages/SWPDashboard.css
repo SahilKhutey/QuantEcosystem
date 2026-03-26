@@ -1,0 +1,326 @@
+/* src/pages/SWPDashboard.css */
+.swp-dashboard {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.swp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.swp-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.summary-cards {
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.current-value {
+  border-left: 4px solid #1890ff;
+}
+
+.withdrawal-rate {
+  border-left: 4px solid #52c41a;
+}
+
+.sustainability-period {
+  border-left: 4px solid #faad14;
+}
+
+.success-rate {
+  border-left: 4px solid #722ed1;
+}
+
+.max-drawdown {
+  border-left: 4px solid #13c2c2;
+}
+
+.sustainability-score {
+  border-left: 4px solid #52c41a;
+}
+
+.summary-change {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.summary-change .positive {
+  color: #52c41a;
+}
+
+.summary-change .negative {
+  color: #ff4d4f;
+}
+
+.swp-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.performance-card, .performance-metrics-card, .allocation-card, 
+.withdrawal-history-card, .performance-analysis-card, 
+.risk-metrics-card, .trade-statistics-card, 
+.withdrawal-analysis-card, .projections-card, 
+.projection-summary-card, .sensitivity-card, 
+.assumptions-card, .account-settings-card, 
+.account-summary-card, .account-security-card, 
+.sustainability-analysis-card, .sustainability-card, 
+.strategy-analysis-card, .simulation-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.account-selection-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.account-selection {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.account-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.account-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: left;
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-name {
+  font-weight: 500;
+}
+
+.account-description {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.account-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.performance-metrics, .risk-metrics, .trade-statistics, 
+.contribution-metrics, .projection-summary, 
+.sensitivity-analysis, .account-summary, 
+.sustainability-metrics, .sustainability-analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.metric-item, .stat-item, .summary-item, .sensitivity-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-label, .stat-label, .summary-label, .sensitivity-label {
+  font-weight: 500;
+}
+
+.metric-value, .stat-value, .summary-value, .sensitivity-value {
+  font-weight: 600;
+}
+
+.metric-value.positive {
+  color: #52c41a;
+}
+
+.metric-value.negative {
+  color: #ff4d4f;
+}
+
+.performance-analysis {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.performance-charts, .drawdown-chart {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.chart-title {
+  margin: 0 0 16px 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.allocation-content {
+  padding: 16px;
+  text-align: center;
+}
+
+.contribution-analysis {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.contribution-charts, .contribution-metrics {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.account-settings {
+  padding: 16px;
+}
+
+.account-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.account-security {
+  padding: 16px;
+}
+
+.security-item {
+  display: flex;
+  gap: 8px;
+}
+
+.chart-loading, .table-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.chart-loading p, .loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .swp-dashboard {
+    padding: 16px;
+  }
+  
+  .swp-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-controls {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .summary-cards {
+    margin-bottom: 16px;
+  }
+  
+  .account-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .performance-analysis {
+    grid-template-columns: 1fr;
+  }
+  
+  .contribution-analysis {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .swp-dashboard {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .swp-content-card, .performance-card, .performance-metrics-card, 
+  .allocation-card, .contribution-history-card, .performance-analysis-card, 
+  .risk-metrics-card, .trade-statistics-card, .contribution-analysis-card, 
+  .projections-card, .projection-summary-card, .sensitivity-card, 
+  .assumptions-card, .account-settings-card, .account-summary-card, 
+  .account-security-card, .sustainability-analysis-card, 
+  .sustainability-card, .strategy-analysis-card, .simulation-card, 
+  .account-selection-card {
+    background-color: #262626 !important;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .account-item, .metric-item, .stat-item, .summary-item, 
+  .sensitivity-item, .contribution-item {
+    background-color: #262626;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .account-item:hover {
+    background-color: #333333;
+  }
+  
+  .metric-label, .stat-label, .summary-label, .sensitivity-label {
+    color: #ffffff;
+  }
+  
+  .metric-value, .stat-value, .summary-value, .sensitivity-value {
+    color: #e6e6e6;
+  }
+  
+  .metric-value.positive {
+    color: #52c41a;
+  }
+  
+  .metric-value.negative {
+    color: #ff4d4f;
+  }
+}

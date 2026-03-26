@@ -1,0 +1,115 @@
+/* src/pages/SIPDashboard.css */
+.sip-dashboard {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.sip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.sip-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.summary-cards {
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.summary-card.total-investment { border-left: 4px solid #1890ff; }
+.summary-card.current-value { border-left: 4px solid #52c41a; }
+.summary-card.roi { border-left: 4px solid #faad14; }
+.summary-card.risk { border-left: 4px solid #722ed1; }
+.summary-card.contributions { border-left: 4px solid #13c2c2; }
+.summary-card.profit-factor { border-left: 4px solid #52c41a; }
+
+.summary-change {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #8c8c8c;
+}
+
+.summary-change .positive { color: #52c41a; }
+.summary-change .negative { color: #ff4d4f; }
+
+.sip-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.performance-card, .performance-metrics-card, .allocation-card, 
+.contribution-history-card, .performance-analysis-card, .projections-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.metric-item, .stat-item, .sensitivity-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.metric-label, .stat-label, .sensitivity-label { font-weight: 500; }
+.metric-value, .stat-value, .sensitivity-value { font-weight: 600; }
+
+.chart-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sip-dashboard { padding: 16px; }
+  .sip-header { flex-direction: column; align-items: stretch; }
+  .summary-cards { margin-bottom: 16px; }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .sip-dashboard { background-color: #1a1a1a; color: #ffffff; }
+  .sip-content-card, .performance-card, .performance-metrics-card, 
+  .allocation-card, .contribution-history-card, .projections-card {
+    background-color: #262626 !important; border-color: #434343; color: #ffffff;
+  }
+  .metric-item, .stat-item, .sensitivity-item {
+    background-color: #262626; border-color: #434343; color: #ffffff;
+  }
+  .metric-label, .stat-label { color: #ffffff; }
+  .metric-value, .stat-value { color: #e6e6e6; }
+  .sip-header h1 { color: #fff; }
+  .summary-change { color: #bfbfbf; }
+}

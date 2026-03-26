@@ -1,0 +1,373 @@
+/* src/pages/EquityAnalysisPage.css */
+.equity-analysis-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.equity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.equity-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.summary-cards {
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.current-price {
+  border-left: 4px solid #1890ff;
+}
+
+.fair-value {
+  border-left: 4px solid #52c41a;
+}
+
+.rating {
+  border-left: 4px solid #faad14;
+}
+
+.market-cap {
+  border-left: 4px solid #13c2c2;
+}
+
+.pe-ratio {
+  border-left: 4px solid #722ed1;
+}
+
+.factor-score {
+  border-left: 4px solid #52c41a;
+}
+
+.summary-change {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.summary-change .positive {
+  color: #52c41a;
+}
+
+.summary-change .negative {
+  color: #ff4d4f;
+}
+
+.equity-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.financials-card, .company-profile-card, .financials-history-card, 
+.valuation-card, .historical-valuation-card, .peer-group-card, 
+.factor-analysis-card, .factor-exposures-card, .factor-simulation-card, 
+.factor-performance-card, .projections-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.company-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-info h3 {
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.profile-sectors {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-details {
+  padding: 16px;
+}
+
+.financials-content, .valuation-content, .factor-analysis {
+  padding: 16px;
+}
+
+.financials-metrics, .valuation-metrics, .factor-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-item, .valuation-metric-item, .factor-metric-item, .exposure-metric-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.metric-label, .valuation-metric-label, .factor-metric-label, .exposure-metric-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.metric-value, .valuation-metric-value, .factor-metric-value, .exposure-metric-value {
+  font-weight: 600;
+}
+
+.metric-value.positive, .valuation-metric-value.positive, .factor-metric-value.positive, .exposure-metric-value.positive {
+  color: #52c41a;
+}
+
+.metric-value.negative, .valuation-metric-value.negative, .factor-metric-value.negative, .exposure-metric-value.negative {
+  color: #ff4d4f;
+}
+
+.metric-description, .valuation-metric-description, .factor-metric-description, .exposure-metric-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 8px;
+}
+
+.valuation-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.factor-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.exposure-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.valuation-charts, .factor-charts, .financials-charts {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.chart-title {
+  margin: 0 0 16px 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.valuation-percentile {
+  padding: 16px;
+}
+
+.percentile-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.percentile-metric-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.percentile-metric-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.percentile-metric-value {
+  font-weight: 600;
+}
+
+.peer-group-content {
+  padding: 16px;
+}
+
+.peer-group-charts {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.peer-group-metrics {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.peer-company {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.company-symbol {
+  font-weight: 500;
+}
+
+.company-name {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.weight-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.weight-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-loading, .table-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.chart-loading p, .loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .equity-analysis-page {
+    padding: 16px;
+  }
+  
+  .equity-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-controls {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .summary-cards {
+    margin-bottom: 16px;
+  }
+  
+  .financials-metrics, .valuation-metrics, .factor-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .valuation-metrics-grid, .factor-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .weight-inputs {
+    grid-template-columns: 1fr;
+  }
+  
+  .peer-group-charts, .peer-group-metrics {
+    border: none;
+    padding: 0;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .equity-analysis-page {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .equity-content-card, .financials-card, .company-profile-card, 
+  .financials-history-card, .valuation-card, .historical-valuation-card, 
+  .peer-group-card, .factor-analysis-card, .factor-exposures-card, 
+  .factor-simulation-card, .factor-performance-card, .projections-card {
+    background-color: #262626 !important;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .metric-item, .valuation-metric-item, .factor-metric-item, 
+  .exposure-metric-item, .peer-company, .percentile-metric-item {
+    background-color: #262626;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .metric-item:hover, .valuation-metric-item:hover, 
+  .factor-metric-item:hover, .exposure-metric-item:hover {
+    background-color: #333333;
+  }
+  
+  .metric-label, .valuation-metric-label, .factor-metric-label, 
+  .exposure-metric-label, .percentile-metric-label {
+    color: #ffffff;
+  }
+  
+  .metric-value, .valuation-metric-value, .factor-metric-value, 
+  .exposure-metric-value, .percentile-metric-value {
+    color: #e6e6e6;
+  }
+  
+  .metric-value.positive, .valuation-metric-value.positive, 
+  .factor-metric-value.positive, .exposure-metric-value.positive {
+    color: #52c41a;
+  }
+  
+  .metric-value.negative, .valuation-metric-value.negative, 
+  .factor-metric-value.negative, .exposure-metric-value.negative {
+    color: #ff4d4f;
+  }
+}

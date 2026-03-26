@@ -1,56 +1,369 @@
-import React, { useState } from 'react';
-import { FiCpu } from 'react-icons/fi';
-import ModelFusionDashboard from '../components/dashboard/QuantEngine/ModelFusionDashboard';
-import RegimeDetection from '../components/dashboard/QuantEngine/RegimeDetection';
-import StochasticModels from '../components/dashboard/QuantEngine/StochasticModels';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Table, 
+  Tabs, 
+  Select, 
+  Button, 
+  Spin, 
+  Alert,
+  Tag,
+  Space,
+  Tooltip,
+  Progress,
+  Badge,
+  Descriptions,
+  Statistic,
+  Input,
+  Avatar,
+  Divider,
+  Switch,
+  Dropdown,
+  Menu,
+  Modal,
+  Form,
+  DatePicker,
+  Slider,
+  InputNumber,
+  Checkbox,
+  Collapse,
+  List
+} from 'antd';
+import { 
+  ExperimentOutlined,
+  BarChartOutlined,
+  LineChartOutlined,
+  ThunderboltOutlined,
+  CodeOutlined,
+  DatabaseOutlined,
+  SettingOutlined,
+  InfoCircleOutlined,
+  WarningOutlined,
+  FireOutlined,
+  ReloadOutlined,
+  PlayCircleOutlined,
+  StopOutlined,
+  DownloadOutlined,
+  FilterOutlined,
+  SearchOutlined,
+  SaveOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  ExclamationCircleOutlined,
+  DotChartOutlined
+} from '@ant-design/icons';
+import { Line, Column, Pie, Heatmap, DualAxes, Scatter } from '@ant-design/plots';
+import { quantEngineAPI } from '../services/api/quantEngine';
+import './QuantEnginePage.css';
 
-const SYMBOLS = ['NIFTY50', 'BANKNIFTY', 'SENSEX', 'HDFCBANK', 'TCS', 'RELIANCE'];
+const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
+const { confirm } = Modal;
+const { useForm } = Form;
+const { Panel } = Collapse;
 
 const QuantEnginePage = () => {
-  const [symbol, setSymbol] = useState('NIFTY50');
+  // State Management
+  const [strategyTemplates, setStrategyTemplates] = useState([]);
+  const [backtestingResults, setBacktestingResults] = useState({});
+  const [optimizationResults, setOptimizationResults] = useState({});
+  const [strategyParameters, setStrategyParameters] = useState({});
+  const [savedStrategies, setSavedStrategies] = useState([]);
+  const [performanceMetrics, setPerformanceMetrics] = useState({});
+  const [riskMetrics, setRiskMetrics] = useState({});
+  const [loading, setLoading] = useState({
+    templates: true,
+    backtesting: false,
+    optimization: false,
+    strategies: true
+  });
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('editor');
+  const [selectedStrategy, setSelectedStrategy] = useState('mean_reversion');
+  const [isRunning, setIsRunning] = useState(false);
+  const [codeEditorValue, setCodeEditorValue] = useState('class MeanReversionStrategy:\n    def __init__(self, window=20, threshold=2.0):\n        self.window = window\n        self.threshold = threshold\n\n    def generate_signal(self, data):\n        # Bollinger Band Mean Reversion logic\n        rolling_mean = data["close"].rolling(window=self.window).mean()\n        rolling_std = data["close"].rolling(window=self.window).std()\n        upper_band = rolling_mean + (self.threshold * rolling_std)\n        lower_band = rolling_mean - (self.threshold * rolling_std)\n        \n        if data["close"].iloc[-1] > upper_band.iloc[-1]:\n            return "SELL"\n        elif data["close"].iloc[-1] < lower_band.iloc[-1]:\n            return "BUY"\n        return "HOLD"');
+  
+  const [parameterForm] = useForm();
+  const [backtestForm] = useForm();
+  const [optimizationForm] = useForm();
+  
+  const [showBacktestModal, setShowBacktestModal] = useState(false);
+  const [showOptimizationModal, setShowOptimizationModal] = useState(false);
+  const [showParameterModal, setShowParameterModal] = useState(false);
+
+  // Constants
+  const availableSymbols = ['SPY', 'QQQ', 'DIA', 'IWM', 'AAPL', 'MSFT', 'TSLA', 'BTC/USD', 'ETH/USD'];
+  const timeframes = [
+    { value: '1m', label: '1 Minute' },
+    { value: '5m', label: '5 Minutes' },
+    { value: '15m', label: '15 Minutes' },
+    { value: '1h', label: '1 Hour' },
+    { value: '1d', label: '1 Day' }
+  ];
+  const optimizationMethods = [
+    { value: 'grid_search', label: 'Grid Search' },
+    { value: 'random_search', label: 'Random Search' },
+    { value: 'genetic', label: 'Genetic Algorithm' }
+  ];
+  const objectives = [
+    { value: 'sharpe_ratio', label: 'Sharpe Ratio' },
+    { value: 'max_drawdown', label: 'Max Drawdown' },
+    { value: 'net_profit', label: 'Net Profit' }
+  ];
+
+  // Fetch initial data
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  const fetchInitialData = async () => {
+    setLoading(prev => ({ ...prev, templates: true, strategies: true }));
+    try {
+      const [templatesRes, savedRes, paramsRes] = await Promise.all([
+        quantEngineAPI.getStrategyTemplates(),
+        quantEngineAPI.getSavedStrategies(),
+        quantEngineAPI.getStrategyParameters(selectedStrategy)
+      ]);
+      setStrategyTemplates(templatesRes.data || []);
+      setSavedStrategies(savedRes.data || []);
+      setStrategyParameters(paramsRes.data || {});
+    } catch (err) {
+      setError('Failed to fetch initial data');
+    } finally {
+      setLoading(prev => ({ ...prev, templates: false, strategies: false }));
+    }
+  };
+
+  // Run backtesting
+  const runBacktesting = async () => {
+    setIsRunning(true);
+    setLoading(prev => ({ ...prev, backtesting: true }));
+    try {
+      const config = backtestForm.getFieldsValue();
+      const res = await quantEngineAPI.getBacktestingResults(selectedStrategy, config);
+      setBacktestingResults(res.data);
+      setPerformanceMetrics(res.data.metrics || {});
+      setActiveTab('results');
+    } catch (err) {
+      setError('Backtesting job failed');
+    } finally {
+      setIsRunning(false);
+      setLoading(prev => ({ ...prev, backtesting: false }));
+      setShowBacktestModal(false);
+    }
+  };
+
+  // Run optimization
+  const runOptimization = async () => {
+    setIsRunning(true);
+    setLoading(prev => ({ ...prev, optimization: true }));
+    try {
+      const config = optimizationForm.getFieldsValue();
+      const res = await quantEngineAPI.getOptimizationResults(selectedStrategy, config);
+      setOptimizationResults(res.data);
+      setActiveTab('optimization');
+    } catch (err) {
+      setError('Optimization job failed');
+    } finally {
+      setIsRunning(false);
+      setLoading(prev => ({ ...prev, optimization: false }));
+      setShowOptimizationModal(false);
+    }
+  };
+
+  // Plot Configurations
+  const equityCurveConfig = useMemo(() => ({
+    data: backtestingResults.equityCurve || [],
+    xField: 'date',
+    yField: 'equity',
+    smooth: true,
+    lineStyle: { lineWidth: 2, stroke: '#1890ff' },
+    yAxis: { label: { formatter: (v) => `$${(v/1000).toFixed(0)}k` } },
+    tooltip: { formatter: (v) => ({ name: 'Portfolio Value', value: `$${v.equity.toLocaleString()}` }) }
+  }), [backtestingResults.equityCurve]);
 
   return (
-    <div className="page-container" style={{ animation: 'fadeInUp 0.4s ease' }}>
-      <div className="page-header">
-        <div>
-          <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <FiCpu color="var(--accent-purple)" size={22} />
-            Advanced Quant Engine
-          </div>
-          <div className="page-subtitle">
-            ARIMA · LSTM · HMM · Bayesian · Monte Carlo model fusion & regime detection
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Symbol:</span>
-          <select
-            value={symbol}
-            onChange={e => setSymbol(e.target.value)}
-            style={{
-              background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)',
-              borderRadius: 8, padding: '8px 14px', color: 'var(--text-primary)',
-              fontSize: 13, cursor: 'pointer', outline: 'none',
-              fontFamily: 'var(--font-mono)',
-            }}
-          >
-            {SYMBOLS.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <span className="badge badge-purple">
-            <span className="status-dot live" /> 5 Models Active
-          </span>
+    <div className="quant-engine-page">
+      {/* Header Section */}
+      <div className="quant-header">
+        <h1><ExperimentOutlined /> Quantitative Strategy Terminal</h1>
+        <div className="header-controls">
+          <Select 
+            value={selectedStrategy} 
+            onChange={setSelectedStrategy}
+            style={{ width: 220 }}
+            options={strategyTemplates.map(t => ({ value: t.id, label: t.name }))}
+          />
+          <Button type="primary" icon={<PlayCircleOutlined />} onClick={() => setShowBacktestModal(true)} loading={isRunning}>Run Backtest</Button>
+          <Button icon={<SettingOutlined />} onClick={() => setShowOptimizationModal(true)}>Optimize</Button>
+          <Button icon={<SaveOutlined />}>Save Strategy</Button>
         </div>
       </div>
 
-      {/* Model fusion — full width */}
-      <div style={{ marginBottom: 16 }}>
-        <ModelFusionDashboard symbol={symbol} />
-      </div>
+      {/* Strategy Performance Summary */}
+      <Row gutter={[24, 24]} className="metrics-summary">
+        <Col xs={12} lg={6}>
+          <Card className="metric-card"><Statistic title="Sharpe Ratio" value={performanceMetrics.sharpeRatio || 0} precision={2} valueStyle={{ color: '#1890ff' }} /></Card>
+        </Col>
+        <Col xs={12} lg={6}>
+          <Card className="metric-card"><Statistic title="Annualized Return" value={performanceMetrics.annualizedReturn || 0} suffix="%" precision={2} valueStyle={{ color: '#52c41a' }} /></Card>
+        </Col>
+        <Col xs={12} lg={6}>
+          <Card className="metric-card"><Statistic title="Max Drawdown" value={performanceMetrics.maxDrawdown || 0} suffix="%" precision={2} valueStyle={{ color: '#ff4d4f' }} /></Card>
+        </Col>
+        <Col xs={12} lg={6}>
+          <Card className="metric-card"><Statistic title="Profit Factor" value={performanceMetrics.profitFactor || 0} precision={2} /></Card>
+        </Col>
+      </Row>
 
-      {/* Regime + Stochastic side by side */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <RegimeDetection symbol={symbol} />
-        <StochasticModels symbol={symbol} />
-      </div>
+      {/* Main Content Workspace */}
+      <Card className="quant-workspace">
+        <Tabs activeKey={activeTab} onChange={setActiveTab}>
+          {/* Strategy Editor */}
+          <TabPane tab={<span><CodeOutlined /> Strategy Editor</span>} key="editor">
+            <Row gutter={24}>
+              <Col span={16}>
+                <div className="code-editor-container">
+                  <div className="editor-header">
+                    <Tag color="blue">PYTHON 3.9</Tag>
+                    <Space>
+                      <Button size="small" icon={<CopyOutlined />}>Copy</Button>
+                      <Button size="small" icon={<ReloadOutlined />}>Reset</Button>
+                    </Space>
+                  </div>
+                  <textarea 
+                    className="strategy-code-area"
+                    value={codeEditorValue}
+                    onChange={(e) => setCodeEditorValue(e.target.value)}
+                  />
+                </div>
+              </Col>
+              <Col span={8}>
+                <Card title="Strategy Hyperparameters" size="small" extra={<Button type="link" size="small" onClick={() => setShowParameterModal(true)}>Advanced</Button>}>
+                  <Form form={parameterForm} layout="vertical">
+                    <Form.Item label="Lookback Window" name="window"><Slider min={5} max={100} defaultValue={20} /></Form.Item>
+                    <Form.Item label="Std Dev Threshold" name="threshold"><InputNumber step={0.1} style={{ width: '100%' }} defaultValue={2.0} /></Form.Item>
+                    <Form.Item label="Position Sizing (%)" name="sizing"><Slider min={1} max={50} defaultValue={10} /></Form.Item>
+                    <Form.Item label="ATR Stop Multiplier" name="atr_stop"><InputNumber step={0.5} style={{ width: '100%' }} defaultValue={2.5} /></Form.Item>
+                  </Form>
+                </Card>
+                <Card title="Strategy Library" size="small" className="library-card">
+                   <List
+                    size="small"
+                    dataSource={savedStrategies}
+                    renderItem={item => (
+                      <List.Item actions={[<Button type="link" size="small" icon={<EditOutlined />} />]}>
+                        <List.Item.Meta title={item.name} description={item.template} />
+                      </List.Item>
+                    )}
+                  />
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          {/* Backtesting Engine */}
+          <TabPane tab={<span><BarChartOutlined /> Backtest Results</span>} key="results">
+            {loading.backtesting ? <div className="engine-loading"><Spin size="large" tip="Processing quantitative logs..." /></div> : (
+              <Row gutter={[24, 24]}>
+                <Col span={16}>
+                  <Card title="Portfolio Equity Curve"><Line {...equityCurveConfig} height={400} /></Card>
+                </Col>
+                <Col span={8}>
+                  <Card title="Risk Statistics">
+                    <Descriptions column={1} bordered size="small">
+                      <Descriptions.Item label="Volatility (Ann.)">14.2%</Descriptions.Item>
+                      <Descriptions.Item label="VaR (95%)">-$4,250</Descriptions.Item>
+                      <Descriptions.Item label="Sortino Ratio">2.18</Descriptions.Item>
+                      <Descriptions.Item label="Skewness">-0.45</Descriptions.Item>
+                    </Descriptions>
+                  </Card>
+                  <Card title="Trade Distribution" className="distribution-card">
+                     <Statistic title="Total Trades" value={performanceMetrics.totalTrades} />
+                     <Divider />
+                     <Progress percent={performanceMetrics.winRate} success={{ percent: performanceMetrics.winRate }} />
+                     <div style={{ textAlign: 'center', marginTop: 8 }}>Win Rate: {performanceMetrics.winRate}%</div>
+                  </Card>
+                </Col>
+                <Col span={24}>
+                  <Card title="Trade Execution Audit">
+                    <Table 
+                      dataSource={backtestingResults.trades || []} 
+                      size="small"
+                      columns={[
+                        { title: 'Date', dataIndex: 'date' },
+                        { title: 'Action', dataIndex: 'type', render: (t) => <Tag color={t === 'BUY' ? 'green' : 'red'}>{t}</Tag> },
+                        { title: 'Price', dataIndex: 'price', render: (p) => `$${p.toFixed(2)}` },
+                        { title: 'P&L', dataIndex: 'pnl', render: (p) => <span style={{ color: p >= 0 ? '#52c41a' : '#ff4d4f' }}>${p.toFixed(2)}</span> }
+                      ]}
+                      pagination={{ pageSize: 5 }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+            )}
+          </TabPane>
+
+          {/* Parameter Optimization */}
+          <TabPane tab={<span><DotChartOutlined /> Optimization</span>} key="optimization">
+            {loading.optimization ? <div className="engine-loading"><Spin size="large" tip="Executing parallel grid search..." /></div> : (
+              <Row gutter={[24, 24]}>
+                <Col span={24}>
+                  <Row gutter={24}>
+                    <Col span={8}><Card><Statistic title="Optimal Sharpe" value={2.84} precision={2} valueStyle={{ color: '#52c41a' }} /><div className="opt-params">params: window=25, thresh=2.2</div></Card></Col>
+                    <Col span={8}><Card><Statistic title="Optimization Jobs" value={100} /></Card></Col>
+                    <Col span={8}><Card><Statistic title="Search Method" value="Grid Search" /></Card></Col>
+                  </Row>
+                </Col>
+                <Col span={16}>
+                  <Card title="Parameter Sensitivity Heatmap">
+                    <Heatmap 
+                      data={optimizationResults.data || []}
+                      xField="window"
+                      yField="threshold"
+                      colorField="sharpe"
+                      color={['#f6ffed', '#52c41a', '#237804']}
+                      height={400}
+                    />
+                  </Card>
+                </Col>
+                <Col span={8}>
+                  <Card title="Convergence Audit">
+                    <div className="convergence-list">
+                      <div className="conv-item"><span>Iteration 10/100</span><Progress percent={10} size="small" /></div>
+                      <div className="conv-item"><span>Iteration 50/100</span><Progress percent={50} size="small" /></div>
+                      <div className="conv-item"><span>Iteration 95/100</span><Progress percent={95} size="small" /></div>
+                    </div>
+                  </Card>
+                </Col>
+              </Row>
+            )}
+          </TabPane>
+        </Tabs>
+      </Card>
+
+      {/* Modals for configurations */}
+      <Modal title="Configure Backtest Engine" open={showBacktestModal} onOk={runBacktesting} onCancel={() => setShowBacktestModal(false)}>
+        <Form form={backtestForm} layout="vertical">
+          <Form.Item label="Symbol" name="symbol" initialValue="SPY"><Select options={availableSymbols.map(s => ({ value: s, label: s }))} /></Form.Item>
+          <Form.Item label="Resolution" name="timeframe" initialValue="1d"><Select options={timeframes} /></Form.Item>
+          <Form.Item label="Date Range" name="dateRange"><RangePicker style={{ width: '100%' }} /></Form.Item>
+          <Form.Item label="Starting Cash" name="initialCapital" initialValue={100000}><InputNumber style={{ width: '100%' }} /></Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal title="Configure Optimization Job" open={showOptimizationModal} onOk={runOptimization} onCancel={() => setShowOptimizationModal(false)}>
+        <Form form={optimizationForm} layout="vertical">
+          <Form.Item label="Optimization Method" name="method" initialValue="grid_search"><Select options={optimizationMethods} /></Form.Item>
+          <Form.Item label="Objective Function" name="objective" initialValue="sharpe_ratio"><Select options={objectives} /></Form.Item>
+          <Form.Item label="Iterations" name="iterations" initialValue={100}><Slider min={10} max={1000} /></Form.Item>
+        </Form>
+      </Modal>
+
+      {error && <Alert message="Engine Error" description={error} type="error" showIcon closable style={{ marginTop: 16 }} />}
     </div>
   );
 };

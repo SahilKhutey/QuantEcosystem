@@ -1,0 +1,234 @@
+/* src/pages/QuantEnginePage.css */
+.quant-engine-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.quant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.quant-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.performance-cards {
+  margin-bottom: 24px;
+}
+
+.performance-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.performance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.total-return { border-left: 4px solid #52c41a; }
+.sharpe { border-left: 4px solid #1890ff; }
+.max-drawdown { border-left: 4px solid #ff4d4f; }
+.win-rate { border-left: 4px solid #722ed1; }
+.profit-factor { border-left: 4px solid #faad14; }
+.trades { border-left: 4px solid #13c2c2; }
+
+.performance-change {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.performance-change .positive { color: #52c41a; }
+.performance-change .negative { color: #ff4d4f; }
+
+.quant-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.code-editor-card, .parameters-card, .saved-strategies-card, 
+.equity-curve-card, .performance-metrics-card, .risk-metrics-card, 
+.trade-analysis-card, .optimization-results-card, 
+.sensitivity-card, .history-card, .strategy-library-card, 
+.categories-card, .popular-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.code-editor {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.code-input {
+  width: 100%;
+  height: 400px;
+  padding: 16px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  border: none;
+  resize: none;
+}
+
+.saved-strategies {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.strategy-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+}
+
+.strategy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.strategy-name { font-weight: 500; }
+.strategy-date { font-size: 0.9rem; color: #666; }
+.strategy-actions { display: flex; gap: 8px; }
+
+.performance-metrics, .risk-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.metric-item:last-child { border-bottom: none; }
+.metric-label { font-weight: 500; color: #1a1a1a; }
+.metric-value { font-weight: 600; }
+.metric-value.positive { color: #52c41a; }
+.metric-value.negative { color: #ff4d4f; }
+
+.trade-distribution, .drawdown-analysis { padding: 16px; }
+.trade-distribution h3, .drawdown-analysis h3 { margin: 0 0 16px 0; text-align: center; }
+
+.optimization-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.best-parameters, .optimization-metrics {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.sensitivity-analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sensitivity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sensitivity-item:last-child { border-bottom: none; }
+.parameter-name { font-weight: 500; }
+.sensitivity-value { display: flex; align-items: center; gap: 8px; }
+
+.optimization-history {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.history-iteration { font-weight: 500; margin-bottom: 4px; }
+.history-objective, .history-parameters { font-size: 0.9rem; color: #666; margin-bottom: 2px; }
+
+.convergence-chart, .parameter-space { padding: 16px; }
+
+.strategy-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.category-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.category-name { font-weight: 600; margin-bottom: 4px; }
+.category-count { font-size: 0.9rem; color: #1890ff; margin-bottom: 8px; }
+.category-description { font-size: 0.9rem; color: #666; }
+
+.strategy-description { font-size: 0.9rem; color: #666; }
+.strategy-stats { display: flex; flex-direction: column; gap: 4px; text-align: right; }
+.stat-item { display: flex; justify-content: space-between; font-size: 0.9rem; }
+.stat-label { color: #666; margin-right: 8px; }
+
+.chart-loading, .table-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .quant-engine-page { background-color: #1a1a1a; color: #ffffff; }
+  .performance-card, .quant-content-card, .code-editor-card, 
+  .parameters-card, .saved-strategies-card, .equity-curve-card, 
+  .performance-metrics-card, .risk-metrics-card, .trade-analysis-card, 
+  .optimization-results-card, .sensitivity-card, .history-card, 
+  .strategy-library-card, .categories-card, .popular-card {
+    background-color: #262626 !important; border-color: #434343; color: #ffffff;
+  }
+  .strategy-item, .metric-item, .sensitivity-item, .history-item, .category-item {
+    background-color: #262626; border-color: #434343; color: #ffffff;
+  }
+  .strategy-item:hover, .category-item:hover, .history-item:hover { background-color: #333333; }
+  .metric-label, .parameter-name, .strategy-name, .category-name, .history-iteration { color: #ffffff; }
+  .strategy-date, .history-objective, .history-parameters, .category-description, .strategy-description, .stat-label { color: #bfbfbf; }
+  .code-input { background-color: #1e1e1e; color: #d4d4d4; }
+}

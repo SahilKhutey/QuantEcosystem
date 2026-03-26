@@ -1,0 +1,265 @@
+/* src/pages/AIAgentPage.css */
+.ai-agent-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.agent-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.status-cards {
+  margin-bottom: 24px;
+}
+
+.status-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.status-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.agent-status { border-left: 4px solid #1890ff; }
+.performance { border-left: 4px solid #52c41a; }
+.positions { border-left: 4px solid #722ed1; }
+.orders { border-left: 4px solid #faad14; }
+.signals { border-left: 4px solid #13c2c2; }
+.uptime { border-left: 4px solid #52c41a; }
+
+.status-change {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-change .positive { color: #52c41a; }
+.status-change .negative { color: #ff4d4f; }
+
+.agent-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.performance-card, .risk-card, .statistics-card, 
+.positions-card, .position-summary-card, 
+.position-distribution-card, .orders-card, 
+.order-stats-card, .recent-orders-card, 
+.logs-card, .log-distribution-card, 
+.errors-card, .config-card, 
+.performance-settings-card, 
+.risk-management-card, 
+.advanced-config-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.agent-statistics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.stat-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-label { font-weight: 500; margin-bottom: 8px; }
+.stat-value { font-size: 1.2rem; font-weight: 600; }
+.stat-value.positive { color: #52c41a; }
+.stat-value.negative { color: #ff4d4f; }
+
+.position-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.summary-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.summary-label { font-weight: 500; margin-bottom: 8px; }
+.summary-value { font-size: 1.2rem; font-weight: 600; }
+.summary-value.positive { color: #52c41a; }
+.summary-value.negative { color: #ff4d4f; }
+
+.position-distribution { padding: 16px; }
+.position-distribution .ant-statistic { text-align: center; }
+
+.alert-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.alert-item:last-child { border-bottom: none; }
+.alert-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.alert-time { font-size: 0.8rem; color: #666; }
+.alert-message { font-size: 0.9rem; color: #333; }
+
+.alert-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.detail-item {
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.85rem;
+}
+
+.order-title { display: flex; align-items: center; gap: 8px; }
+.order-symbol { font-weight: 600; }
+.order-details { display: flex; flex-direction: column; gap: 4px; }
+.order-quantity, .order-price, .order-status, .order-time { font-size: 0.9rem; color: #666; }
+.order-actions { display: flex; gap: 8px; }
+
+.order-statistics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.log-message { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.message-text { max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.log-distribution { padding: 16px; }
+.log-distribution .ant-statistic { text-align: center; }
+
+.error-title { display: flex; align-items: center; gap: 8px; }
+.error-time { font-size: 0.8rem; color: #666; }
+.error-details { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.error-message { font-size: 0.9rem; color: #333; }
+.error-source { font-size: 0.85rem; color: #666; }
+
+.settings-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.setting-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.setting-label { font-weight: 500; margin-bottom: 8px; }
+.setting-value { font-size: 1.2rem; font-weight: 600; }
+
+.log-detail { padding: 16px; }
+.log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.log-level { font-weight: 600; }
+.log-timestamp { color: #666; }
+
+.log-content { display: flex; flex-direction: column; gap: 16px; }
+.log-message, .log-source, .log-details { border: 1px solid #f0f0f0; border-radius: 6px; padding: 16px; }
+.log-details h3 { margin: 0 0 12px 0; }
+.details-table { width: 100%; }
+.log-table { width: 100%; border-collapse: collapse; }
+.detail-key { font-weight: 600; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+.detail-value { padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+
+.chart-loading, .table-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+/* Terminal Design Extension for log inspection */
+.logs-terminal {
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-header {
+  background: #1a1a1a;
+  padding: 8px 16px;
+  border-bottom: 1px solid #333;
+}
+
+.terminal-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 13px;
+  color: #d4d4d4;
+  line-height: 1.6;
+}
+
+.log-line { margin-bottom: 4px; cursor: pointer; transition: background 0.2s; }
+.log-line:hover { background: #1a1a1a; }
+.log-line.critical { color: #fff; background: #ff4d4f33; }
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .ai-agent-page { background-color: #1a1a1a; color: #ffffff; }
+  .status-card, .agent-content-card, .performance-card, 
+  .risk-card, .statistics-card, .positions-card, 
+  .position-summary-card, .position-distribution-card, 
+  .orders-card, .order-stats-card, .recent-orders-card, 
+  .logs-card, .log-distribution-card, .errors-card, 
+  .config-card, .performance-settings-card, 
+  .risk-management-card, .advanced-config-card {
+    background-color: #262626 !important; border-color: #434343; color: #ffffff;
+  }
+  .alert-item, .order-item, .log-item, .stat-item, .summary-item, .setting-item, .log-detail {
+    background-color: #262626; border-color: #434343; color: #ffffff;
+  }
+  .alert-item:hover, .order-item:hover, .log-item:hover { background-color: #333333; }
+  .stat-label, .summary-label, .setting-label, .log-title, .error-title { color: #ffffff; }
+  .stat-value, .summary-value, .setting-value, .log-message, .error-message, .log-details { color: #e6e6e6; }
+  .stat-value.positive { color: #52c41a; }
+  .stat-value.negative { color: #ff4d4f; }
+  .log-table { color: #e6e6e6; }
+  .detail-key { color: #bfbfbf; }
+  .detail-value { color: #e6e6e6; }
+  .decision-box { background: #1a2a1a; border-color: #2b452b; }
+  .decision-text { color: #52c41a; }
+}
+
+@media (max-width: 768px) {
+  .ai-agent-page { padding: 16px; }
+  .agent-header { flex-direction: column; align-items: stretch; }
+  .header-controls { justify-content: flex-end; flex-wrap: wrap; }
+  .status-cards { margin-bottom: 16px; }
+  .agent-statistics, .position-summary, .order-statistics, .settings-group { grid-template-columns: 1fr; }
+}

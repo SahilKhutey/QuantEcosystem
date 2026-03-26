@@ -1,0 +1,100 @@
+/* src/components/Trading/Trading.css */
+.trading-dashboard {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.trading-header {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-title {
+  font-weight: 600;
+  font-size: 24px;
+  color: #262626;
+}
+
+.order-book-row:hover {
+  cursor: pointer;
+  background-color: #f5f5f5;
+}
+
+.order-book-row.bid:hover {
+  background-color: rgba(82, 196, 26, 0.05);
+}
+
+.order-book-row.ask:hover {
+  background-color: rgba(255, 77, 79, 0.05);
+}
+
+.trading-controls {
+  background: #fff;
+}
+
+.trading-main .ant-card {
+  margin-bottom: 24px;
+}
+
+.order-ticket-container {
+  padding: 8px;
+}
+
+.summary-metrics {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+/* Scrollbar styling for tables */
+.ant-table-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ant-table-body::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .trading-dashboard {
+    padding: 12px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .trading-dashboard {
+    background-color: #141414;
+    color: #ffffff;
+  }
+  
+  .trading-header, .ant-card, .trading-controls {
+    background-color: #1f1f1f !important;
+    border-color: #303030;
+  }
+  
+  .dashboard-title {
+    color: #ffffff;
+  }
+  
+  .summary-metrics {
+    background: #262626;
+  }
+  
+  .ant-table {
+    background: #1f1f1f;
+    color: #ffffff;
+  }
+}

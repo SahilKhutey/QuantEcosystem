@@ -5,8 +5,7 @@ import { theme } from './styles/theme';
 import './styles/globals.css';
 import styled from 'styled-components';
 
-import Header from './components/Header/Header';
-import Sidebar from './components/Sidebar/Sidebar';
+import { Sidebar, Header } from './components/Sidebar';
 
 // Page imports
 import DashboardPage from './pages/DashboardPage';
@@ -50,49 +49,59 @@ const AppContainer = styled.div`
   }
 `;
 
+import { Layout } from 'antd';
+import useAppStore from './services/store/appStore';
+
+const { Content } = Layout;
+
 function App() {
+  const { selectedSymbol, setSelectedSymbol } = useAppStore();
+  const [collapsed, setCollapsed] = React.useState(false);
+
   useEffect(() => {
-    // Initialize global data services
-    console.log("Initializing trading terminal data services...");
-    
-    return () => {
-      console.log("Cleaning up data subscriptions");
-    };
+    console.log("Initializing trade terminal metadata...");
   }, []);
   
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <AppContainer>
-          <Sidebar />
-          <div className="main-content">
-            <Header />
-            <Routes>
-              {/* Core Terminal Routes */}
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/trading" element={<TradingPage />} />
-              <Route path="/signals" element={<SignalsPage />} />
-              <Route path="/portfolio" element={<PortfolioPage />} />
-              <Route path="/risk" element={<RiskPage />} />
-              <Route path="/news" element={<NewsPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              
-              {/* Quant Ecosystem Routes */}
-              <Route path="/global-market" element={<GlobalMarketPage />} />
-              <Route path="/stock-analysis" element={<StockAnalysisPage />} />
-              <Route path="/quant-engine" element={<QuantEnginePage />} />
-              <Route path="/ai-agent" element={<AIAgentPage />} />
-              <Route path="/trading-engine" element={<TradingEnginePage />} />
-              
-              {/* Wealth Management Routes */}
-              <Route path="/wealth" element={<GlobalWealthPage />} />
-              <Route path="/wealth/sip" element={<SIPDashboard />} />
-              <Route path="/wealth/swp" element={<SWPDashboard />} />
-              <Route path="/wealth/equity" element={<EquityAnalysisPage />} />
-            </Routes>
-          </div>
-        </AppContainer>
+        <Layout style={{ minHeight: '100vh' }}>
+          <Sidebar collapsed={collapsed} />
+          <Layout>
+            <Header 
+              collapsed={collapsed} 
+              onCollapse={setCollapsed} 
+              selectedSymbol={selectedSymbol}
+              onSymbolChange={setSelectedSymbol}
+            />
+            <Content style={{ padding: '0', background: '#f0f2f5', overflow: 'auto' }}>
+              <Routes>
+                {/* Core Terminal Routes */}
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/trading" element={<TradingPage />} />
+                <Route path="/signals" element={<SignalsPage />} />
+                <Route path="/portfolio" element={<PortfolioPage />} />
+                <Route path="/risk" element={<RiskPage />} />
+                <Route path="/news" element={<NewsPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                
+                {/* Quant Ecosystem Routes */}
+                <Route path="/global-market" element={<GlobalMarketPage />} />
+                <Route path="/stock-analysis" element={<StockAnalysisPage />} />
+                <Route path="/quant-engine" element={<QuantEnginePage />} />
+                <Route path="/ai-agent" element={<AIAgentPage />} />
+                <Route path="/trading-engine" element={<TradingEnginePage />} />
+                
+                {/* Wealth Management Routes */}
+                <Route path="/wealth" element={<GlobalWealthPage />} />
+                <Route path="/wealth/sip" element={<SIPDashboard />} />
+                <Route path="/wealth/swp" element={<SWPDashboard />} />
+                <Route path="/wealth/equity" element={<EquityAnalysisPage />} />
+              </Routes>
+            </Content>
+          </Layout>
+        </Layout>
       </Router>
     </ThemeProvider>
   );

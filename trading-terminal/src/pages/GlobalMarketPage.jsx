@@ -1,838 +1,328 @@
-import React, { useState, useEffect } from 'react';
-import { FiGlobe, FiTrendingUp, FiTrendingDown, FiBarChart2, FiSearch, FiRefreshCw } from 'react-icons/fi';
-import styled from 'styled-components';
-import GlobalMarketMap from '../components/dashboard/GlobalMarketMap/GlobalMarketMap';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useGeoData } from '../services/data/geoData';
-import { useMarketData } from '../services/data/marketData';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Table, 
+  Tabs, 
+  Select, 
+  Button, 
+  Spin, 
+  Alert,
+  Tag,
+  Space,
+  Tooltip,
+  Progress,
+  Badge,
+  Descriptions,
+  Collapse,
+  Timeline,
+  Statistic,
+  Input,
+  Switch,
+  Typography,
+  Avatar,
+  Divider,
+  Drawer
+} from 'antd';
+import { 
+  GlobalOutlined,
+  BarChartOutlined,
+  LineChartOutlined,
+  HeatMapOutlined,
+  FundProjectionScreenOutlined,
+  CalendarOutlined,
+  BankOutlined,
+  GoldOutlined,
+  DollarCircleOutlined,
+  RiseOutlined,
+  FallOutlined,
+  InfoCircleOutlined,
+  ReloadOutlined,
+  PlayCircleOutlined,
+  StopOutlined,
+  SearchOutlined,
+  FilterOutlined,
+  NotificationOutlined,
+  DropboxOutlined,
+  BitcoinOutlined
+} from '@ant-design/icons';
+import { Heatmap, Column, Line, Scatter, RingProgress } from '@ant-design/plots';
+import { globalMarketAPI } from '../services/api/globalMarket';
+import './GlobalMarketPage.css';
 
-const GlobalMarketContainer = styled.div`
-  .global-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
-    }
-    
-    .controls {
-      display: flex;
-      gap: 10px;
-      
-      button {
-        background: var(--secondary-dark);
-        border: 1px solid var(--border-color);
-        color: var(--text-secondary);
-        padding: 8px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        
-        &:hover {
-          background: var(--tertiary-dark);
-        }
-        
-        &.active {
-          background: var(--accent-blue);
-          color: white;
-          border-color: var(--accent-blue);
-        }
-      }
-    }
-  }
-  
-  .map-container {
-    height: 500px;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    border: 1px solid var(--border-color);
-    
-    .map-title {
-      padding: 10px 15px;
-      background: var(--tertiary-dark);
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      
-      h2 {
-        font-size: 18px;
-        font-weight: 600;
-      }
-      
-      .map-controls {
-        display: flex;
-        gap: 10px;
-      }
-    }
-  }
-  
-  .market-regions {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  
-  .region-card {
-    background: var(--secondary-dark);
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    padding: 20px;
-    
-    .region-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      
-      h3 {
-        font-size: 16px;
-        font-weight: 600;
-      }
-      
-      .region-status {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        
-        &.bullish {
-          color: var(--accent-green);
-        }
-        
-        &.bearish {
-          color: var(--accent-red);
-        }
-      }
-    }
-    
-    .region-data {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      
-      .data-item {
-        display: flex;
-        flex-direction: column;
-        
-        .data-value {
-          font-size: 16px;
-          font-weight: 600;
-          
-          &.positive {
-            color: var(--accent-green);
-          }
-          
-          &.negative {
-            color: var(--accent-red);
-          }
-        }
-        
-        .data-label {
-          font-size: 12px;
-          color: var(--text-tertiary);
-        }
-      }
-    }
-    
-    .region-chart {
-      margin-top: 15px;
-      
-      .chart-title {
-        font-size: 14px;
-        color: var(--text-tertiary);
-        margin-bottom: 5px;
-      }
-    }
-  }
-  
-  .global-indicators {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    
-    .indicator-card {
-      background: var(--secondary-dark);
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      padding: 20px;
-      
-      .indicator-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 15px;
-        
-        .icon {
-          width: 40px;
-          height: 40px;
-          background: var(--tertiary-dark);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          
-          svg {
-            font-size: 20px;
-          }
-        }
-        
-        h3 {
-          font-size: 16px;
-          font-weight: 600;
-        }
-      }
-      
-      .indicator-value {
-        font-size: 24px;
-        font-weight: 700;
-        margin-bottom: 5px;
-      }
-      
-      .indicator-change {
-        font-size: 14px;
-        color: var(--text-tertiary);
-        
-        &.positive {
-          color: var(--accent-green);
-        }
-        
-        &.negative {
-          color: var(--accent-red);
-        }
-      }
-    }
-  }
-  
-  .market-trends {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 20px;
-    
-    .trend-card {
-      background: var(--secondary-dark);
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      padding: 20px;
-      
-      .trend-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        
-        h3 {
-          font-size: 16px;
-          font-weight: 600;
-        }
-        
-        .trend-status {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          
-          &.bullish {
-            color: var(--accent-green);
-          }
-          
-          &.bearish {
-            color: var(--accent-red);
-          }
-        }
-      }
-      
-      .trend-chart {
-        height: 200px;
-      }
-    }
-  }
-  
-  .market-events {
-    margin-top: 20px;
-    
-    .events-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      
-      h2 {
-        font-size: 18px;
-        font-weight: 600;
-      }
-      
-      .event-filters {
-        display: flex;
-        gap: 10px;
-        
-        button {
-          background: var(--tertiary-dark);
-          border: 1px solid var(--border-color);
-          color: var(--text-tertiary);
-          padding: 4px 10px;
-          border-radius: 4px;
-          cursor: pointer;
-          
-          &.active {
-            background: var(--accent-blue);
-            color: white;
-          }
-        }
-      }
-    }
-    
-    .event-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 15px;
-      
-      .event-card {
-        background: var(--tertiary-dark);
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        padding: 15px;
-        
-        .event-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 10px;
-          
-          .event-title {
-            font-weight: 600;
-            color: var(--text-primary);
-          }
-          
-          .event-impact {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            
-            &.high {
-              color: var(--accent-red);
-            }
-            
-            &.medium {
-              color: var(--accent-yellow);
-            }
-            
-            &.low {
-              color: var(--accent-green);
-            }
-          }
-        }
-        
-        .event-details {
-          font-size: 12px;
-          color: var(--text-tertiary);
-          line-height: 1.4;
-          margin-bottom: 10px;
-        }
-        
-        .event-meta {
-          display: flex;
-          justify-content: space-between;
-          font-size: 11px;
-          color: var(--text-tertiary);
-        }
-      }
-    }
-  }
-`;
+const { TabPane } = Tabs;
+const { Panel } = Collapse;
+const { Title, Text } = Typography;
+const { Search } = Input;
 
 const GlobalMarketPage = () => {
-  const { getMarketEvents, subscribeToEvents } = useGeoData();
-  const { getLatestPrice } = useMarketData();
-  const [marketEvents, setMarketEvents] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
-  const [eventFilter, setEventFilter] = useState('all');
-  const [globalData, setGlobalData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // State Management
+  const [globalOverview, setGlobalOverview] = useState({ 
+    sp500: { price: 5200.5, change24h: 45.3, change24hPct: 0.85 },
+    nasdaq: { price: 16400.2, change24h: 195.4, change24hPct: 1.20 },
+    dow: { price: 39400.1, change24h: 120.5, change24hPct: 0.31 },
+    gold: { price: 2170.5, change24h: 12.4, change24hPct: 0.57 },
+    oil: { price: 81.2, change24h: -0.65, change24hPct: -0.80 },
+    bitcoin: { price: 65000.0, change24h: 1200.5, change24hPct: 1.88 },
+    usdIndex: { value: 104.2, change24h: 0.15 },
+    portfolioCorrelation: 0.45
+  });
+  const [correlations, setCorrelations] = useState([]);
+  const [macroeconomicData, setMacroeconomicData] = useState({});
+  const [marketSentiment, setMarketSentiment] = useState({ fearGreedIndex: 72, fearGreedLabel: 'Greed', fearGreedDescription: 'Market participants are optimistic.' });
+  const [economicCalendar, setEconomicCalendar] = useState([]);
+  const [sectorPerformance, setSectorPerformance] = useState([]);
+  const [commodityPrices, setCommodityPrices] = useState([]);
+  const [currencyData, setCurrencyData] = useState([]);
+  const [bondYields, setBondYields] = useState([]);
+  const [volatilitySurface, setVolatilitySurface] = useState({ surface: [] });
+  const [centralBankPolicies, setCentralBankPolicies] = useState([]);
+  const [loading, setLoading] = useState({ overview: true, correlations: true, macro: true, sentiment: true, calendar: true, sectors: true, commodities: true, currencies: true, bonds: true, volatility: true, policies: true });
   const [error, setError] = useState(null);
-  const [activeRegion, setActiveRegion] = useState(null);
-  const [timeframe, setTimeframe] = useState('24h');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState('global');
+  const [marketNews, setMarketNews] = useState([]);
+  const [correlationFilters, setCorrelationFilters] = useState({ assets: ['SPY', 'TLT', 'GLD', 'USO', 'BTC/USD'], timeframe: '30d' });
+  const [sentimentFilters, setSentimentFilters] = useState({ assets: ['SPY', 'QQQ', 'BTC'] });
+  const [newsDrawerVisible, setNewsDrawerVisible] = useState(false);
 
-  // Mock global market data
-  const mockGlobalData = {
-    regions: {
-      north_america: {
-        id: 'north_america',
-        name: 'North America',
-        lat: 37.0902,
-        lng: -95.7129,
-        index: 'S&P 500',
-        index_value: 4567.89,
-        change: 1.2,
-        status: 'Bullish',
-        market_hours: '9:30 AM - 4:00 PM ET',
-        currency: 'USD',
-        data: [
-          { name: 'Jan', value: 4000 },
-          { name: 'Feb', value: 4100 },
-          { name: 'Mar', value: 4200 },
-          { name: 'Apr', value: 4300 },
-          { name: 'May', value: 4400 },
-          { name: 'Jun', value: 4500 }
-        ]
-      },
-      europe: {
-        id: 'europe',
-        name: 'Europe',
-        lat: 54.5260,
-        lng: 15.2551,
-        index: 'STOXX 50',
-        index_value: 4567.89,
-        change: 0.5,
-        status: 'Moderate',
-        market_hours: '8:00 AM - 5:30 PM CET',
-        currency: 'EUR',
-        data: [
-          { name: 'Jan', value: 4000 },
-          { name: 'Feb', value: 4050 },
-          { name: 'Mar', value: 4100 },
-          { name: 'Apr', value: 4150 },
-          { name: 'May', value: 4200 },
-          { name: 'Jun', value: 4250 }
-        ]
-      },
-      asia: {
-        id: 'asia',
-        name: 'Asia',
-        lat: 33.9992,
-        lng: 136.5985,
-        index: 'Nikkei 225',
-        index_value: 32145.67,
-        change: -0.2,
-        status: 'Bearish',
-        market_hours: '9:00 AM - 3:00 PM JST',
-        currency: 'JPY',
-        data: [
-          { name: 'Jan', value: 30000 },
-          { name: 'Feb', value: 30500 },
-          { name: 'Mar', value: 31000 },
-          { name: 'Apr', value: 31500 },
-          { name: 'May', value: 32000 },
-          { name: 'Jun', value: 32145 }
-        ]
-      },
-      emerging_markets: {
-        id: 'emerging_markets',
-        name: 'Emerging Markets',
-        lat: 20.5937,
-        lng: 78.9629,
-        index: 'MSCI Emerging',
-        index_value: 1156.78,
-        change: -1.5,
-        status: 'Weak',
-        market_hours: 'Vary by country',
-        currency: 'Varies',
-        data: [
-          { name: 'Jan', value: 1200 },
-          { name: 'Feb', value: 1180 },
-          { name: 'Mar', value: 1160 },
-          { name: 'Apr', value: 1140 },
-          { name: 'May', value: 1130 },
-          { name: 'Jun', value: 1157 }
-        ]
-      }
-    },
-    economic_indicators: {
-      gdp: {
-        name: 'GDP Growth',
-        value: 2.5,
-        change: 0.2
-      },
-      inflation: {
-        name: 'Inflation',
-        value: 3.2,
-        change: 0.5
-      },
-      unemployment: {
-        name: 'Unemployment',
-        value: 3.8,
-        change: -0.1
-      },
-      interest_rates: {
-        name: 'Interest Rates',
-        value: 5.25,
-        change: 0.25
-      }
-    },
-    market_trends: {
-      sector_performance: [
-        { name: 'Technology', value: 2.5, change: 0.3 },
-        { name: 'Financials', value: 1.2, change: 0.1 },
-        { name: 'Energy', value: -0.8, change: -0.5 },
-        { name: 'Healthcare', value: 0.5, change: 0.2 },
-        { name: 'Consumer', value: 1.8, change: 0.4 }
-      ],
-      sector_chart_data: [
-        { name: 'Jan', tech: 100, finance: 100, energy: 100, healthcare: 100, consumer: 100 },
-        { name: 'Feb', tech: 102.5, finance: 101.2, energy: 99.2, healthcare: 100.5, consumer: 101.8 },
-        { name: 'Mar', tech: 105.5, finance: 102.1, energy: 98.0, healthcare: 101.2, consumer: 103.5 },
-        { name: 'Apr', tech: 107.5, finance: 103.0, energy: 96.5, healthcare: 102.0, consumer: 105.0 },
-        { name: 'May', tech: 110.0, finance: 104.2, energy: 95.0, healthcare: 103.0, consumer: 107.0 },
-        { name: 'Jun', tech: 112.5, finance: 105.0, energy: 94.0, healthcare: 104.0, consumer: 108.5 }
-      ]
+  const fetchData = useCallback(async () => {
+    setLoading({ overview: true, correlations: true, macro: true, sentiment: true, calendar: true, sectors: true, commodities: true, currencies: true, bonds: true, volatility: true, policies: true });
+    try {
+      const responses = await Promise.allSettled([
+        globalMarketAPI.getGlobalOverview(),
+        globalMarketAPI.getAssetCorrelations(correlationFilters.assets, correlationFilters.timeframe),
+        globalMarketAPI.getMacroeconomicData(),
+        globalMarketAPI.getMarketSentiment(sentimentFilters.assets),
+        globalMarketAPI.getEconomicCalendar(),
+        globalMarketAPI.getSectorPerformance(selectedRegion),
+        globalMarketAPI.getCommodityPrices(),
+        globalMarketAPI.getCurrencyData(),
+        globalMarketAPI.getBondYields(),
+        globalMarketAPI.getVolatilitySurface('SPY'),
+        globalMarketAPI.getCentralBankPolicies()
+      ]);
+
+      if (responses[0].status === 'fulfilled') setGlobalOverview(prev => ({ ...prev, ...responses[0].value.data }));
+      if (responses[1].status === 'fulfilled') setCorrelations(responses[1].value.data);
+      if (responses[2].status === 'fulfilled') setMacroeconomicData(responses[2].value.data);
+      if (responses[3].status === 'fulfilled') setMarketSentiment(prev => ({ ...prev, ...responses[3].value.data }));
+      if (responses[4].status === 'fulfilled') setEconomicCalendar(responses[4].value.data);
+      if (responses[5].status === 'fulfilled') setSectorPerformance(responses[5].value.data);
+      if (responses[6].status === 'fulfilled') setCommodityPrices(responses[6].value.data);
+      if (responses[7].status === 'fulfilled') setCurrencyData(responses[7].value.data);
+      if (responses[8].status === 'fulfilled') setBondYields(responses[8].value.data);
+      if (responses[9].status === 'fulfilled') setVolatilitySurface(responses[9].value.data);
+      if (responses[10].status === 'fulfilled') setCentralBankPolicies(responses[10].value.data);
+
+      setLoading({ overview: false, correlations: false, macro: false, sentiment: false, calendar: false, sectors: false, commodities: false, currencies: false, bonds: false, volatility: false, policies: false });
+    } catch (err) {
+      setError('Failed to load global market data');
     }
-  };
+  }, [correlationFilters, selectedRegion, sentimentFilters]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        // Simulate API delay
-        setTimeout(() => {
-          setGlobalData(mockGlobalData);
-          setLoading(false);
-          setError(null);
-        }, 1000);
-      } catch (err) {
-        setError("Failed to load global market data. Please try again.");
-        setLoading(false);
-      }
-    };
-
     fetchData();
-    
-    // Set up real-time event subscription
-    const unsubscribe = subscribeToEvents(event => {
-      setMarketEvents(prevEvents => {
-        const updated = [...prevEvents, event];
-        return updated.slice(-50);
-      });
-    });
-    
-    // Initial market events
-    setMarketEvents(getMarketEvents());
-    
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+  }, [fetchData]);
 
-  useEffect(() => {
-    if (marketEvents.length > 0) {
-      if (eventFilter === 'all') {
-        setFilteredEvents(marketEvents);
-      } else {
-        setFilteredEvents(marketEvents.filter(event => event.impact === eventFilter));
-      }
-    }
-  }, [marketEvents, eventFilter]);
+  // Helper function for economic health score
+  const calculateHealthScore = (data) => {
+    let score = 50;
+    const gdpValue = parseFloat(data.gdp) || 0;
+    const inflationValue = parseFloat(data.inflation) || 0;
+    const unemploymentValue = parseFloat(data.unemployment) || 0;
 
-  const handleEventFilter = (filter) => {
-    setEventFilter(filter);
+    if (gdpValue > 3) score += 15;
+    else if (gdpValue > 0) score += 5;
+    else score -= 10;
+
+    if (inflationValue > 5) score -= 15;
+    else if (inflationValue > 3) score -= 5;
+
+    if (unemploymentValue > 6) score -= 10;
+    else if (unemploymentValue < 4) score += 5;
+
+    return Math.max(0, Math.min(100, score));
   };
 
-  if (loading) {
-    return (
-      <div className="page-container" style={{ textAlign: 'center', padding: '100px 0' }}>
-        <div style={{ display: 'inline-block' }}>
-          <div style={{ 
-            width: '40px', 
-            height: '40px', 
-            border: '4px solid rgba(255, 255, 255, 0.1)',
-            borderLeft: '4px solid var(--accent-blue)',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }}></div>
-          <h2>Loading global market data...</h2>
-        </div>
-      </div>
-    );
-  }
+  const overviewCards = useMemo(() => [
+    { title: 'S&P 500', value: globalOverview.sp500?.price, change: globalOverview.sp500?.change24h, changePct: globalOverview.sp500?.change24hPct, icon: <BarChartOutlined />, color: '#52c41a' },
+    { title: 'NASDAQ', value: globalOverview.nasdaq?.price, change: globalOverview.nasdaq?.change24h, changePct: globalOverview.nasdaq?.change24hPct, icon: <LineChartOutlined />, color: '#52c41a' },
+    { title: 'DOW JONES', value: globalOverview.dow?.price, change: globalOverview.dow?.change24h, changePct: globalOverview.dow?.change24hPct, icon: <FundProjectionScreenOutlined />, color: '#52c41a' },
+    { title: 'GOLD', value: globalOverview.gold?.price, change: globalOverview.gold?.change24h, changePct: globalOverview.gold?.change24hPct, icon: <GoldOutlined />, color: '#faad14' },
+    { title: 'OIL (WTI)', value: globalOverview.oil?.price, change: globalOverview.oil?.change24h, changePct: globalOverview.oil?.change24hPct, icon: <DropboxOutlined />, color: '#ff4d4f' },
+    { title: 'BITCOIN', value: globalOverview.bitcoin?.price, change: globalOverview.bitcoin?.change24h, changePct: globalOverview.bitcoin?.change24hPct, icon: <BitcoinOutlined />, color: '#1890ff' }
+  ], [globalOverview]);
 
-  if (error) {
-    return (
-      <div className="page-container" style={{ textAlign: 'center', padding: '100px 0' }}>
-        <div style={{ 
-          display: 'inline-block', 
-          background: 'var(--secondary-dark)', 
-          border: '1px solid var(--border-color)',
-          borderRadius: '8px',
-          padding: '30px',
-          width: '500px'
-        }}>
-          <div style={{ 
-            width: '40px', 
-            height: '40px', 
-            background: 'var(--accent-red)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px'
-          }}>
-            <span style={{ color: 'white', fontSize: '20px' }}>!</span>
-          </div>
-          <h2 style={{ color: 'var(--accent-red)' }}>Error Loading Data</h2>
-          <p style={{ color: 'var(--text-tertiary)', margin: '20px 0' }}>{error}</p>
-          <button 
-            className="btn-primary"
-            onClick={() => window.location.reload()}
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const heatmapConfig = useMemo(() => ({
+    data: correlations, xField: 'asset1', yField: 'asset2', colorField: 'correlation',
+    color: ['#ff4d4f', '#ffffff', '#1890ff'],
+  }), [correlations]);
+
+  const sectorColumns = [
+    { title: 'Sector', dataIndex: 'sector', key: 'sector' },
+    { title: 'Performance', dataIndex: 'change', key: 'change', sorter: (a, b) => a.change - b.change, render: v => <span className={v >= 0 ? 'positive' : 'negative'}>{v >= 0 ? <RiseOutlined /> : <FallOutlined />} {v}%</span> },
+    { title: 'Weight', dataIndex: 'weight', key: 'weight', render: v => `${(v * 100).toFixed(1)}%` }
+  ];
+
+  const calendarColumns = [
+    { title: 'Date/Time', dataIndex: 'date', key: 'date', sorter: (a, b) => new Date(a.date) - new Date(b.date) },
+    { title: 'Event', dataIndex: 'event', key: 'event', render: (t, r) => <Space><Avatar size="small" src={`/flags/${r.country?.toLowerCase()}.png`} />{t}</Space> },
+    { title: 'Impact', dataIndex: 'impact', key: 'impact', render: v => <Tag color={v === 'High' ? 'red' : 'blue'}>{v}</Tag> },
+    { title: 'Forecast', dataIndex: 'forecast', key: 'forecast' },
+    { title: 'Actual', dataIndex: 'actual', key: 'actual', render: v => v || '---' }
+  ];
+
+  const commodityColumns = [
+    { title: 'Commodity', dataIndex: 'name', key: 'name' },
+    { title: 'Price', dataIndex: 'price', align: 'right', render: v => `$${v?.toLocaleString()}` },
+    { title: 'Change 24h', dataIndex: 'change', align: 'right', render: v => <span className={v >= 0 ? 'positive' : 'negative'}>{v}%</span> }
+  ];
 
   return (
-    <GlobalMarketContainer className="page-container">
-      <div className="global-header">
-        <h1>Global Market View</h1>
-        <div className="controls">
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <div style={{ position: 'relative' }}>
-              <FiSearch size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type="text"
-                placeholder="Search markets..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ 
-                  paddingLeft: '30px',
-                  padding: '8px 15px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '4px',
-                  background: 'var(--tertiary-dark)',
-                  color: 'var(--text-primary)',
-                  width: '200px'
-                }}
-              />
-            </div>
-            <button className="btn-secondary">
-              <FiRefreshCw size={14} /> Refresh
-            </button>
-          </div>
-          <div>
-            <button 
-              className={timeframe === '24h' ? 'active' : ''}
-              onClick={() => setTimeframe('24h')}
-            >
-              24h
-            </button>
-            <button 
-              className={timeframe === '1w' ? 'active' : ''}
-              onClick={() => setTimeframe('1w')}
-            >
-              1w
-            </button>
-            <button 
-              className={timeframe === '1m' ? 'active' : ''}
-              onClick={() => setTimeframe('1m')}
-            >
-              1m
-            </button>
-          </div>
+    <div className="global-market-page">
+      <div className="market-header">
+        <Title level={2}><GlobalOutlined /> Global Markets Dashboard</Title>
+        <div className="header-controls">
+          <Badge count={marketNews.length} showZero><Button icon={<NotificationOutlined />} type="primary" onClick={() => setNewsDrawerVisible(true)}>Market News</Button></Badge>
+          <Switch checked={isMonitoring} onChange={setIsMonitoring} checkedChildren="Live" unCheckedChildren="Static" style={{ margin: '0 16px' }} />
+          <Button icon={<ReloadOutlined />} onClick={fetchData}>Refresh</Button>
         </div>
-      </div>
-      
-      <div className="map-container">
-        <div className="map-title">
-          <h2>Global Market Activity</h2>
-          <div className="map-controls">
-            <button>World</button>
-            <button>Regions</button>
-            <button>Sectors</button>
-          </div>
-        </div>
-        <GlobalMarketMap />
-      </div>
-      
-      <div className="market-regions">
-        {Object.values(globalData.regions).map(region => (
-          <div key={region.id} className="region-card">
-            <div className="region-header">
-              <h3>{region.name}</h3>
-              <div className={`region-status ${region.status.toLowerCase()}`}>
-                {region.status === 'Bullish' ? <FiTrendingUp /> : region.status === 'Bearish' ? <FiTrendingDown /> : <FiBarChart2 />}
-                {region.status}
-              </div>
-            </div>
-            
-            <div className="region-data">
-              <div className="data-item">
-                <span className="data-value">{region.index_value.toLocaleString()}</span>
-                <span className="data-label">Index Value</span>
-              </div>
-              <div className="data-item">
-                <span className={`data-value ${region.change >= 0 ? 'positive' : 'negative'}`}>
-                  {region.change >= 0 ? '+' : ''}{region.change}%
-                </span>
-                <span className="data-label">Today's Change</span>
-              </div>
-              <div className="data-item">
-                <span className="data-value">{region.currency}</span>
-                <span className="data-label">Currency</span>
-              </div>
-              <div className="data-item">
-                <span className="data-value">{region.market_hours}</span>
-                <span className="data-label">Trading Hours</span>
-              </div>
-            </div>
-            
-            <div className="region-chart">
-              <div className="chart-title">{region.index} Performance</div>
-              <ResponsiveContainer width="100%" height={150}>
-                <LineChart data={region.data}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis dataKey="name" stroke="#999" />
-                  <YAxis stroke="#999" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1a1a1a', 
-                      border: '1px solid #333',
-                      borderRadius: '4px'
-                    }} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="value" 
-                    stroke={region.change >= 0 ? "#00cc66" : "#ff3333"} 
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        ))}
       </div>
 
-      <div className="global-indicators">
-        {Object.values(globalData.economic_indicators).map(indicator => (
-          <div key={indicator.name} className="indicator-card">
-            <div className="indicator-header">
-              <div className="icon" style={{ 
-                background: indicator.change >= 0 ? 'rgba(0, 204, 102, 0.1)' : 'rgba(255, 51, 51, 0.1)'
-              }}>
-                {indicator.name === 'GDP Growth' && <FiTrendingUp />}
-                {indicator.name === 'Inflation' && <FiTrendingDown />}
-                {indicator.name === 'Unemployment' && <FiBarChart2 />}
-                {indicator.name === 'Interest Rates' && <FiTrendingUp />}
+      <Row gutter={[24, 24]} className="overview-cards">
+        {overviewCards.map((card, idx) => (
+          <Col xs={24} sm={12} lg={4} key={idx}>
+            <Card className="overview-card" loading={loading.overview}>
+              <div className="card-header"><div className="card-icon" style={{ color: card.color }}>{card.icon}</div><div className="card-title">{card.title}</div></div>
+              <div className="card-value">${card.value?.toLocaleString()}</div>
+              <div className={`card-change ${card.change >= 0 ? 'positive' : 'negative'}`}>
+                {card.change >= 0 ? <RiseOutlined /> : <FallOutlined />} {card.changePct}%
               </div>
-              <h3>{indicator.name}</h3>
-            </div>
-            <div className="indicator-value">
-              {indicator.value}{indicator.name.includes('Rate') ? '%' : ''}
-            </div>
-            <div className={`indicator-change ${indicator.change >= 0 ? 'positive' : 'negative'}`}>
-              {indicator.change >= 0 ? '+' : ''}{indicator.change}{indicator.name.includes('Rate') ? '%' : ''}
-            </div>
-          </div>
+            </Card>
+          </Col>
         ))}
-      </div>
-      
-      <div className="market-trends">
-        <div className="trend-card">
-          <div className="trend-header">
-            <h3>Sector Performance</h3>
-            <div className="trend-status bullish">
-              <FiTrendingUp /> Bullish
-            </div>
-          </div>
-          
-          <div className="trend-chart">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={globalData.market_trends.sector_chart_data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="name" stroke="#999" />
-                <YAxis stroke="#999" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1a1a1a', 
-                    border: '1px solid #333',
-                    borderRadius: '4px'
-                  }} 
-                />
-                <Line type="monotone" dataKey="tech" stroke="#00cc66" strokeWidth={2} dot={false} name="Technology" />
-                <Line type="monotone" dataKey="finance" stroke="#007acc" strokeWidth={2} dot={false} name="Financials" />
-                <Line type="monotone" dataKey="energy" stroke="#ff3333" strokeWidth={2} dot={false} name="Energy" />
-                <Line type="monotone" dataKey="healthcare" stroke="#ffcc00" strokeWidth={2} dot={false} name="Healthcare" />
-                <Line type="monotone" dataKey="consumer" stroke="#9933cc" strokeWidth={2} dot={false} name="Consumer" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-        
-        <div className="trend-card">
-          <div className="trend-header">
-            <h3>Global Market Correlation</h3>
-            <div className="trend-status">
-              <FiBarChart2 /> Moderate
-            </div>
-          </div>
-          
-          <div className="trend-chart">
-            <div style={{ 
-              height: '100%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              fontSize: '14px',
-              color: 'var(--text-tertiary)'
-            }}>
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(5, 1fr)', 
-                gap: '10px',
-                width: '100%',
-                textAlign: 'center'
-              }}>
-                <div>US</div><div>EU</div><div>Asia</div><div>Emerging</div><div>Global</div>
-                <div>1.0</div><div>0.85</div><div>0.65</div><div>0.55</div><div>0.75</div>
-                <div>0.85</div><div>1.0</div><div>0.75</div><div>0.65</div><div>0.85</div>
-                <div>0.65</div><div>0.75</div><div>1.0</div><div>0.60</div><div>0.70</div>
-                <div>0.55</div><div>0.65</div><div>0.60</div><div>1.0</div><div>0.65</div>
-                <div>0.75</div><div>0.85</div><div>0.70</div><div>0.65</div><div>1.0</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="market-events">
-        <div className="events-header">
-          <h2>Global Market Events</h2>
-          <div className="event-filters">
-            <button className={eventFilter === 'all' ? 'active' : ''} onClick={() => handleEventFilter('all')}>All</button>
-            <button className={eventFilter === 'high' ? 'active' : ''} onClick={() => handleEventFilter('high')}>High Impact</button>
-            <button className={eventFilter === 'medium' ? 'active' : ''} onClick={() => handleEventFilter('medium')}>Medium Impact</button>
-            <button className={eventFilter === 'low' ? 'active' : ''} onClick={() => handleEventFilter('low')}>Low Impact</button>
-          </div>
-        </div>
-        
-        <div className="event-list">
-          {filteredEvents.map(event => (
-            <div key={event.id} className="event-card">
-              <div className="event-header">
-                <div className="event-title">{event.title}</div>
-                <div className={`event-impact ${event.impact}`}>
-                  {event.impact.charAt(0).toUpperCase() + event.impact.slice(1)}
-                </div>
-              </div>
-              <div className="event-details">{event.description}</div>
-              <div className="event-meta">
-                <span>{new Date(event.timestamp).toLocaleTimeString()}</span>
-                <span>{new Date(event.timestamp).toLocaleDateString()}</span>
-              </div>
-            </div>
+      </Row>
+
+      <Card className="market-content-card">
+        <Tabs activeKey={activeTab} onChange={setActiveTab} tabBarExtraContent={
+          activeTab === 'correlations' ? (
+            <Space>
+              <Select mode="multiple" value={correlationFilters.assets} style={{ width: 250 }} onChange={v => setCorrelationFilters(p => ({ ...p, assets: v }))} options={['SPY', 'QQQ', 'BTC', 'GLD', 'TLT', 'USO'].map(a => ({ value: a, label: a }))} />
+              <Select value={correlationFilters.timeframe} onChange={v => setCorrelationFilters(p => ({ ...p, timeframe: v }))} options={[{ value: '30d', label: '30 Days' }, { value: '90d', label: '90 Days' }]} />
+            </Space>
+          ) : null
+        }>
+          <TabPane tab={<span><FundProjectionScreenOutlined />Overview</span>} key="overview">
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={16}>
+                <Card title="Sector Performance Matrix"><Column data={sectorPerformance} xField="sector" yField="change" colorField="sector" /></Card>
+                <Card title="Volatility Surface (SPY)" style={{ marginTop: 24 }}>
+                   <Scatter data={volatilitySurface.surface || []} xField="strike" yField="impliedVolatility" colorField="expiration" size={4} height={350} />
+                </Card>
+              </Col>
+              <Col xs={24} lg={8}>
+                <Card title="Fear & Greed Index" className="fear-greed-card">
+                   <div style={{ textAlign: 'center' }}>
+                     <RingProgress percent={marketSentiment.fearGreedIndex / 100} color={['#ff4d4f', '#52c41a']} size={120} />
+                     <Title level={3}>{marketSentiment.fearGreedIndex}/100</Title>
+                     <Text strong>{marketSentiment.fearGreedLabel}</Text>
+                     <p>{marketSentiment.fearGreedDescription}</p>
+                   </div>
+                </Card>
+                <Card title="Market Leaders" style={{ marginTop: 16 }}>
+                   {globalOverview.indices?.slice(0, 4).map(idx => (
+                     <div key={idx.name} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                       <Text strong>{idx.name}</Text>
+                       <Text className={idx.change >= 0 ? 'positive' : 'negative'}>{idx.change}%</Text>
+                     </div>
+                   ))}
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          <TabPane tab={<span><HeatMapOutlined />Correlations</span>} key="correlations">
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={18}><Card title="Correlation Matrix"><Heatmap {...heatmapConfig} height={500} /></Card></Col>
+              <Col xs={24} lg={6}>
+                <Card title="Diversification Insights" className="insights-card">
+                   <div className="insight-recommendation">
+                     <h4>Advice</h4>
+                     <p>{globalOverview.portfolioCorrelation > 0.6 ? 'High portfolio correlation detected. Consider safe havens like Gold or TLT.' : 'Portfolio is well-diversified.'}</p>
+                   </div>
+                   <Divider />
+                   <div className="insight-item"><Text type="secondary">Avg Correlation</Text><div>42.5%</div></div>
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          <TabPane tab={<span><BankOutlined />Macro Indicators</span>} key="macro">
+             <Row gutter={[24, 24]}>
+               <Col xs={24} lg={16}>
+                  <Card title="Global Economic Indicators">
+                    <Table dataSource={Object.entries(macroeconomicData).map(([k, v]) => ({ key: k, country: k, ...v }))}
+                           columns={[
+                             { title: 'Country', dataIndex: 'country', render: c => <Space><Avatar size="small" src={`/flags/${c.toLowerCase()}.png`} />{c}</Space> },
+                             { title: 'GDP', dataIndex: 'gdp', render: v => <span className={v >= 0 ? 'positive' : 'negative'}>{v}%</span> },
+                             { title: 'Inflation', dataIndex: 'inflation' },
+                             { title: 'Rates', dataIndex: 'interest_rate' }
+                           ]} pagination={false} />
+                  </Card>
+               </Col>
+               <Col xs={24} lg={8}>
+                  <Card title="Central Bank Policies">
+                    {centralBankPolicies.map(p => (
+                      <div key={p.bank} style={{ marginBottom: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><Text strong>{p.bank}</Text><Tag color="blue">{p.stance}</Tag></div>
+                        <Text type="secondary">Next Meeting: {p.next_meeting}</Text>
+                      </div>
+                    ))}
+                  </Card>
+                  <Card title="Economic Health Scores" style={{ marginTop: 16 }}>
+                     {Object.entries(macroeconomicData).map(([k, v]) => (
+                       <div key={k} style={{ marginBottom: 8 }}>
+                         <Text>{k}</Text><Progress percent={calculateHealthScore(v)} size="small" />
+                       </div>
+                     ))}
+                  </Card>
+               </Col>
+             </Row>
+          </TabPane>
+
+          <TabPane tab={<span><GoldOutlined />Commodities</span>} key="commodities">
+             <Row gutter={[24, 24]}>
+               <Col xs={24} lg={16}><Card title="Commodity Table"><Table dataSource={commodityPrices} columns={commodityColumns} pagination={false} /></Card></Col>
+               <Col xs={24} lg={8}>
+                  <Card title="Energy Summary">
+                     {commodityPrices.filter(c => c.name.includes('Crude') || c.name.includes('Natural')).map(c => (
+                       <Statistic key={c.name} title={c.name} value={c.price} prefix="$" suffix={<Text className={c.change >= 0 ? 'positive' : 'negative'} style={{ fontSize: 12, marginLeft: 8 }}>{c.change}%</Text>} />
+                     ))}
+                  </Card>
+               </Col>
+             </Row>
+          </TabPane>
+
+          <TabPane tab={<span><CalendarOutlined />Economic Calendar</span>} key="calendar">
+             <Table dataSource={economicCalendar} columns={calendarColumns} pagination={{ pageSize: 10 }} />
+          </TabPane>
+        </Tabs>
+      </Card>
+
+      <Drawer title="Market News & Analysis" placement="right" onClose={() => setNewsDrawerVisible(false)} open={newsDrawerVisible} width={400}>
+        <Timeline>
+          {marketNews.map((n, i) => (
+            <Timeline.Item key={i}><Text strong>{n.title}</Text><br /><Text type="secondary">{n.source} • {new Date(n.timestamp).toLocaleTimeString()}</Text></Timeline.Item>
           ))}
-        </div>
-      </div>
-    </GlobalMarketContainer>
-  ); 
+        </Timeline>
+      </Drawer>
+
+      {error && <Alert message="Error" description={error} type="error" showIcon closable style={{ marginTop: 16 }} />}
+    </div>
+  );
 };
 
 export default GlobalMarketPage;

@@ -1,0 +1,426 @@
+/* src/pages/GlobalMarketDashboard.css */
+.global-market-dashboard {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.market-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.market-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.market-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.map-card, .sentiment-overview-card, .regional-analysis-card, 
+.sentiment-trends-card, .correlation-matrix-card, 
+.market-conditions-card, .regional-performance-card, 
+.regional-correlations-card, .regional-conditions-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.map-container {
+  height: 500px;
+  background: #f0f2f5;
+  border-radius: 8px;
+  position: relative;
+}
+
+.map-placeholder {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.map-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.legend-label {
+  font-size: 12px;
+}
+
+.sentiment-overview {
+  padding: 16px;
+}
+
+.sentiment-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.metric-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.metric-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-weight: 600;
+}
+
+.metric-value.positive {
+  color: #52c41a;
+}
+
+.metric-value.negative {
+  color: #ff4d4f;
+}
+
+.regional-analysis {
+  padding: 16px;
+}
+
+.regional-charts {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.regional-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.region-card {
+  text-align: center;
+  height: 100%;
+}
+
+.region-name {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.region-sentiment {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.region-metric {
+  font-size: 12px;
+  color: #666;
+}
+
+.correlation-matrix {
+  padding: 16px;
+}
+
+.matrix-title {
+  margin: 0 0 16px 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.matrix-content {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.correlation-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.correlation-table th, .correlation-table td {
+  border: 1px solid #f0f0f0;
+  padding: 8px;
+  text-align: center;
+}
+
+.correlation-cell {
+  font-weight: bold;
+  color: white;
+}
+
+.correlation-insights {
+  margin-top: 24px;
+}
+
+.insights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.insights-list li {
+  margin: 8px 0;
+}
+
+.conditions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.region-condition-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.region-condition-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.region-status {
+  font-weight: 500;
+}
+
+.region-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.metric-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.metric-label {
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.metric-value {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.country-details {
+  padding: 24px;
+}
+
+.country-overview-card, .country-performance-card, .regional-context-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.country-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.performance-charts {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.performance-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.context-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.context-chart {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.chart-title {
+  margin: 0 0 16px 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.map-loading, .chart-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.map-loading p, .chart-loading p, .loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .global-market-dashboard {
+    padding: 16px;
+  }
+  
+  .market-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-controls {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .map-container {
+    height: 400px;
+  }
+  
+  .map-legend {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .sentiment-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .regional-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .conditions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .country-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .performance-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .context-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .global-market-dashboard {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .market-content-card, .map-card, .sentiment-overview-card, 
+  .regional-analysis-card, .sentiment-trends-card, 
+  .correlation-matrix-card, .market-conditions-card, 
+  .regional-performance-card, .regional-correlations-card, 
+  .regional-conditions-card, .country-overview-card, 
+  .country-performance-card, .regional-context-card {
+    background-color: #262626 !important;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .map-container {
+    background: #262626;
+  }
+  
+  .map-legend {
+    background: rgba(40, 40, 40, 0.8);
+  }
+  
+  .metric-item, .stat-item {
+    background-color: #262626;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .metric-item:hover {
+    background-color: #333333;
+  }
+  
+  .metric-label, .stat-label {
+    color: #ffffff;
+  }
+  
+  .metric-value, .stat-value {
+    color: #e6e6e6;
+  }
+  
+  .metric-value.positive {
+    color: #52c41a;
+  }
+  
+  .metric-value.negative {
+    color: #ff4d4f;
+  }
+}

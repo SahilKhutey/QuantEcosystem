@@ -1,0 +1,529 @@
+/* src/pages/GlobalMarketPage.css */
+.global-market-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.market-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.market-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.overview-cards {
+  margin-bottom: 24px;
+}
+
+.overview-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.overview-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.card-title {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.card-value {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.card-change {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.card-change.positive {
+  color: #52c41a;
+}
+
+.card-change.negative {
+  color: #ff4d4f;
+}
+
+.market-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sentiment-card, .correlation-card, .policy-card, .health-card, 
+.top-sectors-card, .rotation-card, .metals-card, .energy-card, 
+.strength-card, .usd-index-card, .insights-card, .stats-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chart-loading, .table-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.fear-greed-content {
+  text-align: center;
+}
+
+.fear-greed-value {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 16px 0;
+}
+
+.fear-greed-label {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.fear-greed-description {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.market-leaders {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.leader-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+}
+
+.leader-rank {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #1890ff;
+  min-width: 30px;
+}
+
+.leader-info {
+  flex: 1;
+  margin: 0 16px;
+}
+
+.leader-symbol {
+  font-weight: 600;
+}
+
+.leader-name {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.leader-change.positive {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+.correlation-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insight-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.insight-item:last-child {
+  border-bottom: none;
+}
+
+.insight-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #1a1a1a;
+}
+
+.insight-content {
+  color: #666;
+}
+
+.insight-recommendation {
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #e6f7ff;
+  border-radius: 6px;
+  border-left: 4px solid #1890ff;
+}
+
+.insight-recommendation h4 {
+  margin: 0 0 8px 0;
+}
+
+.policy-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.policy-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.policy-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.policy-country {
+  font-weight: 500;
+}
+
+.policy-details {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.health-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.health-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.health-country {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+}
+
+.top-sectors {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sector-ranking {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+}
+
+.sector-position {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #1890ff;
+  min-width: 30px;
+}
+
+.sector-info {
+  flex: 1;
+  margin: 0 16px;
+}
+
+.sector-performance.positive {
+  color: #52c41a;
+}
+
+.sector-performance.negative {
+  color: #ff4d4f;
+}
+
+.rotation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rotation-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rotation-label {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.metal-item, .energy-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.metal-item:last-child, .energy-item:last-child {
+  border-bottom: none;
+}
+
+.metal-name, .energy-name {
+  font-weight: 500;
+}
+
+.metal-change.positive, .energy-change.positive {
+  color: #52c41a;
+}
+
+.metal-change.negative, .energy-change.negative {
+  color: #ff4d4f;
+}
+
+.timeline-event {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.event-time {
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.event-details {
+  flex: 1;
+}
+
+.event-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.event-country {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.impact-analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.impact-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.impact-item:last-child {
+  border-bottom: none;
+}
+
+.impact-title {
+  font-weight: 500;
+}
+
+.impact-count {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.impact-summary {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  font-style: italic;
+}
+
+.country-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sector-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.sector-name {
+  font-weight: 500;
+}
+
+.commodity-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.commodity-name {
+  font-weight: 500;
+}
+
+.commodity-symbol {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.positive {
+  color: #52c41a;
+}
+
+.negative {
+  color: #ff4d4f;
+}
+
+.warning {
+  color: #faad14;
+}
+
+.market-news {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.news-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.news-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.news-source {
+  font-weight: 500;
+  color: #1890ff;
+}
+
+.news-time {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.news-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.news-summary {
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .global-market-page {
+    padding: 16px;
+  }
+  
+  .market-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-controls {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .overview-cards {
+    margin-bottom: 16px;
+  }
+  
+  .timeline-event {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .market-content-card {
+    margin-bottom: 16px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .global-market-page {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .overview-card, .market-content-card, .sentiment-card, .correlation-card, 
+  .policy-card, .health-card, .top-sectors-card, .rotation-card, 
+  .metals-card, .energy-card, .strength-card, .usd-index-card, 
+  .insights-card, .stats-card {
+    background-color: #262626 !important;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .leader-item, .policy-item, .metal-item, .energy-item, 
+  .sector-ranking, .impact-item, .health-item, .insight-item {
+    background-color: #262626;
+    border-color: #434343;
+  }
+  
+  .leader-item:hover, .policy-item:hover, .sector-ranking:hover {
+    background-color: #333333;
+  }
+  
+  .insight-recommendation {
+    background-color: #1a2a3a;
+    border-color: #1890ff;
+  }
+}

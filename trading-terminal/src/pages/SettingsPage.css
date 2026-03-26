@@ -1,0 +1,305 @@
+/* src/pages/SettingsPage.css */
+.settings-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.settings-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.settings-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.api-keys-card, .api-best-practices-card, .api-usage-card, 
+.alerts-card, .alert-types-card, .notification-channels-card, 
+.active-alerts-card, .account-info-card, .personal-info-card, 
+.security-settings-card, .general-settings-card, 
+.data-settings-card, .advanced-config-card, 
+.notification-preferences-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.api-key-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.key-name {
+  font-weight: 500;
+}
+
+.key-id {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.permissions-badge {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.best-practice-item {
+  display: flex;
+  gap: 8px;
+}
+
+.api-usage {
+  padding: 16px;
+}
+
+.usage-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.stat-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-weight: 600;
+}
+
+.alert-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alert-name {
+  font-weight: 500;
+}
+
+.alert-description {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.alert-config, .alert-channels {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.alerts-overview {
+  padding: 16px;
+}
+
+.overview-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-name h3 {
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.profile-email {
+  color: #666;
+}
+
+.personal-info {
+  padding: 16px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.security-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.security-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.security-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.security-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.security-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 8px;
+}
+
+.notification-types {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notification-type {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.type-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.type-description {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.notification-channels {
+  margin-top: 24px;
+}
+
+.channel-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.channel-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.channel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.channel-description {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.webhook-config {
+  margin-top: 8px;
+}
+
+.webhook-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 8px;
+}
+
+.notification-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.chart-loading, .table-loading, .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.chart-loading p, .loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .settings-page { padding: 16px; }
+  .settings-header { flex-direction: column; align-items: stretch; }
+  .header-controls { justify-content: flex-end; flex-wrap: wrap; }
+  .usage-stats, .overview-stats { grid-template-columns: 1fr; }
+  .profile-header { flex-direction: column; text-align: center; }
+  .profile-actions { flex-direction: column; align-items: center; }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .settings-page { background-color: #1a1a1a; color: #ffffff; }
+  .settings-content-card, .api-keys-card, .api-best-practices-card, 
+  .api-usage-card, .alerts-card, .alert-types-card, 
+  .notification-channels-card, .active-alerts-card, 
+  .account-info-card, .personal-info-card, 
+  .security-settings-card, .general-settings-card, 
+  .data-settings-card, .advanced-config-card, 
+  .notification-preferences-card {
+    background-color: #262626 !important; border-color: #434343; color: #ffffff;
+  }
+  .api-key-info, .alert-info, .profile-header, .security-item, .notification-type, .channel-item {
+    background-color: #262626; border-color: #434343; color: #ffffff;
+  }
+  .api-key-info:hover, .alert-info:hover { background-color: #333333; }
+  .stat-label, .type-header, .channel-header, .profile-name h3 { color: #ffffff; }
+  .stat-value, .type-description, .channel-description, .profile-email { color: #e6e6e6; }
+  .webhook-info { color: #bfbfbf; }
+  .ant-descriptions-item-label { background-color: #1f1f1f !important; color: #bfbfbf !important; }
+  .ant-descriptions-item-content { color: #fff !important; }
+}

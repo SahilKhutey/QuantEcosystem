@@ -1,207 +1,342 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FiShield, FiAlertTriangle, FiBarChart2, FiActivity, FiTarget, FiZap } from 'react-icons/fi';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Statistic, 
+  Table, 
+  Tabs, 
+  Select, 
+  Button, 
+  Spin, 
+  Alert,
+  Progress,
+  Tag,
+  Space,
+  Tooltip,
+  Slider,
+  InputNumber,
+  Switch,
+  Descriptions,
+  Collapse,
+  Badge,
+  Modal,
+  Form,
+  Input,
+  Typography,
+  Divider
+} from 'antd';
+import { 
+  ExclamationCircleOutlined,
+  WarningOutlined,
+  CheckCircleOutlined,
+  BarChartOutlined,
+  LineChartOutlined,
+  HeatMapOutlined,
+  ExperimentOutlined,
+  SafetyCertificateOutlined,
+  BellOutlined,
+  ReloadOutlined,
+  PlayCircleOutlined,
+  StopOutlined,
+  DownloadOutlined,
+  SettingOutlined,
+  HistoryOutlined
+} from '@ant-design/icons';
+import { Column, Line, Heatmap } from '@ant-design/plots';
+import { riskAPI } from '../services/api/risk';
+import './RiskPage.css';
 
-const RiskContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto 1fr;
-  gap: 20px;
-  height: 100%;
-  
-  .risk-header {
-    grid-column: 1 / span 2;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-  }
-  
-  .card {
-    background: var(--secondary-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-  }
-  
-  .full-width {
-    grid-column: 1 / span 2;
-  }
-`;
-
-const RiskMetric = styled.div`
-  background: var(--secondary-dark);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 20px;
-  
-  .label { color: var(--text-tertiary); font-size: 12px; margin-bottom: 8px; }
-  .value { font-size: 24px; font-weight: 700; color: var(--text-primary); }
-  .indicator { 
-    height: 4px; 
-    width: 100%; 
-    background: rgba(255,255,255,0.05); 
-    border-radius: 2px; 
-    margin-top: 12px;
-    position: relative;
-    
-    .fill { 
-      position: absolute; 
-      height: 100%; 
-      border-radius: 2px;
-    }
-  }
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-primary);
-  
-  svg { color: var(--accent-red); }
-`;
-
-const StressTestRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 120px 120px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 14px;
-  
-  .scenario { color: var(--text-primary); font-weight: 500; }
-  .impact { text-align: right; }
-  .status { text-align: right; font-weight: 600; }
-  
-  .positive { color: var(--accent-green); }
-  .negative { color: var(--accent-red); }
-`;
-
-import useAppStore from '../services/store/appStore';
+const { TabPane } = Tabs;
+const { Panel } = Collapse;
+const { confirm } = Modal;
+const { Title, Text } = Typography;
 
 const RiskPage = () => {
-  const { selectedSymbol } = useAppStore();
-  const exposureData = [
-    { subject: 'Technology', value: 85, fullMark: 100 },
-    { subject: 'Finance', value: 60, fullMark: 100 },
-    { subject: 'Energy', value: 40, fullMark: 100 },
-    { subject: 'Healthcare', value: 55, fullMark: 100 },
-    { subject: 'Consumer', value: 70, fullMark: 100 },
-  ];
+  // State Management
+  const [riskExposure, setRiskExposure] = useState({ 
+    exposureByAsset: [], 
+    portfolioVar: 0,
+    varStatus: 'safe',
+    topAssetConcentration: 0,
+    topAssetName: 'N/A',
+    concentrationRisk: 'low',
+    liquidityRiskScore: 0,
+    liquidityRiskLevel: 'low',
+    leverageRatio: 0,
+    varExposure: 0,
+    currentDrawdown: 0,
+    portfolioCorrelation: 0
+  });
+  const [greeksData, setGreeksData] = useState([]);
+  const [varData, setVarData] = useState({ distribution: [], portfolioVar: 0, method: 'historical', confidence: 95, timeframe: '1d', expectedShortfall: 0, historicalMaxLoss: 0, backtestAccuracy: 0.98, breakdown: [] });
+  const [stressTestData, setStressTestData] = useState({ scenarioName: 'Market Crash', portfolioLoss: 0, lossPercentage: 0, varIncrease: 0, recoveryTime: 0, assetImpacts: [] });
+  const [correlationMatrix, setCorrelationMatrix] = useState([]);
+  const [riskLimits, setRiskLimits] = useState({ varLimit: 10000, concentrationLimit: 0.3, leverageLimit: 2, drawdownLimit: 0.12 });
+  const [complianceData, setComplianceData] = useState({ status: 'compliant', score: 95, violations: 0 });
+  const [loading, setLoading] = useState({
+    exposure: true, greeks: true, var: true,
+    stress: true, correlation: true, limits: true, compliance: true
+  });
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('exposure');
+  const [varParams, setVarParams] = useState({ method: 'historical', confidence: 95, timeframe: '1d' });
+  const [stressTestParams, setStressTestParams] = useState({ scenario: 'market_crash', severity: 'moderate' });
+  const [selectedAsset, setSelectedAsset] = useState('BTC');
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [alerts, setAlerts] = useState([]);
+  const [scenarioForm] = Form.useForm();
+  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false);
 
-  const barData = [
-    { name: 'Equity', var: 12.5, limit: 15 },
-    { name: 'Fixed Inc', var: 4.2, limit: 10 },
-    { name: 'Commod', var: 8.8, limit: 12 },
-    { name: 'Crypto', var: 24.5, limit: 25 },
-    { name: 'Cash', var: 0.5, limit: 2 },
-  ];
+  const fetchData = useCallback(async () => {
+    setLoading({ exposure: true, greeks: true, var: true, stress: true, correlation: true, limits: true, compliance: true });
+    setError(null);
+
+    try {
+      const responses = await Promise.allSettled([
+        riskAPI.getRiskExposure(),
+        riskAPI.getGreeks(selectedAsset),
+        riskAPI.getValueAtRisk(varParams.method, varParams.confidence, varParams.timeframe),
+        riskAPI.getStressTests(stressTestParams.scenario),
+        riskAPI.getCorrelationMatrix(['BTC', 'ETH', 'AAPL', 'MSFT']),
+        riskAPI.getRiskLimits(),
+        riskAPI.getComplianceReport()
+      ]);
+
+      if (responses[0].status === 'fulfilled') setRiskExposure(prev => ({ ...prev, ...responses[0].value.data, exposureByAsset: responses[0].value.data }));
+      if (responses[1].status === 'fulfilled') setGreeksData(Array.isArray(responses[1].value.data) ? responses[1].value.data : [responses[1].value.data]);
+      if (responses[2].status === 'fulfilled') setVarData(prev => ({ ...prev, ...responses[2].value.data }));
+      if (responses[3].status === 'fulfilled') setStressTestData(responses[3].value.data);
+      if (responses[4].status === 'fulfilled') setCorrelationMatrix(responses[4].value.data);
+      if (responses[5].status === 'fulfilled') setRiskLimits(responses[5].value.data);
+      if (responses[6].status === 'fulfilled') setComplianceData(responses[6].value.data);
+
+      setLoading({ exposure: false, greeks: false, var: false, stress: false, correlation: false, limits: false, compliance: false });
+    } catch (err) {
+      setError('Failed to load risk data');
+    }
+  }, [selectedAsset, varParams, stressTestParams]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Chart Configs
+  const exposureChartConfig = useMemo(() => ({
+    data: riskExposure.exposureByAsset || [],
+    xField: 'symbol',
+    yField: 'market_value',
+    seriesField: 'symbol',
+    label: { position: 'middle' },
+  }), [riskExposure.exposureByAsset]);
+
+  const varDistributionConfig = useMemo(() => ({
+    data: varData.distribution || [],
+    xField: 'confidence',
+    yField: 'loss',
+    point: { size: 5, shape: 'diamond' },
+  }), [varData.distribution]);
+
+  const correlationHeatmapConfig = useMemo(() => {
+    const data = [];
+    const assets = ['BTC', 'ETH', 'AAPL', 'MSFT'];
+    if (correlationMatrix.length > 0) {
+      correlationMatrix.forEach((row, i) => {
+        row.forEach((val, j) => {
+          data.push({ asset1: assets[i], asset2: assets[j], correlation: val });
+        });
+      });
+    }
+    return {
+      data,
+      xField: 'asset1',
+      yField: 'asset2',
+      colorField: 'correlation',
+      color: ['#1890ff', '#ffffff', '#ff4d4f'],
+    };
+  }, [correlationMatrix]);
+
+  const greeksHeatmapConfig = useMemo(() => {
+    const data = greeksData.flatMap(item => [
+      { asset: item.symbol || item.asset, metric: 'Delta', value: item.delta },
+      { asset: item.symbol || item.asset, metric: 'Gamma', value: item.gamma },
+      { asset: item.symbol || item.asset, metric: 'Theta', value: item.theta },
+      { asset: item.symbol || item.asset, metric: 'Vega', value: item.vega }
+    ]);
+    return { data, xField: 'metric', yField: 'asset', colorField: 'value' };
+  }, [greeksData]);
+
+  const runCustomScenario = () => {
+    confirm({
+      title: 'Run Custom Scenario Analysis',
+      icon: <ExperimentOutlined />,
+      content: 'This will simulate a custom market scenario. Are you sure?',
+      onOk: async () => {
+        try {
+          const values = await scenarioForm.validateFields();
+          await riskAPI.runScenarioAnalysis(values);
+          fetchData();
+        } catch (err) {
+          setError('Failed to run scenario analysis');
+        }
+      },
+    });
+  };
 
   return (
-    <RiskContainer className="page-container">
+    <div className="risk-page">
       <div className="risk-header">
-        <RiskMetric>
-          <div className="label">Portfolio VaR (95%)</div>
-          <div className="value">₹1,24,500</div>
-          <div className="indicator">
-            <div className="fill" style={{ width: '65%', background: 'var(--accent-red)' }}></div>
-          </div>
-        </RiskMetric>
-        <RiskMetric>
-          <div className="label">Conditional VaR (CVaR)</div>
-          <div className="value">₹1,85,200</div>
-          <div className="indicator">
-            <div className="fill" style={{ width: '75%', background: 'var(--accent-red)' }}></div>
-          </div>
-        </RiskMetric>
-        <RiskMetric>
-          <div className="label">Beta to Benchmark</div>
-          <div className="value">1.14</div>
-          <div className="indicator">
-            <div className="fill" style={{ width: '55%', background: 'var(--accent-blue)' }}></div>
-          </div>
-        </RiskMetric>
-        <RiskMetric>
-          <div className="label">Sharpe Ratio</div>
-          <div className="value">2.42</div>
-          <div className="indicator">
-            <div className="fill" style={{ width: '82%', background: 'var(--accent-green)' }}></div>
-          </div>
-        </RiskMetric>
-      </div>
-      
-      <div className="card">
-        <SectionTitle><FiShield /> Sector Concentration Risk</SectionTitle>
-        <ResponsiveContainer width="100%" height={300}>
-          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={exposureData}>
-            <PolarGrid stroke="#333" />
-            <PolarAngleAxis dataKey="subject" tick={{ fill: '#999', fontSize: 12 }} />
-            <PolarRadiusAxis hide />
-            <Radar
-              name="Exposure"
-              dataKey="value"
-              stroke="var(--accent-blue)"
-              fill="var(--accent-blue)"
-              fillOpacity={0.6}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
-      </div>
-      
-      <div className="card">
-        <SectionTitle><FiBarChart2 /> Asset-Class VaR vs Limits</SectionTitle>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={barData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-            <XAxis dataKey="name" stroke="#666" fontSize={12} />
-            <YAxis stroke="#666" fontSize={12} />
-            <Tooltip contentStyle={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '4px' }} />
-            <Bar dataKey="var" fill="var(--accent-red)" radius={[4, 4, 0, 0]} name="Current VaR %" />
-            <Bar dataKey="limit" fill="rgba(255,255,255,0.05)" radius={[4, 4, 0, 0]} name="Risk Limit %" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      
-      <div className="card full-width">
-        <SectionTitle><FiZap /> Stress Test Scenarios</SectionTitle>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px', padding: '10px 0', color: 'var(--text-tertiary)', fontSize: '13px', borderBottom: '1px solid var(--border-color)' }}>
-            <span>Scenario Definition</span>
-            <span style={{ textAlign: 'right' }}>Projected P&L</span>
-            <span style={{ textAlign: 'right' }}>Status</span>
-          </div>
-          
-          <StressTestRow>
-            <span className="scenario">S&P 500 Crash (-10%)</span>
-            <span className="impact negative">-₹2,45,000</span>
-            <span className="status negative">CRITICAL</span>
-          </StressTestRow>
-          <StressTestRow>
-            <span className="scenario">Interest Rate Hike (+50 bps)</span>
-            <span className="impact negative">-₹45,200</span>
-            <span className="status" style={{ color: 'var(--accent-blue)' }}>WARNING</span>
-          </StressTestRow>
-          <StressTestRow>
-            <span className="scenario">Oil Price Spike (+15%)</span>
-            <span className="impact positive">+₹12,400</span>
-            <span className="status positive">SAFE</span>
-          </StressTestRow>
-          <StressTestRow>
-            <span className="scenario">Tech Sector Correction (-5%)</span>
-            <span className="impact negative">-₹85,000</span>
-            <span className="status negative">CRITICAL</span>
-          </StressTestRow>
-          <StressTestRow>
-            <span className="scenario">Emerging Market Rally (+5%)</span>
-            <span className="impact positive">+₹22,500</span>
-            <span className="status positive">SAFE</span>
-          </StressTestRow>
+        <Title level={2}>Risk Management Dashboard</Title>
+        <div className="header-controls">
+          <Badge count={alerts.length} showZero><Button icon={<BellOutlined />} onClick={() => setAlerts([])}>Alerts</Button></Badge>
+          <Switch checked={isMonitoring} onChange={setIsMonitoring} checkedChildren="Monitoring ON" unCheckedChildren="Monitoring OFF" style={{ margin: '0 16px' }} />
+          <Button icon={<ReloadOutlined />} onClick={fetchData} loading={Object.values(loading).some(l => l)}>Refresh</Button>
         </div>
       </div>
-    </RiskContainer>
+
+      <Row gutter={[24, 24]} className="summary-cards">
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="summary-card var-exposure">
+            <Statistic title="Portfolio VaR (95%)" value={varData.portfolioVar || 2450.50} precision={2} valueStyle={{ color: '#ff4d4f' }} prefix={<WarningOutlined />} suffix="USD" />
+            <Tag color="green">SAFE</Tag>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="summary-card concentration-risk">
+            <Statistic title="Top Asset Concentration" value={riskExposure.topAssetConcentration * 100 || 12.5} precision={1} suffix="%" />
+            <Text type="secondary">{riskExposure.topAssetName || 'BTC'}</Text>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="summary-card liquidity-risk">
+            <Statistic title="Liquidity Risk Score" value={riskExposure.liquidityRiskScore || 1.2} precision={1} suffix="/10" />
+            <Tag color="green">LOW RISK</Tag>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="summary-card compliance">
+            <Statistic title="Compliance Score" value={complianceData.score} precision={1} prefix={<SafetyCertificateOutlined />} suffix="/100" />
+            <Text type="secondary">{complianceData.violations} violations</Text>
+          </Card>
+        </Col>
+      </Row>
+
+      <Card className="risk-content-card">
+        <Tabs activeKey={activeTab} onChange={setActiveTab} tabBarExtraContent={
+          <Space>
+            {activeTab === 'var' && (
+              <Space>
+                <span>Method:</span>
+                <Select value={varParams.method} onChange={m => setVarParams(p => ({ ...p, method: m }))} options={[{ value: 'historical', label: 'Historical' }]} />
+                <span>Confidence:</span>
+                <Slider value={varParams.confidence} onChange={c => setVarParams(p => ({ ...p, confidence: c }))} min={90} max={99} step={0.5} style={{ width: 100 }} />
+                <span>{varParams.confidence}%</span>
+              </Space>
+            )}
+            {activeTab === 'stress' && (
+              <Space>
+                <Select value={stressTestParams.scenario} onChange={s => setStressTestParams(p => ({ ...p, scenario: s }))} options={[{ value: 'market_crash', label: 'Market Crash' }]} />
+                <Button icon={<ExperimentOutlined />} onClick={() => setIsScenarioModalOpen(true)}>Custom Scenario</Button>
+              </Space>
+            )}
+          </Space>
+        }>
+          <TabPane tab={<span><BarChartOutlined />Risk Exposure</span>} key="exposure">
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={16}><Card title="Exposure by Asset Class"><Column {...exposureChartConfig} height={400} /></Card></Col>
+              <Col xs={24} lg={8}>
+                <Card title="Risk Limits">
+                  <Descriptions column={1} size="small">
+                    <Descriptions.Item label="VaR Limit"><Progress percent={24} status="normal" format={() => "$2,450 / $10,000"} /></Descriptions.Item>
+                    <Descriptions.Item label="Concentration"><Progress percent={12.5} status="normal" format={() => "12.5%"} /></Descriptions.Item>
+                    <Descriptions.Item label="Leverage"><Progress percent={riskExposure.leverageRatio * 50} status="normal" format={() => `${riskExposure.leverageRatio}x`} /></Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          <TabPane tab={<span><LineChartOutlined />VaR Analysis</span>} key="var">
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={16}><Card title="VaR Distribution"><Line {...varDistributionConfig} height={400} /></Card></Col>
+              <Col xs={24} lg={8}>
+                <Card title="VaR Metrics">
+                  <Descriptions column={1} size="small">
+                    <Descriptions.Item label="Method">{varData.method?.toUpperCase()}</Descriptions.Item>
+                    <Descriptions.Item label="Portfolio VaR"><Text type="danger">${varData.portfolioVar?.toLocaleString()}</Text></Descriptions.Item>
+                    <Descriptions.Item label="Backtesting"><Progress percent={varData.backtestAccuracy * 100} status="success" /></Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+              <Col xs={24}>
+                <Card title="VaR Breakdown by Asset">
+                  <Table dataSource={varData.breakdown} pagination={false} columns={[
+                    { title: 'Asset', dataIndex: 'asset' },
+                    { title: 'Individual VaR', dataIndex: 'individualVar', align: 'right', render: v => `$${v?.toLocaleString()}` },
+                    { title: 'Contribution %', dataIndex: 'contribution', align: 'right', render: v => `${(v * 100).toFixed(2)}%` }
+                  ]} />
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          <TabPane tab={<span><ExperimentOutlined />Stress Testing</span>} key="stress">
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={16}>
+                <Card title="Stress Test Results">
+                  <div className="stress-results">
+                    <h3>{stressTestData.scenarioName}</h3>
+                    <Row gutter={16}>
+                      <Col span={8}><Statistic title="Portfolio Loss" value={stressTestData.portfolioLoss} prefix="$" valueStyle={{ color: '#cf1322' }} /></Col>
+                      <Col span={8}><Statistic title="Loss %" value={stressTestData.lossPercentage} suffix="%" /></Col>
+                      <Col span={8}><Statistic title="Recovery Time" value={stressTestData.recoveryTime} suffix=" days" /></Col>
+                    </Row>
+                    <Divider />
+                    <Table size="small" dataSource={stressTestData.assetImpacts} columns={[
+                      { title: 'Asset', dataIndex: 'asset' },
+                      { title: 'Loss', dataIndex: 'loss', render: v => <Text type="danger">-${v?.toLocaleString()}</Text> },
+                      { title: 'Loss %', dataIndex: 'lossPercentage', render: v => <Text type="danger">{v?.toFixed(2)}%</Text> }
+                    ]} pagination={false} />
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} lg={8}>
+                <Card title="Risk Mitigation">
+                  <div className="mitigation-strategies">
+                    <div className="strategy-item"><h4>Hedging</h4><p>Purchase put options to protect downside.</p><Button size="small" type="primary">Execute</Button></div>
+                    <Divider />
+                    <div className="strategy-item"><h4>Liquidity Buffer</h4><p>Maintain 10% cash buffer.</p><Tag color="green">Active</Tag></div>
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+
+          <TabPane tab={<span><HeatMapOutlined />Correlation Analysis</span>} key="correlation">
+            <Row gutter={[24, 24]}>
+              <Col xs={24} lg={16}><Card title="Correlation Matrix"><Heatmap {...correlationHeatmapConfig} height={500} /></Card></Col>
+              <Col xs={24} lg={8}>
+                <Card title="Correlation Insights">
+                   <div className="insight-item"><span>Portfolio Correlation:</span> <strong>{(riskExposure.portfolioCorrelation * 100).toFixed(1)}%</strong></div>
+                   <Divider />
+                   <p>{riskExposure.portfolioCorrelation > 0.6 ? 'High correlation detected. Consider diversification.' : 'Good diversification.'}</p>
+                </Card>
+              </Col>
+            </Row>
+          </TabPane>
+        </Tabs>
+      </Card>
+
+      <Modal title="Create Custom Scenario" open={isScenarioModalOpen} onCancel={() => setIsScenarioModalOpen(false)} onOk={runCustomScenario}>
+        <Form form={scenarioForm} layout="vertical">
+          <Form.Item name="name" label="Scenario Name" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="description" label="Description"><Input.TextArea rows={3} /></Form.Item>
+          <Form.Item name="duration" label="Duration (days)"><InputNumber min={1} defaultValue={30} /></Form.Item>
+        </Form>
+      </Modal>
+
+      {error && <Alert message="Error" description={error} type="error" showIcon closable style={{ marginTop: 16 }} />}
+    </div>
   );
 };
 

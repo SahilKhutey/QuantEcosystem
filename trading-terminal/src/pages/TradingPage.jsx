@@ -1,406 +1,727 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FiTrendingUp, FiTrendingDown, FiArrowRight, FiActivity, FiLayers, FiList } from 'react-icons/fi';
-import { useMarketData } from '../services/data/marketData';
-import useAppStore from '../services/store/appStore';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Button, 
+  InputNumber, 
+  Select, 
+  Table, 
+  Spin, 
+  Alert,
+  Tabs,
+  Tag,
+  Space,
+  Divider,
+  Typography,
+  Tooltip,
+  Badge
+} from 'antd';
+import { 
+  PlayCircleOutlined,
+  StopOutlined,
+  PlusOutlined,
+  MinusOutlined,
+  ReloadOutlined,
+  InfoCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ClockCircleOutlined
+} from '@ant-design/icons';
+import { Column } from '@ant-design/plots';
+import { tradingAPI } from '../services/api/trading'; // Corrected path
+import './TradingPage.css';
 
-const TradingContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  grid-template-rows: auto 1fr auto;
-  gap: 20px;
-  height: 100%;
-  
-  .main-chart-area {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-    background: var(--secondary-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .order-book-area {
-    grid-column: 2;
-    grid-row: 1;
-    background: var(--secondary-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    height: 450px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .order-entry-area {
-    grid-column: 2;
-    grid-row: 2;
-    background: var(--secondary-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-  }
-  
-  .trade-history-area {
-    grid-column: 1 / span 2;
-    grid-row: 3;
-    background: var(--secondary-dark);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-  }
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-primary);
-  
-  svg {
-    color: var(--accent-blue);
-  }
-`;
-
-const OrderBookTable = styled.div`
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 12px;
-  
-  .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    padding: 4px 0;
-    position: relative;
-    
-    .price { font-weight: 600; }
-    .amount { text-align: right; color: var(--text-tertiary); }
-    .total { text-align: right; color: var(--text-tertiary); }
-    
-    &.ask .price { color: var(--accent-red); }
-    &.bid .price { color: var(--accent-green); }
-    
-    .depth-bar {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 0;
-      opacity: 0.15;
-    }
-  }
-  
-  .spread {
-    text-align: center;
-    padding: 8px 0;
-    margin: 4px 0;
-    background: rgba(255, 255, 255, 0.03);
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-`;
-
-const OrderEntryForm = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  
-  .tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 5px;
-    
-    button {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid var(--border-color);
-      background: var(--tertiary-dark);
-      border-radius: 4px;
-      font-size: 13px;
-      cursor: pointer;
-      
-      &.active.buy { background: var(--accent-green); color: white; border-color: var(--accent-green); }
-      &.active.sell { background: var(--accent-red); color: white; border-color: var(--accent-red); }
-    }
-  }
-  
-  .input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    
-    label { font-size: 12px; color: var(--text-tertiary); }
-    input {
-      background: var(--tertiary-dark);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      padding: 10px;
-      color: var(--text-primary);
-      outline: none;
-      
-      &:focus { border-color: var(--accent-blue); }
-    }
-  }
-  
-  .btn-submit {
-    margin-top: 5px;
-    padding: 12px;
-    border-radius: 4px;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    text-transform: uppercase;
-    
-    &.buy { background: var(--accent-green); color: white; }
-    &.sell { background: var(--accent-red); color: white; }
-  }
-`;
+const { TabPane } = Tabs;
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 const TradingPage = () => {
-  const { addToPortfolio } = useAppStore();
-  const { getLatestPrice, getPriceHistory, selectedSymbol } = useMarketData();
-  const [orderType, setOrderType] = useState('buy');
-  const [amount, setAmount] = useState('');
-  const [price, setPrice] = useState('0.00');
-  const [chartData, setChartData] = useState([]);
+  // State Management
+  const [selectedSymbol, setSelectedSymbol] = useState('BTC/USD');
+  const [marketData, setMarketData] = useState({});
+  const [orderBook, setOrderBook] = useState({ bids: [], asks: [] });
+  const [openOrders, setOpenOrders] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [orderForm, setOrderForm] = useState({
+    type: 'limit',
+    side: 'buy',
+    price: '',
+    amount: '',
+    total: ''
+  });
+  const [loading, setLoading] = useState({
+    orderBook: true,
+    openOrders: true,
+    positions: true,
+    marketData: true
+  });
+  const [error, setError] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
   
-  // Mock order book state
-  const [bids, setBids] = useState([]);
-  const [asks, setAsks] = useState([]);
-  const [lastPrice, setLastPrice] = useState(0);
+  const wsRef = useRef(null);
+  const priceInputRef = useRef(null);
+  const amountInputRef = useRef(null);
 
+  // Available trading pairs
+  const tradingPairs = [
+    { symbol: 'BTC/USD', name: 'Bitcoin / US Dollar' },
+    { symbol: 'ETH/USD', name: 'Ethereum / US Dollar' },
+    { symbol: 'SOL/USD', name: 'Solana / US Dollar' },
+    { symbol: 'ADA/USD', name: 'Cardano / US Dollar' },
+    { symbol: 'DOT/USD', name: 'Polkadot / US Dollar' },
+    { symbol: 'XRP/USD', name: 'Ripple / US Dollar' }
+  ];
+
+  const handleWebSocketMessage = useCallback((data) => {
+    switch (data.type) {
+      case 'orderbook':
+        setOrderBook(data.payload);
+        break;
+      case 'market_data':
+        setMarketData(data.payload);
+        break;
+      case 'order_update':
+        fetchOpenOrders();
+        break;
+      case 'position_update':
+        fetchPositions();
+        break;
+      default:
+        break;
+    }
+  }, []);
+
+  const connectWebSocket = useCallback((symbol) => {
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+
+    const ws = tradingAPI.connectWebSocket(symbol, handleWebSocketMessage);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      setIsConnected(true);
+      console.log(`Connected to WebSocket for ${symbol}`);
+    };
+
+    ws.onclose = () => {
+      setIsConnected(false);
+      console.log('WebSocket connection closed');
+    };
+
+    ws.onerror = (error) => {
+      setError('WebSocket connection error');
+      console.error('WebSocket error:', error);
+    };
+  }, [handleWebSocketMessage]);
+
+  // Connect to WebSocket for real-time updates
   useEffect(() => {
-    let isMounted = true;
-    
-    const initData = async () => {
-      try {
-        const currentPrice = await getLatestPrice();
-        if (!isMounted) return;
-        
-        const validPrice = typeof currentPrice === 'number' && !isNaN(currentPrice) ? currentPrice : 0;
-        setLastPrice(validPrice);
-        setPrice(validPrice.toFixed(2));
-        
-        const hist = await getPriceHistory();
-        if (!isMounted) return;
-        setChartData(Array.isArray(hist) ? hist : []);
-        
-        generateBook(validPrice);
-      } catch (err) {
-        console.error("TradingPage init failed", err);
-      }
-    };
-
-    const generateBook = (basePrice) => {
-      const p = basePrice || 1500;
-      const newAsks = Array.from({ length: 12 }, (_, i) => ({
-        price: p + (i + 1) * (p * 0.0001),
-        amount: Math.random() * 500,
-        total: 1000 + Math.random() * 5000
-      })).reverse();
-      
-      const newBids = Array.from({ length: 12 }, (_, i) => ({
-        price: p - (i + 1) * (p * 0.0001),
-        amount: Math.random() * 500,
-        total: 1000 + Math.random() * 5000
-      }));
-      
-      setAsks(newAsks);
-      setBids(newBids);
-    };
-
-    initData();
-    
-    const interval = setInterval(async () => {
-      try {
-        const p = await getLatestPrice();
-        if (isMounted && typeof p === 'number' && !isNaN(p) && p > 0) {
-          setLastPrice(p);
-          generateBook(p);
-        }
-      } catch (err) { /* ignore periodic errors */ }
-    }, 10000);
+    connectWebSocket(selectedSymbol);
     
     return () => {
-      isMounted = false;
-      clearInterval(interval);
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
     };
+  }, [selectedSymbol, connectWebSocket]);
+
+  const fetchMarketData = async () => {
+    setLoading(prev => ({ ...prev, marketData: true }));
+    try {
+      const response = await tradingAPI.getMarketData(selectedSymbol);
+      setMarketData(response.data);
+    } catch (err) {
+      console.error('Market data fetch error:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, marketData: false }));
+    }
+  };
+
+  const fetchOrderBook = async () => {
+    setLoading(prev => ({ ...prev, orderBook: true }));
+    try {
+      const response = await tradingAPI.getOrderBook(selectedSymbol);
+      setOrderBook(response.data);
+    } catch (err) {
+      console.error('Order book fetch error:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, orderBook: false }));
+    }
+  };
+
+  const fetchOpenOrders = async () => {
+    setLoading(prev => ({ ...prev, openOrders: true }));
+    try {
+      const response = await tradingAPI.getOpenOrders(selectedSymbol);
+      setOpenOrders(response.data);
+    } catch (err) {
+      console.error('Open orders fetch error:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, openOrders: false }));
+    }
+  };
+
+  const fetchPositions = async () => {
+    setLoading(prev => ({ ...prev, positions: true }));
+    try {
+      const response = await tradingAPI.getPositions(selectedSymbol);
+      setPositions(response.data);
+    } catch (err) {
+      console.error('Positions fetch error:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, positions: false }));
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading({
+      orderBook: true,
+      openOrders: true,
+      positions: true,
+      marketData: true
+    });
+    try {
+      await Promise.all([
+        fetchMarketData(),
+        fetchOrderBook(),
+        fetchOpenOrders(),
+        fetchPositions()
+      ]);
+    } catch (err) {
+      setError('Failed to fetch trading data');
+      console.error('Fetch error:', err);
+    }
+  };
+
+  // Fetch initial data
+  useEffect(() => {
+    fetchData();
   }, [selectedSymbol]);
 
-  return (
-    <TradingContainer className="page-container">
-      <div className="main-chart-area">
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <div>
-            <h2 style={{ fontSize: '24px', fontWeight: '700' }}>{selectedSymbol}</h2>
-            <div style={{ display: 'flex', gap: '15px', marginTop: '5px' }}>
-              <span style={{ color: 'var(--accent-green)', fontWeight: '600' }}>{lastPrice.toFixed(2)}</span>
-              <span style={{ color: 'var(--accent-green)' }}>+24.12 (1.14%)</span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {['1m', '5m', '15m', '1h', '1D'].map(tf => (
-              <button key={tf} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-tertiary)', cursor: 'pointer' }}>{tf}</button>
-            ))}
-          </div>
-        </div>
-        
-        <ResponsiveContainer width="100%" height={400}>
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--accent-blue)" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="var(--accent-blue)" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-            <XAxis dataKey="name" stroke="#666" hide />
-            <YAxis domain={['auto', 'auto']} stroke="#666" />
-            <Tooltip 
-              contentStyle={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '4px' }}
-              itemStyle={{ color: 'var(--accent-blue)' }}
-            />
-            <Area type="monotone" dataKey="price" stroke="var(--accent-blue)" fillOpacity={1} fill="url(#colorPrice)" strokeWidth={2} />
-          </AreaChart>
-        </ResponsiveContainer>
-        
-        <div style={{ marginTop: 'auto', display: 'flex', gap: '30px', padding: '15px 0', borderTop: '1px solid var(--border-color)' }}>
-          <div><div style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>24H HIGH</div><div style={{ fontWeight: '600' }}>22,512.00</div></div>
-          <div><div style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>24H LOW</div><div style={{ fontWeight: '600' }}>22,340.50</div></div>
-          <div><div style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>24H VOLUME</div><div style={{ fontWeight: '600' }}>842.12M</div></div>
-        </div>
-      </div>
+  // Handle form changes
+  const handleOrderFormChange = (field, value) => {
+    setOrderForm(prev => {
+      const updated = { ...prev, [field]: value };
       
-      <div className="order-book-area">
-        <SectionTitle><FiLayers size={16} /> Order Book</SectionTitle>
-        <OrderBookTable>
-          <div className="row header" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', marginBottom: '8px' }}>
-            <div className="price">Price</div>
-            <div className="amount">Amt</div>
-            <div className="total">Total</div>
-          </div>
-          
-          {asks.map((ask, idx) => (
-            <div key={`ask-${idx}`} className="row ask">
-              <div className="price">{ask.price.toFixed(2)}</div>
-              <div className="amount">{ask.amount.toFixed(2)}</div>
-              <div className="total">{ask.total.toLocaleString()}</div>
-              <div className="depth-bar" style={{ width: `${(ask.amount / 500) * 100}%`, background: 'var(--accent-red)' }}></div>
-            </div>
-          ))}
-          
-          <div className="spread">Spread: 0.5 (0.002%)</div>
-          
-          {bids.map((bid, idx) => (
-            <div key={`bid-${idx}`} className="row bid">
-              <div className="price">{bid.price.toFixed(2)}</div>
-              <div className="amount">{bid.amount.toFixed(2)}</div>
-              <div className="total">{bid.total.toLocaleString()}</div>
-              <div className="depth-bar" style={{ width: `${(bid.amount / 500) * 100}%`, background: 'var(--accent-green)' }}></div>
-            </div>
-          ))}
-        </OrderBookTable>
-      </div>
+      // Auto-calculate total when price or amount changes
+      if ((field === 'price' || field === 'amount') && updated.price && updated.amount) {
+        updated.total = (parseFloat(updated.price) * parseFloat(updated.amount)).toFixed(2);
+      }
       
-      <div className="order-entry-area">
-        <SectionTitle><FiActivity size={16} /> Place Order</SectionTitle>
-        <OrderEntryForm>
-          <div className="tabs">
-            <button 
-              className={`buy ${orderType === 'buy' ? 'active' : ''}`}
-              onClick={() => setOrderType('buy')}
-            >BUY</button>
-            <button 
-              className={`sell ${orderType === 'sell' ? 'active' : ''}`}
-              onClick={() => setOrderType('sell')}
-            >SELL</button>
-          </div>
-          
-          <div className="input-group">
-            <label>Price ({selectedSymbol})</label>
-            <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
-          </div>
-          
-          <div className="input-group">
-            <label>Amount (Lots)</label>
-            <input type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
-          </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-            <span style={{ color: 'var(--text-tertiary)' }}>Available</span>
-            <span>1.24 BTC / ₹4.50L</span>
-          </div>
-          
-          <button className={`btn-submit ${orderType}`}>
-            {orderType === 'buy' ? 'Execute Buy' : 'Execute Sell'}
-          </button>
+      return updated;
+    });
+  };
 
-          <button 
-            onClick={() => addToPortfolio({
-              symbol: selectedSymbol,
-              qty: parseFloat(amount) || 1,
-              avg: parseFloat(price) || lastPrice
-            })}
-            style={{ 
-              marginTop: '10px', 
-              padding: '10px', 
-              borderRadius: '4px', 
-              background: 'transparent', 
-              border: '1px solid var(--accent-blue)', 
-              color: 'var(--accent-blue)',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            Add to Portfolio
-          </button>
-        </OrderEntryForm>
-      </div>
+  // Place order
+  const handlePlaceOrder = async () => {
+    try {
+      const orderData = {
+        symbol: selectedSymbol,
+        type: orderForm.type,
+        side: orderForm.side,
+        price: parseFloat(orderForm.price),
+        amount: parseFloat(orderForm.amount)
+      };
+
+      const response = await tradingAPI.placeOrder(orderData);
       
-      <div className="trade-history-area">
-        <SectionTitle><FiList size={16} /> Market History</SectionTitle>
-        <div style={{ overflow: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-            <thead>
-              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)', color: 'var(--text-tertiary)' }}>
-                <th style={{ padding: '10px 0' }}>Time</th>
-                <th style={{ padding: '10px 0' }}>Type</th>
-                <th style={{ padding: '10px 0' }}>Price</th>
-                <th style={{ padding: '10px 0' }}>Size</th>
-                <th style={{ padding: '10px 0' }}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...Array(5)].map((_, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '10px 0' }}>15:34:2{i}</td>
-                  <td style={{ padding: '10px 0', color: i % 2 === 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                    {i % 2 === 0 ? 'BUY' : 'SELL'}
-                  </td>
-                  <td style={{ padding: '10px 0' }}>{lastPrice.toFixed(2)}</td>
-                  <td style={{ padding: '10px 0' }}>{(Math.random() * 10).toFixed(4)}</td>
-                  <td style={{ padding: '10px 0' }}>₹{(Math.random() * 100000).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      if (response.status === 'success') {
+        // Reset form
+        setOrderForm({
+          type: 'limit',
+          side: 'buy',
+          price: '',
+          amount: '',
+          total: ''
+        });
+        
+        // Refresh data
+        fetchOpenOrders();
+        fetchPositions();
+        
+        // Show success notification (In production use antd message)
+        console.log('Order placed successfully!');
+      } else {
+        throw new Error(response.message || 'Failed to place order');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to place order');
+      console.error('Order placement error:', err);
+    }
+  };
+
+  // Cancel order
+  const handleCancelOrder = async (orderId) => {
+    try {
+      const response = await tradingAPI.cancelOrder(orderId);
+      
+      if (response.status === 'success') {
+        fetchOpenOrders();
+        console.log('Order cancelled successfully!');
+      } else {
+        throw new Error(response.message || 'Failed to cancel order');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to cancel order');
+      console.error('Order cancellation error:', err);
+    }
+  };
+
+  // Quick fill functions
+  const quickFillPrice = (price) => {
+    handleOrderFormChange('price', price.toString());
+    if (priceInputRef.current) {
+      priceInputRef.current.focus();
+    }
+  };
+
+  const quickFillAmount = (amount) => {
+    handleOrderFormChange('amount', amount.toString());
+    if (amountInputRef.current) {
+      amountInputRef.current.focus();
+    }
+  };
+
+  // Order Book Columns
+  const orderBookColumns = [
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      key: 'price',
+      align: 'right',
+      render: (price, record) => (
+        <Text 
+          strong 
+          type={record.type === 'bid' ? 'success' : 'danger'}
+          style={{ cursor: 'pointer' }}
+          onClick={() => quickFillPrice(price)}
+        >
+          {price.toFixed(2)}
+        </Text>
+      )
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+      align: 'right',
+      render: (amount) => amount.toFixed(6)
+    },
+    {
+      title: 'Total',
+      dataIndex: 'total',
+      key: 'total',
+      align: 'right',
+      render: (total) => total.toFixed(2)
+    }
+  ];
+
+  // Open Orders Columns
+  const openOrdersColumns = [
+    {
+      title: 'Time',
+      dataIndex: 'timestamp',
+      key: 'timestamp',
+      render: (timestamp) => new Date(timestamp).toLocaleTimeString()
+    },
+    {
+      title: 'Pair',
+      dataIndex: 'symbol',
+      key: 'symbol'
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type',
+      render: (type) => (
+        <Tag color={type === 'limit' ? 'blue' : 'orange'}>
+          {type.toUpperCase()}
+        </Tag>
+      )
+    },
+    {
+      title: 'Side',
+      dataIndex: 'side',
+      key: 'side',
+      render: (side) => (
+        <Tag color={side === 'buy' ? 'green' : 'red'}>
+          {side.toUpperCase()}
+        </Tag>
+      )
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      key: 'price',
+      render: (price) => `$${price?.toFixed(2)}`
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (amount) => amount.toFixed(6)
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status = 'open') => {
+        const statusColors = {
+          'open': 'blue',
+          'partially_filled': 'orange',
+          'filled': 'green',
+          'cancelled': 'red'
+        };
+        return <Tag color={statusColors[status]}>{status.toUpperCase()}</Tag>;
+      }
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Button 
+          type="link" 
+          danger
+          onClick={() => handleCancelOrder(record.id)}
+        >
+          Cancel
+        </Button>
+      )
+    }
+  ];
+
+  // Position Columns
+  const positionsColumns = [
+    {
+      title: 'Symbol',
+      dataIndex: 'symbol',
+      key: 'symbol'
+    },
+    {
+      title: 'Side',
+      dataIndex: 'side',
+      key: 'side',
+      render: (side) => (
+        <Tag color={side === 'long' ? 'green' : 'red'}>
+          {side ? side.toUpperCase() : 'LONG'}
+        </Tag>
+      )
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (amount) => parseFloat(amount).toFixed(6)
+    },
+    {
+      title: 'Entry Price',
+      dataIndex: 'entryPrice',
+      key: 'entryPrice',
+      render: (price) => `$${parseFloat(price || 0).toFixed(2)}`
+    },
+    {
+      title: 'Current Price',
+      dataIndex: 'currentPrice',
+      key: 'currentPrice',
+      render: (price) => `$${parseFloat(price || 0).toFixed(2)}`
+    },
+    {
+      title: 'P&L',
+      dataIndex: 'pnl',
+      key: 'pnl',
+      render: (pnl) => (
+        <Text type={parseFloat(pnl) >= 0 ? 'success' : 'danger'}>
+          ${parseFloat(pnl || 0).toFixed(2)}
+        </Text>
+      )
+    }
+  ];
+
+  const orderBookConfig = {
+    data: [
+        ...(orderBook.bids || []).map(b => ({ price: b[0], amount: b[1], type: 'bid' })),
+        ...(orderBook.asks || []).map(a => ({ price: a[0], amount: a[1], type: 'ask' }))
+    ],
+    xField: 'amount',
+    yField: 'price',
+    seriesField: 'type',
+    color: ['#52c41a', '#ff4d4f'],
+  };
+
+  return (
+    <div className="trading-page">
+      {/* Page Header */}
+      <div className="trading-header">
+        <Title level={2} style={{ margin: 0 }}>
+          Trading Terminal
+        </Title>
+        <div className="header-controls">
+          <Badge 
+            status={isConnected ? "success" : "error"} 
+            text={isConnected ? "Connected" : "Disconnected"}
+          />
+          <Button 
+            icon={<ReloadOutlined />} 
+            onClick={fetchData}
+            loading={Object.values(loading).some(l => l)}
+          >
+            Refresh
+          </Button>
         </div>
       </div>
-    </TradingContainer>
+
+      {/* Market Info Bar */}
+      <Card className="market-info-bar" size="small">
+        <Row gutter={16} align="middle">
+          <Col>
+            <Select
+              value={selectedSymbol}
+              style={{ width: 180 }}
+              onChange={setSelectedSymbol}
+              showSearch
+            >
+              {tradingPairs.map(pair => (
+                <Option key={pair.symbol} value={pair.symbol}>
+                  {pair.symbol}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col>
+            <Text strong>Price:</Text> 
+            <Text type="success" style={{ fontSize: '1.2em', marginLeft: 8 }}>
+              ${marketData.lastPrice?.toFixed(2)}
+            </Text>
+          </Col>
+          <Col>
+            <Text strong>24h Change:</Text>
+            <Text 
+              type={marketData.change24h >= 0 ? "success" : "danger"} 
+              style={{ marginLeft: 8 }}
+            >
+              {marketData.change24h >= 0 ? '+' : ''}{marketData.change24h?.toFixed(2)}%
+            </Text>
+          </Col>
+          <Col>
+            <Text strong>24h Volume:</Text>
+            <Text style={{ marginLeft: 8 }}>
+              ${((marketData.volume24h || 0) / 1000000).toFixed(2)}M
+            </Text>
+          </Col>
+        </Row>
+      </Card>
+
+      {/* Main Trading Area */}
+      <Row gutter={[16, 16]} className="trading-main">
+        {/* Left Panel - Order Form and Market Depth */}
+        <Col xs={24} lg={8}>
+          {/* Order Entry Form */}
+          <Card title="Order Entry" className="order-form-card">
+            <div className="order-form-section">
+              <div className="form-row">
+                <Button.Group style={{ width: '100%' }}>
+                  <Button 
+                    type={orderForm.side === 'buy' ? 'primary' : 'default'}
+                    onClick={() => handleOrderFormChange('side', 'buy')}
+                    style={{ width: '50%', backgroundColor: orderForm.side === 'buy' ? '#52c41a' : undefined }}
+                  >
+                    Buy
+                  </Button>
+                  <Button 
+                    type={orderForm.side === 'sell' ? 'primary' : 'default'}
+                    onClick={() => handleOrderFormChange('side', 'sell')}
+                    style={{ width: '50%', backgroundColor: orderForm.side === 'sell' ? '#ff4d4f' : undefined }}
+                  >
+                    Sell
+                  </Button>
+                </Button.Group>
+              </div>
+
+              <div className="form-row">
+                <label>Order Type</label>
+                <Select
+                  value={orderForm.type}
+                  onChange={(value) => handleOrderFormChange('type', value)}
+                  style={{ width: '100%' }}
+                >
+                  <Option value="limit">Limit</Option>
+                  <Option value="market">Market</Option>
+                </Select>
+              </div>
+
+              <div className="form-row">
+                <label>Price</label>
+                <InputNumber
+                  ref={priceInputRef}
+                  value={orderForm.price}
+                  onChange={(value) => handleOrderFormChange('price', value)}
+                  placeholder="0.00"
+                  style={{ width: '100%' }}
+                  step={0.01}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Amount</label>
+                <InputNumber
+                  ref={amountInputRef}
+                  value={orderForm.amount}
+                  onChange={(value) => handleOrderFormChange('amount', value)}
+                  placeholder="0.000000"
+                  style={{ width: '100%' }}
+                  step={0.000001}
+                />
+              </div>
+
+              <div className="form-row">
+                <label>Total</label>
+                <InputNumber
+                  value={orderForm.total}
+                  readOnly
+                  placeholder="0.00"
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <Button 
+                type="primary" 
+                size="large" 
+                block
+                onClick={handlePlaceOrder}
+                loading={loading.openOrders}
+                style={{ 
+                  marginTop: 16,
+                  backgroundColor: orderForm.side === 'buy' ? '#52c41a' : '#ff4d4f',
+                  borderColor: orderForm.side === 'buy' ? '#52c41a' : '#ff4d4f'
+                }}
+              >
+                {orderForm.side.toUpperCase()}
+              </Button>
+            </div>
+          </Card>
+
+          {/* Market Depth Visualization */}
+          <Card title="Market Depth" style={{ marginTop: 16 }}>
+            {loading.orderBook ? <Spin /> : <Column {...orderBookConfig} height={200} />}
+          </Card>
+        </Col>
+
+        {/* Center Panel - Order Book */}
+        <Col xs={24} lg={8}>
+          <Card 
+            title="Order Book" 
+            className="order-book-card"
+          >
+            {loading.orderBook ? (
+              <div className="loading-container">
+                <Spin />
+              </div>
+            ) : (
+              <div className="order-book-container">
+                {/* Asks (Sell Orders) */}
+                <div className="order-book-section">
+                  <Table
+                    columns={orderBookColumns}
+                    dataSource={(orderBook.asks || []).slice(0, 15).map(a => ({ price: a[0], amount: a[1], total: a[0] * a[1], type: 'ask' }))}
+                    pagination={false}
+                    showHeader={false}
+                    size="small"
+                    rowKey="price"
+                    rowClassName="ask-row"
+                  />
+                </div>
+
+                {/* Spread Indicator */}
+                <div className="spread-indicator" style={{ textAlign: 'center', padding: '8px 0', borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', margin: '8px 0' }}>
+                  <Text strong>Spread: </Text>
+                  <Text>{((orderBook.asks?.[0]?.[0] - orderBook.bids?.[0]?.[0]) || 0).toFixed(2)}</Text>
+                  <Text type="secondary" style={{ marginLeft: 8 }}>
+                    ({(((orderBook.asks?.[0]?.[0] - orderBook.bids?.[0]?.[0]) / orderBook.bids?.[0]?.[0]) * 100 || 0).toFixed(4)}%)
+                  </Text>
+                </div>
+
+                {/* Bids (Buy Orders) */}
+                <div className="order-book-section">
+                  <Table
+                    columns={orderBookColumns}
+                    dataSource={(orderBook.bids || []).slice(0, 15).map(b => ({ price: b[0], amount: b[1], total: b[0] * b[1], type: 'bid' }))}
+                    pagination={false}
+                    showHeader={false}
+                    size="small"
+                    rowKey="price"
+                    rowClassName="bid-row"
+                  />
+                </div>
+              </div>
+            )}
+          </Card>
+        </Col>
+
+        {/* Right Panel - Positions and Orders */}
+        <Col xs={24} lg={8}>
+          <Tabs defaultActiveKey="1" className="trading-tabs">
+            <TabPane tab="Positions" key="1">
+              <Card size="small" className="positions-card">
+                {loading.positions ? (
+                  <div className="loading-container">
+                    <Spin />
+                  </div>
+                ) : positions.length > 0 ? (
+                  <Table
+                    columns={positionsColumns}
+                    dataSource={positions}
+                    pagination={false}
+                    size="small"
+                    rowKey="symbol"
+                  />
+                ) : (
+                  <div className="empty-state" style={{ textAlign: 'center', padding: '20px' }}>
+                    <Text>No open positions</Text>
+                  </div>
+                )}
+              </Card>
+            </TabPane>
+            
+            <TabPane tab="Open Orders" key="2">
+              <Card size="small" className="orders-card">
+                {loading.openOrders ? (
+                  <div className="loading-container">
+                    <Spin />
+                  </div>
+                ) : openOrders.length > 0 ? (
+                  <Table
+                    columns={openOrdersColumns}
+                    dataSource={openOrders}
+                    pagination={false}
+                    size="small"
+                    rowKey="id"
+                  />
+                ) : (
+                  <div className="empty-state" style={{ textAlign: 'center', padding: '20px' }}>
+                    <Text>No open orders</Text>
+                  </div>
+                )}
+              </Card>
+            </TabPane>
+          </Tabs>
+        </Col>
+      </Row>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setError(null)}
+          style={{ marginTop: 16 }}
+        />
+      )}
+    </div>
   );
 };
 

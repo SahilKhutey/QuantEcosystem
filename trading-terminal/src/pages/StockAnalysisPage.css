@@ -1,0 +1,212 @@
+/* src/pages/StockAnalysisPage.css */
+.stock-analysis-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.analysis-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.overview-cards {
+  margin-bottom: 24px;
+}
+
+.overview-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.overview-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.price { border-left: 4px solid #52c41a; }
+.market-cap { border-left: 4px solid #1890ff; }
+.volume { border-left: 4px solid #722ed1; }
+.dividend { border-left: 4px solid #faad14; }
+
+.price-change, .market-cap-change, .volume-change, .dividend-amount {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.positive { color: #52c41a; }
+.negative { color: #ff4d4f; }
+
+.analysis-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.price-volume-charts {
+  display: grid;
+  grid-template-rows: 300px 150px;
+  gap: 8px;
+}
+
+.key-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.metric-item {
+  text-align: center;
+  padding: 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.metric-label { font-weight: 500; margin-bottom: 8px; color: #1a1a1a; }
+.metric-value { font-size: 1.5rem; font-weight: 600; }
+
+.company-overview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.indicator-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  background: #fff;
+}
+
+.volatility-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.news-item {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.news-item:hover { background-color: #fafafa; }
+.news-item.positive { border-left: 4px solid #52c41a; }
+.news-item.negative { border-left: 4px solid #ff4d4f; }
+
+.ratings-summary, .ownership-summary, .options-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rating-item, .ownership-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.performance-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.performance-chart {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  height: 300px;
+  background: #fff;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .stock-analysis-page { background-color: #141414; color: #ffffff; }
+  .analysis-header h1 { color: #ffffff; }
+  .analysis-content-card, .metric-item, .indicator-item, .performance-chart, .company-overview {
+    background-color: #1f1f1f !important;
+    border-color: #303030;
+    color: #ffffff;
+  }
+  .metric-label, .indicator-name, .news-title a, .news-meta,
+  .topic-name, .rating-label, .analysis-label {
+    color: #ffffff;
+  }
+
+  .metric-value, .indicator-value, .news-sentiment, .topic-volume,
+  .rating-value, .analysis-value {
+    color: #e6e6e6;
+  }
+
+  .metric-value.positive { color: #52c41a; }
+  .metric-value.negative { color: #ff4d4f; }
+
+  .news-item.positive { background-color: #1a3a1a !important; }
+  .news-item.negative { background-color: #3a1a1a !important; }
+
+  .news-title a:hover { color: #1890ff; }
+
+  .ant-table { background-color: #262626 !important; }
+  .ant-table-thead > tr > th { background-color: #333333 !important; color: #ffffff !important; border-bottom: 1px solid #434343 !important; }
+  .ant-table-tbody > tr > td { border-bottom: 1px solid #434343 !important; }
+  .ant-table-tbody > tr:hover > td { background-color: #333333 !important; }
+
+  .ant-card { background-color: #262626 !important; border-color: #434343 !important; }
+  .ant-card-head { border-bottom: 1px solid #434343 !important; color: #ffffff !important; }
+
+  .ant-select-selector, .ant-input, .ant-input-affix-wrapper {
+    background-color: #262626 !important;
+    border-color: #434343 !important;
+    color: #ffffff !important;
+  }
+
+  .ant-btn { background-color: #333333 !important; border-color: #434343 !important; color: #ffffff !important; }
+  .ant-btn-primary { background-color: #1890ff !important; border-color: #1890ff !important; }
+
+  .ant-tag { background-color: #333333 !important; border-color: #434343 !important; color: #ffffff; }
+  .ant-tag-blue { background-color: #1890ff !important; }
+  .ant-tag-red { background-color: #ff4d4f !important; }
+  .ant-tag-green { background-color: #52c41a !important; }
+  .ant-tag-orange { background-color: #faad14 !important; }
+
+  .ant-statistic-content { color: #e6e6e6; }
+  .ant-progress-bg { background-color: #1890ff !important; }
+  .ant-progress-text { color: #e6e6e6; }
+  .ant-divider { background-color: #434343 !important; }
+  .ant-descriptions-item-label { background-color: #1f1f1f !important; color: #e6e6e6 !important; }
+  .ant-descriptions-item-content { color: #e6e6e6 !important; }
+  .ant-tabs-tab { color: #e6e6e6 !important; }
+  .ant-tabs-tab-active .ant-tabs-tab-btn { color: #1890ff !important; }
+}
+
+@media (max-width: 768px) {
+  .performance-charts { grid-template-columns: 1fr; }
+  .price-volume-charts { grid-template-rows: 250px 125px; }
+  .analysis-header { flex-direction: column; align-items: stretch; }
+}

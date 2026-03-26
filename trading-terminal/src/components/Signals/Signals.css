@@ -1,0 +1,356 @@
+/* src/components/Signals/Signals.css */
+.signal-dashboard {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.signal-header {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #fff;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-title {
+  font-weight: 500;
+  font-size: 24px;
+}
+
+.dashboard-tabs .ant-tabs {
+  margin-top: 24px;
+}
+
+.signal-indicator {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.signal-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.signal-direction {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.direction-indicator {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.signal-strength {
+  text-align: left;
+}
+
+.strength-label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.strength-value {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.signal-metrics {
+  margin-top: 16px;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-weight: 600;
+}
+
+.confidence-ticker {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.confidence-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.confidence-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.confidence-timer {
+  font-weight: 500;
+}
+
+.confidence-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.confidence-level {
+  display: flex;
+  align-items: center;
+  height: 60px;
+}
+
+.level-indicator {
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.confidence-meter {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.meter-value {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.confidence-score {
+  display: flex;
+  align-items: center;
+  height: 60px;
+}
+
+.score-value {
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.signal-strength-bar {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.strength-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.strength-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.strength-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.strength-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.bar-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.strength-metrics {
+  width: 100%;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.signal-history {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.history-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.history-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.history-chart {
+  height: 300px;
+  margin-bottom: 16px;
+}
+
+.history-metrics {
+  margin-top: 16px;
+}
+
+.signal-alerts {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.alerts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.alerts-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.alerts-content {
+  height: 100%;
+}
+
+.alert-item {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 0;
+}
+
+.alert-item:last-child {
+  border-bottom: none;
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.alert-severity {
+  font-weight: 500;
+}
+
+.alert-date {
+  font-size: 12px;
+  color: #666;
+}
+
+.alert-title-text {
+  font-weight: 500;
+}
+
+.alert-description {
+  margin-top: 8px;
+}
+
+.alert-content {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.alert-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.signal-metrics {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.metrics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.metrics-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.metrics-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.metrics-description {
+  margin-top: 16px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .signal-dashboard {
+    padding: 16px;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .dashboard-tabs .ant-tabs {
+    margin-top: 16px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .signal-dashboard {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .signal-header, .signal-indicator, .confidence-ticker, 
+  .signal-strength-bar, .signal-history, .signal-alerts, 
+  .signal-metrics {
+    background-color: #262626 !important;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .alert-item {
+    border-color: #434343;
+  }
+  
+  .alert-content, .metric-label {
+    color: #e6e6e6;
+  }
+}

@@ -1,0 +1,247 @@
+/* src/pages/PortfolioPage.css */
+.portfolio-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.portfolio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.portfolio-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.summary-cards {
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.total-value {
+  border-left: 4px solid #1890ff;
+}
+
+.daily-pnl {
+  border-left: 4px solid #52c41a;
+}
+
+.allocation {
+  border-left: 4px solid #722ed1;
+}
+
+.risk-score {
+  border-left: 4px solid #faad14;
+}
+
+.portfolio-change {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.portfolio-change .positive {
+  color: #52c41a;
+}
+
+.portfolio-change .negative {
+  color: #ff4d4f;
+}
+
+.portfolio-subtext {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.portfolio-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chart-loading, .table-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.risk-charts {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.risk-metrics {
+  flex: 1;
+  min-width: 200px;
+}
+
+.risk-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.risk-item:last-child {
+  border-bottom: none;
+}
+
+.risk-item span {
+  color: #666;
+}
+
+.performance-stat {
+  text-align: center;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #fafafa;
+  transition: all 0.3s;
+}
+
+.performance-stat:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-2px);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.stat-value.positive {
+  color: #52c41a;
+}
+
+.stat-value.negative {
+  color: #ff4d4f;
+}
+
+.asset-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.asset-symbol {
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+.asset-name {
+  font-size: 0.8em;
+  color: #666;
+}
+
+.pnl-positive {
+  color: #52c41a;
+  font-weight: 500;
+}
+
+.pnl-negative {
+  color: #ff4d4f;
+  font-weight: 500;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .portfolio-page {
+    padding: 16px;
+  }
+  
+  .portfolio-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-controls {
+    justify-content: flex-end;
+  }
+  
+  .summary-cards {
+    margin-bottom: 16px;
+  }
+  
+  .risk-charts {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .performance-stat {
+    margin-bottom: 8px;
+  }
+  
+  .chart-card, .portfolio-content-card {
+    margin-bottom: 16px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .portfolio-page {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .summary-card, .chart-card, .portfolio-content-card {
+    background-color: #262626 !important;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .portfolio-subtext, .stat-label, .risk-item span {
+    color: #bfbfbf;
+  }
+  
+  .performance-stat {
+    background-color: #333333;
+  }
+  
+  .performance-stat:hover {
+    background-color: #404040;
+  }
+}

@@ -1,0 +1,167 @@
+/* src/components/GlobalWealthMap/GlobalWealthMap.css */
+.global-wealth-map {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  border: none;
+}
+
+.wealth-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.map-title {
+  font-weight: 600;
+  font-size: 18px;
+  color: #1a1a1a;
+}
+
+.map-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.map-legend-container {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.map-visualization {
+  width: 100%;
+  height: 450px;
+  position: relative;
+  background-color: #f7f9fc;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.map-heat-overlay {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.map-heat-layer {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 4px;
+  padding: 10px;
+}
+
+.wealth-heat-cell {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  transition: transform 0.3s ease;
+}
+
+.wealth-heat-cell:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.map-loading, .map-error {
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.wealth-map-legend {
+  border: 1px solid #f0f0f0;
+  transition: box-shadow 0.3s ease;
+}
+
+.wealth-map-legend:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.legend-content {
+  padding: 0;
+}
+
+.legend-scale-item {
+  transition: background 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.legend-scale-item:hover {
+  background: #f5f5f5;
+}
+
+.wealth-distribution-chart, .regional-wealth-breakdown, .wealth-quintile-breakdown {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  border: none;
+}
+
+.region-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.region-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quintile-item {
+  transition: background 0.2s ease;
+}
+
+.quintile-item:hover {
+  background: #fafafa;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .global-wealth-map, .wealth-distribution-chart, .regional-wealth-breakdown, .wealth-quintile-breakdown {
+    background-color: #1a1a1a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .map-title {
+    color: #ffffff;
+  }
+  
+  .map-visualization {
+    background-color: #262626;
+  }
+  
+  .legend-description {
+    color: #bfbfbf;
+  }
+  
+  .region-item, .quintile-item {
+    background-color: #262626;
+    border-color: #434343;
+  }
+  
+  .quintile-item:hover {
+    background: #333333;
+  }
+}

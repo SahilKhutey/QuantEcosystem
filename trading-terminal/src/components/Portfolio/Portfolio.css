@@ -1,0 +1,299 @@
+/* src/components/Portfolio/Portfolio.css */
+.portfolio-position-table {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.position-table .ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.position-table .table-row-even {
+  background-color: #f9f9f9;
+}
+
+.position-table .table-row-odd {
+  background-color: #ffffff;
+}
+
+.position-table .asset-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.position-table .asset-symbol {
+  font-weight: 500;
+}
+
+.position-table .asset-name {
+  font-size: 12px;
+  color: #666;
+}
+
+.position-table .positive {
+  color: #52c41a;
+}
+
+.position-table .negative {
+  color: #ff4d4f;
+}
+
+.allocation-chart {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.allocation-chart .chart-container {
+  padding: 16px;
+}
+
+.allocation-chart .chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.allocation-chart .chart-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.allocation-chart .allocation-statistics {
+  margin-top: 24px;
+}
+
+.allocation-chart .statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.performance-chart {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.performance-chart .chart-container {
+  padding: 16px;
+}
+
+.performance-chart .chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.performance-chart .chart-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.performance-chart .performance-metrics {
+  margin-top: 24px;
+}
+
+.performance-chart .metric-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.performance-chart .metric-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.performance-chart .metric-value {
+  font-weight: 600;
+}
+
+.portfolio-summary {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.summary-container {
+  padding: 16px;
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.summary-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.summary-content {
+  position: relative;
+}
+
+.summary-metrics {
+  margin-bottom: 24px;
+}
+
+.allocation-summary {
+  margin: 24px 0;
+}
+
+.allocation-item {
+  margin-bottom: 12px;
+}
+
+.allocation-title {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.allocation-percentage {
+  font-weight: 500;
+}
+
+.risk-metrics, .performance-summary {
+  margin: 24px 0;
+}
+
+.metric-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-weight: 600;
+}
+
+.transaction-history {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.transaction-table .ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.transaction-table .table-row-even {
+  background-color: #f9f9f9;
+}
+
+.transaction-table .table-row-odd {
+  background-color: #ffffff;
+}
+
+.transaction-table .asset-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-table .asset-symbol {
+  font-weight: 500;
+}
+
+.transaction-table .asset-name {
+  font-size: 12px;
+  color: #666;
+}
+
+.transaction-table .positive {
+  color: #52c41a;
+}
+
+.transaction-table .negative {
+  color: #ff4d4f;
+}
+
+.transaction-summary {
+  margin: 16px 0;
+}
+
+.summary-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-weight: 600;
+}
+
+.portfolio-dashboard {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.portfolio-header {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-title {
+  font-weight: 500;
+  font-size: 24px;
+}
+
+.dashboard-tabs {
+  margin-bottom: 24px;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.dashboard-content {
+  position: relative;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .portfolio-dashboard {
+    padding: 16px;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .tab-buttons {
+    flex-wrap: wrap;
+  }
+  
+  .summary-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .statistics-grid, .allocation-items {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,232 @@
+/* src/components/TradingView/TradingView.css */
+.tradingview-chart {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.tradingview-header {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tradingview-container {
+  padding: 16px;
+}
+
+.tradingview-title {
+  font-weight: 500;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.tradingview-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tradingview-content {
+  height: 500px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin: 24px 0;
+  position: relative;
+}
+
+.tradingview-visualization {
+  width: 100%;
+  height: 100%;
+}
+
+.tradingview-loading, .tradingview-error {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.tradingview-loading .loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #1890ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.tradingview-error .error-message {
+  color: #ff4d4f;
+  font-weight: 500;
+}
+
+.tradingview-footer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.tradingview-studies, .tradingview-indicators, .tradingview-timeframe {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+}
+
+.studies-header, .indicators-header, .timeframe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.studies-title, .indicators-title, .timeframe-title {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.studies-content, .indicators-content, .timeframe-content {
+  height: 100%;
+}
+
+.no-studies, .no-indicators {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.no-studies-icon, .no-indicators-icon {
+  color: #1890ff;
+  margin-bottom: 8px;
+}
+
+.no-studies-message, .no-indicators-message {
+  color: #666;
+  font-size: 14px;
+}
+
+.studies-list, .indicators-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.study-item, .indicator-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+}
+
+.study-name, .indicator-name {
+  font-weight: 500;
+}
+
+.study-category, .indicator-category {
+  font-size: 12px;
+  color: #666;
+}
+
+.studies-modal-content, .indicators-modal-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.studies-grid, .indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.study-card, .indicator-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.study-card:hover, .indicator-card:hover {
+  background: #f0f2f5;
+  border-color: #1890ff;
+}
+
+.study-card.selected, .indicator-card.selected {
+  border-color: #1890ff;
+  background: #e6f7ff;
+}
+
+.study-title, .indicator-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.study-category, .indicator-category {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tradingview-chart {
+    padding: 16px;
+  }
+  
+  .tradingview-footer {
+    grid-template-columns: 1fr;
+  }
+  
+  .studies-grid, .indicators-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .tradingview-chart {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .tradingview-header, .tradingview-studies, .tradingview-indicators, .tradingview-timeframe {
+    background-color: #262626 !important;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .tradingview-content {
+    background: #262626;
+  }
+  
+  .no-studies, .no-indicators {
+    color: #e6e6e6;
+  }
+  
+  .study-card, .indicator-card {
+    background-color: #333333;
+    border-color: #434343;
+  }
+  
+  .study-card:hover, .indicator-card:hover {
+    background: #434343;
+    border-color: #1890ff;
+  }
+  
+  .study-card.selected, .indicator-card.selected {
+    background: #1890ff;
+    color: #ffffff;
+  }
+}

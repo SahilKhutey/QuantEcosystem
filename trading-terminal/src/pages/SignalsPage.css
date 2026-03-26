@@ -1,0 +1,370 @@
+/* src/pages/SignalsPage.css */
+.signals-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.signals-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.signals-header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.model-summary {
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.accuracy {
+  border-left: 4px solid #52c41a;
+}
+
+.precision {
+  border-left: 4px solid #1890ff;
+}
+
+.recall {
+  border-left: 4px solid #722ed1;
+}
+
+.sharpe {
+  border-left: 4px solid #faad14;
+}
+
+.winrate {
+  border-left: 4px solid #ff4d4f;
+}
+
+.signals {
+  border-left: 4px solid #13c2c2;
+}
+
+.signals-content-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card, .distribution-card, .actions-card, .performance-card, 
+.features-card, .comparison-card, .indicators-card, 
+.interpretation-card, .history-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.table-loading p {
+  margin-top: 16px;
+  color: #666;
+}
+
+.chart-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.signal-row.buy {
+  background-color: #f6ffed !important;
+}
+
+.signal-row.sell {
+  background-color: #fff1f0 !important;
+}
+
+.signal-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+}
+
+.asset-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.asset-symbol {
+  font-weight: 600;
+}
+
+.signal-action {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.signal-tag.buy {
+  background-color: #f6ffed !important;
+  border-color: #52c41a !important;
+  color: #389e0d !important;
+}
+
+.signal-tag.sell {
+  background-color: #fff1f0 !important;
+  border-color: #ff4d4f !important;
+  color: #f5222d !important;
+}
+
+.confidence-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confidence-value {
+  font-weight: 500;
+  min-width: 40px;
+}
+
+.model-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.model-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.model-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.model-count {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.model-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.model-comparison-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.model-metrics {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.metric .good {
+  color: #52c41a;
+  font-weight: 500;
+}
+
+.metric .average {
+  color: #faad14;
+}
+
+.metric .bad {
+  color: #ff4d4f;
+}
+
+.indicator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.indicator-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.indicator-name {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.indicator-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.success-rate-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.model-success-rate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.success-percentage {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.profitability-analysis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.analysis-item {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.analysis-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.analysis-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.analysis-value.positive {
+  color: #52c41a;
+}
+
+.analysis-value.negative {
+  color: #ff4d4f;
+}
+
+.signal-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.confidence-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.confidence-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.confidence-source {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .signals-page {
+    padding: 16px;
+  }
+  
+  .signals-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-controls {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .model-summary {
+    margin-bottom: 16px;
+  }
+  
+  .indicator-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .profitability-analysis {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .signals-page {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .summary-card, .signals-content-card, .chart-card, .distribution-card, 
+  .actions-card, .performance-card, .features-card, .comparison-card, 
+  .indicators-card, .interpretation-card, .history-card {
+    background-color: #262626 !important;
+    border-color: #434343;
+    color: #ffffff;
+  }
+  
+  .signal-row.buy {
+    background-color: #1a3a1a !important;
+  }
+  
+  .signal-row.sell {
+    background-color: #3a1a1a !important;
+  }
+  
+  .indicator-item, .model-comparison-item, .model-success-rate, 
+  .analysis-item, .model-item {
+    background-color: #262626;
+    border-color: #434343;
+  }
+}

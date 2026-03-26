@@ -1,0 +1,165 @@
+/* src/pages/TradingPage.css */
+.trading-page {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.trading-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.market-info-bar {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.market-info-bar .ant-row {
+  flex-wrap: wrap;
+}
+
+.market-info-bar .ant-col {
+  margin-bottom: 8px;
+}
+
+.trading-main {
+  margin-bottom: 24px;
+}
+
+.order-form-card, .market-depth-card, .order-book-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.order-form-section {
+  padding: 16px 0;
+}
+
+.form-row {
+  margin-bottom: 16px;
+}
+
+.form-row label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.order-book-container {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.order-book-section {
+  margin-bottom: 8px;
+}
+
+.ask-row {
+  background-color: #fff1f0 !important;
+}
+
+.bid-row {
+  background-color: #f6ffed !important;
+}
+
+.spread-indicator {
+  text-align: center;
+  padding: 8px 0;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fafafa;
+  margin: 8px 0;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.trading-tabs .ant-tabs-tabpane {
+  padding-top: 16px;
+}
+
+.positions-card, .orders-card {
+  border-radius: 8px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 0;
+  color: #999;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .trading-page {
+    padding: 16px;
+  }
+  
+  .trading-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-controls {
+    justify-content: flex-end;
+  }
+  
+  .market-info-bar .ant-col {
+    width: 50%;
+  }
+  
+  .form-row {
+    margin-bottom: 12px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .trading-page {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .market-info-bar {
+    background-color: #262626 !important;
+    border-color: #434343;
+  }
+  
+  .order-form-card, 
+  .market-depth-card, 
+  .order-book-card,
+  .positions-card, 
+  .orders-card {
+    background-color: #262626 !important;
+    border-color: #434343;
+  }
+  
+  .ask-row {
+    background-color: #3a1a1a !important;
+  }
+  
+  .bid-row {
+    background-color: #1a3a1a !important;
+  }
+  
+  .spread-indicator {
+    background-color: #333333 !important;
+    border-color: #434343;
+  }
+}
