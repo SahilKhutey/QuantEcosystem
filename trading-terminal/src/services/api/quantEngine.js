@@ -198,5 +198,20 @@ export const quantEngineAPI = {
     };
 
     return ws;
+  },
+
+  // Run model fusion
+  runModelFusion: async (config) => {
+    const response = await fetch(`${API_BASE_URL}/quant-engine/signals/fusion/run`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(config)
+    });
+    return response.json();
   }
 };
+
+export const runModelFusion = quantEngineAPI.runModelFusion;
