@@ -102,7 +102,8 @@ const NavigationMenu = ({
         { key: 'ee-pipeline', label: <Link to="/pipeline">Strat-Ops Pipeline Hub</Link> },
         { key: 'ee-orchestrator', label: <Link to="/orchestrator">Strategy Docker Orchestrator</Link> },
         { key: 'ee-dev', label: <Link to="/developer">Developer Portal</Link> },
-        { key: 'ee-engine', label: <Link to="/trading-engine">Trading Engine Monitor</Link> }
+        { key: 'ee-engine', label: <Link to="/trading-engine">Trading Engine Monitor</Link> },
+        { key: 'exec-infra', label: <Link to="/infrastructure">Infrastructure Orchestrator</Link> }
       ]
     },
     { key: 'settings', icon: <SettingOutlined />, label: <Link to="/settings">Settings</Link> }

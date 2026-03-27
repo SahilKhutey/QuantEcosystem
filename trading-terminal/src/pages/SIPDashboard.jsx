@@ -4,7 +4,8 @@ import {
   ProjectOutlined, 
   RocketOutlined, 
   HistoryOutlined, 
-  SafetyCertificateOutlined 
+  SafetyCertificateOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 import { MetricCard } from '../components/Analytics';
 import { LineChart, PieChart } from '../components/Visualizations';

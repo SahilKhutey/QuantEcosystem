@@ -1,0 +1,6 @@
+@echo off
+echo 🚀 Launching Institutional Quant Terminal...
+cd /d "c:\Users\User\Documents\Quant\trading-terminal"
+echo 🌐 Starting Frontend (Vite)...
+npm run dev
+pause

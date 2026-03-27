@@ -8,6 +8,7 @@ import {
   ExpandOutlined,
   ThunderboltOutlined,
   BlockOutlined,
+  BarChartOutlined,
   DeploymentUnitOutlined,
   AimOutlined,
   ReconciliationOutlined,
