@@ -7,4 +7,4 @@ export { default as PositionSummary } from './PositionSummary';
 export { default as MarketDepthChart } from './MarketDepthChart';
 export { default as TradingControls } from './TradingControls';
 export { default as TradingCSS } from './Trading.css';
-export { tradingAPI } from '../../api/trading';
+export { tradingAPI } from '../../services/api/trading';

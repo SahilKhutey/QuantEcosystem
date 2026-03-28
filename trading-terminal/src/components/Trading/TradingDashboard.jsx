@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Tabs, Space, Button, Select } from 'antd';
 import { OrderedListOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { tradingAPI } from '../../api/trading';
+import { tradingAPI } from '../../services/api/trading';
 import OrderBook from './OrderBook';
 import OrderTicket from './OrderTicket';
 import TradeHistory from './TradeHistory';

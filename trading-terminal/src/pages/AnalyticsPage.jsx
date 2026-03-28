@@ -54,7 +54,7 @@ import {
   DotChartOutlined,
   AreaChartOutlined
 } from '@ant-design/icons';
-import { Column, Line, Pie, Heatmap, Scatter, DualAxes, RingProgress } from '@ant-design/plots';
+import { Column, Line, Pie, Heatmap, Scatter, DualAxes } from '@ant-design/plots';
 import { analyticsAPI } from '../services/api/analytics';
 import './AnalyticsPage.css';
 

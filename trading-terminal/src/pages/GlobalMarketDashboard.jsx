@@ -30,7 +30,7 @@ import {
   PlayCircleOutlined
 } from '@ant-design/icons';
 import { Line, Column, Heatmap } from '@ant-design/plots';
-import { globalMarketAPI } from '../api/globalMarket';
+import { globalMarketAPI } from '../services/api/globalMarket';
 import './GlobalMarketDashboard.css';
 
 const { TabPane } = Tabs;

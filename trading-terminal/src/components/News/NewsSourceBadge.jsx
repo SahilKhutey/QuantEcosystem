@@ -1,7 +1,7 @@
 // src/components/News/NewsSourceBadge.jsx
 import React from 'react';
 import { Tag, Avatar, Space } from 'antd';
-import { NewsOutlined } from '@ant-design/icons';
+import { GlobalOutlined } from '@ant-design/icons';
 
 const NewsSourceBadge = ({ 
   source = 'unknown',

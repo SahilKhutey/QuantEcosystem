@@ -24,7 +24,11 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   // Derived Metrics
-  const totalValue = portfolio.reduce((acc, h) => acc + (h.qty * (prices[h.symbol] || h.avg)), 0);
+  const totalValue = (portfolio || []).reduce((acc, h) => {
+    const qty = h?.qty || 0;
+    const price = prices?.[h?.symbol] || h?.avg || 0;
+    return acc + (qty * price);
+  }, 0);
   const totalChange = 38420; // Mock change
   const changePct = 1.58;
 

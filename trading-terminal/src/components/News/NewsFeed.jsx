@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Space, Button, Select, Input, List } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
-import { newsAPI } from '../../api/news';
+import { newsAPI } from '../../services/api/news';
 import NewsItem from './NewsItem';
 import NewsSummary from './NewsSummary';
 import './News.css';
@@ -38,9 +38,9 @@ const NewsFeed = ({
   };
 
   const applyFilter = (data, text) => {
-    const filtered = data.filter(item => 
-      item.title.toLowerCase().includes(text.toLowerCase()) ||
-      item.content.toLowerCase().includes(text.toLowerCase())
+    const filtered = (data || []).filter(item => 
+      (item.title || '').toLowerCase().includes((text || '').toLowerCase()) ||
+      (item.content || item.summary || '').toLowerCase().includes((text || '').toLowerCase())
     );
     setFilteredNews(filtered);
   };

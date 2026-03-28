@@ -1,6 +1,12 @@
 import logging
 import asyncio
 import threading
+
+# Fix for asyncio event loop on Windows/Python 3.14
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
 import time
 from datetime import datetime
 from flask import Flask, jsonify, request
@@ -262,7 +268,7 @@ def recover_primary():
 
 # --- Analytics & Reporting Endpoints ---
 @app.route('/api/analytics/performance', methods=['GET'])
-def get_performance_attribution():
+def get_performance_attribution_mock():
     # Mock data for demonstration
     trades_df = pd.DataFrame([
         {'strategy': 'HFT', 'symbol': 'AAPL', 'pnl': 1200.50},

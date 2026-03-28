@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Row, Col, Button, Spin, Alert } from 'antd';
 import { GlobalOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
-import { globalWealthAPI } from '../../api/globalWealth';
+import { globalWealthAPI } from '../../services/api/globalWealth';
 import WealthMapLegend from './WealthMapLegend';
 import WealthMapControls from './WealthMapControls';
 import './GlobalWealthMap.css';

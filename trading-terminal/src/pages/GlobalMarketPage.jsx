@@ -47,7 +47,7 @@ import {
   DropboxOutlined,
   BitcoinOutlined
 } from '@ant-design/icons';
-import { Heatmap, Column, Line, Scatter, RingProgress } from '@ant-design/plots';
+import { Heatmap, Column, Line, Scatter } from '@ant-design/plots';
 import { globalMarketAPI } from '../services/api/globalMarket';
 import './GlobalMarketPage.css';
 
@@ -226,7 +226,7 @@ const GlobalMarketPage = () => {
               <Col xs={24} lg={8}>
                 <Card title="Fear & Greed Index" className="fear-greed-card">
                    <div style={{ textAlign: 'center' }}>
-                     <RingProgress percent={marketSentiment.fearGreedIndex / 100} color={['#ff4d4f', '#52c41a']} size={120} />
+                    <Progress type="circle" percent={marketSentiment.fearGreedIndex} strokeColor={marketSentiment.fearGreedIndex > 50 ? '#52c41a' : '#ff4d4f'} width={120} />
                      <Title level={3}>{marketSentiment.fearGreedIndex}/100</Title>
                      <Text strong>{marketSentiment.fearGreedLabel}</Text>
                      <p>{marketSentiment.fearGreedDescription}</p>

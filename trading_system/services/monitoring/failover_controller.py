@@ -8,8 +8,8 @@ class FailoverController:
     """Manages multi-region high availability and automated failover"""
     
     def __init__(self):
-        self.primary_region = settings.get('PRIMARY_REGION', 'us-east-1')
-        self.secondary_region = settings.get('SECONDARY_REGION', 'us-west-2')
+        self.primary_region = settings.RECOVERY_CONFIG.get('primary_region', 'us-east-1')
+        self.secondary_region = settings.RECOVERY_CONFIG.get('secondary_region', 'us-west-2')
         self.current_region = self.primary_region
         self.mode = "PRIMARY" # or "STANDBY"
         self.logger = logger

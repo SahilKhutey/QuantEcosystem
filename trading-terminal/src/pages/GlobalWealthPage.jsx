@@ -60,7 +60,7 @@ import {
   AuditOutlined,
   GlobalOutlined
 } from '@ant-design/icons';
-import { Pie, Column, Line, DualAxes, RingProgress } from '@ant-design/plots';
+import { Pie, Column, Line, DualAxes } from '@ant-design/plots';
 import { globalWealthAPI } from '../services/api/globalWealth';
 import './GlobalWealthPage.css';
 

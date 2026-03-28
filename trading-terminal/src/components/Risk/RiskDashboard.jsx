@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Tabs, Space, Button, Select } from 'antd';
 import { DashboardOutlined, WarningOutlined, HeatMapOutlined, AreaChartOutlined } from '@ant-design/icons';
-import { globalRiskAPI } from '../../api/globalRisk';
+import { globalRiskAPI } from '../../services/api/globalRisk';
 import RiskSummary from './RiskSummary';
 import HazardIndicator from './HazardIndicator';
 import ExposureBar from './ExposureBar';
