@@ -93,10 +93,18 @@ const QuantEnginePage = () => {
   const [signalConvergence, setSignalConvergence] = useState([]);
   const [monteCarloData, setMonteCarloData] = useState([]);
   const [codeEditorValue, setCodeEditorValue] = useState('class MeanReversionStrategy:\n    def __init__(self, window=20, threshold=2.0):\n        self.window = window\n        self.threshold = threshold\n\n    def generate_signal(self, data):\n        # Bollinger Band Mean Reversion logic\n        rolling_mean = data["close"].rolling(window=self.window).mean()\n        rolling_std = data["close"].rolling(window=self.window).std()\n        upper_band = rolling_mean + (self.threshold * rolling_std)\n        lower_band = rolling_mean - (self.threshold * rolling_std)\n        \n        if data["close"].iloc[-1] > upper_band.iloc[-1]:\n            return "SELL"\n        elif data["close"].iloc[-1] < lower_band.iloc[-1]:\n            return "BUY"\n        return "HOLD"');
+  const [optimizerWeights, setOptimizerWeights] = useState([
+    { type: 'AAPL', value: 25 },
+    { type: 'MSFT', value: 40 },
+    { type: 'GOOGL', value: 15 },
+    { type: 'AMZN', value: 20 }
+  ]);
+  const [fusionData, setFusionData] = useState([]);
   
   const [parameterForm] = useForm();
   const [backtestForm] = useForm();
   const [optimizationForm] = useForm();
+  const [modelZooForm] = useForm();
   
   const [showBacktestModal, setShowBacktestModal] = useState(false);
   const [showOptimizationModal, setShowOptimizationModal] = useState(false);
@@ -130,18 +138,44 @@ const QuantEnginePage = () => {
   const fetchInitialData = async () => {
     setLoading(prev => ({ ...prev, templates: true, strategies: true }));
     try {
-      const [templatesRes, savedRes, paramsRes] = await Promise.all([
+      const [templatesRes, savedRes, paramsRes, rlRes, fusionRes] = await Promise.all([
         quantEngineAPI.getStrategyTemplates(),
         quantEngineAPI.getSavedStrategies(),
-        quantEngineAPI.getStrategyParameters(selectedStrategy)
+        quantEngineAPI.getStrategyParameters(selectedStrategy),
+        quantEngineAPI.getRLTrainingMetrics('default'),
+        quantEngineAPI.getSignalConvergence('NVDA')
       ]);
       setStrategyTemplates(templatesRes.data || []);
       setSavedStrategies(savedRes.data || []);
       setStrategyParameters(paramsRes.data || {});
+      setRlTrainingData(rlRes.data || []);
+      setFusionData(fusionRes.data || []);
     } catch (err) {
+      console.error(err);
       setError('Failed to fetch initial data');
     } finally {
       setLoading(prev => ({ ...prev, templates: false, strategies: false }));
+    }
+  };
+
+  const handleOptimizationWeightsTrigger = async (assets) => {
+    setLoading(prev => ({ ...prev, optimization: true }));
+    try {
+      const selectedAssets = assets || modelZooForm.getFieldValue('assets') || ['AAPL', 'MSFT', 'GOOGL', 'AMZN'];
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/quant-engine/optimization/portfolio`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assets: selectedAssets })
+      });
+      const resJson = await response.json();
+      if (resJson.status === 'success') {
+         setOptimizerWeights(resJson.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(prev => ({ ...prev, optimization: false }));
     }
   };
 
@@ -198,8 +232,8 @@ const QuantEnginePage = () => {
     xField: 'episode',
     yField: 'reward',
     smooth: true,
-    color: '#52c41a',
-    area: { style: { fill: 'l(270) 0:#ffffff 0.5:#52c41a 1:#52c41a' } }
+    color: '#10b981',
+    area: { style: { fill: 'l(270) 0:rgba(16,185,129,0) 1:rgba(16,185,129,0.2)' } }
   }), [rlTrainingData]);
 
   const signalConvergenceConfig = useMemo(() => ({
@@ -434,13 +468,7 @@ const QuantEnginePage = () => {
                      <Divider />
                      <div style={{ height: 350 }}>
                         <Radar 
-                           data={[
-                              { name: 'LSTM (Trend)', value: 0.82 },
-                              { name: 'Transformer (State)', value: 0.74 },
-                              { name: 'XGBoost (Features)', value: 0.91 },
-                              { name: 'Sentiment (News)', value: 0.65 },
-                              { name: 'OrderFlow (L2)', value: 0.88 }
-                           ]}
+                           data={fusionData}
                            xField="name"
                            yField="value"
                            meta={{ value: { min: 0, max: 1 } }}
@@ -454,26 +482,21 @@ const QuantEnginePage = () => {
                      <Paragraph style={{ color: '#8c8c8c' }}>
                        Weights are dynamically adjusted via <strong>Meta-Learning</strong> based on current regime performance.
                      </Paragraph>
-                     <List
-                        size="small"
-                        dataSource={[
-                           { name: 'LSTM Predictor', weight: 0.30, bias: 0.82, color: '#1890ff' },
-                           { name: 'Transformer (Market Attention)', weight: 0.30, bias: -0.15, color: '#f5222d' },
-                           { name: 'XGBoost (Alpha-Feature)', weight: 0.20, bias: 0.45, color: '#52c41a' },
-                           { name: 'News Sentiment LLM', weight: 0.20, bias: 0.65, color: '#faad14' }
-                        ]}
-                        renderItem={item => (
-                           <List.Item>
-                              <div style={{ width: '100%' }}>
-                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>{item.name}</span>
-                                    <Tag color={item.bias > 0 ? 'green' : 'red'}>{item.bias > 0 ? '+' : ''}{item.bias}</Tag>
-                                 </div>
-                                 <Progress percent={item.weight * 100} strokeColor={item.color} size="small" />
-                              </div>
-                           </List.Item>
-                        )}
-                     />
+                      <List
+                         size="small"
+                         dataSource={fusionData}
+                         renderItem={item => (
+                            <List.Item>
+                               <div style={{ width: '100%' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                     <span>{item.name}</span>
+                                     <Tag color={item.value > 0.6 ? 'green' : 'orange'}>{item.value.toFixed(2)}</Tag>
+                                  </div>
+                                  <Progress percent={(item.weight || 0.25) * 100} strokeColor={item.value > 0.6 ? '#1890ff' : '#faad14'} size="small" />
+                               </div>
+                            </List.Item>
+                         )}
+                      />
                   </Card>
                   <Card title="Execution Confidence Map" style={{ marginTop: 24 }}>
                      <Area 
@@ -503,9 +526,9 @@ const QuantEnginePage = () => {
                   extra={<Tag color="blue">SCIPY OPTIMIZE</Tag>}
                 >
                   <p style={{ color: '#8c8c8c', marginBottom: '16px' }}>Efficient Frontier computation based on mean-variance optimization.</p>
-                  <Form layout="vertical">
-                    <Form.Item label="Asset Universe">
-                      <Select mode="multiple" style={{ width: '100%' }} defaultValue={['AAPL', 'MSFT', 'GOOGL', 'AMZN']}>
+                  <Form form={modelZooForm} layout="vertical" initialValues={{ assets: ['AAPL', 'MSFT', 'GOOGL', 'AMZN'] }}>
+                    <Form.Item label="Asset Universe" name="assets">
+                      <Select mode="multiple" style={{ width: '100%' }}>
                         {availableSymbols.map(s => <Select.Option key={s} value={s}>{s}</Select.Option>)}
                       </Select>
                     </Form.Item>
@@ -516,17 +539,20 @@ const QuantEnginePage = () => {
                         <Select.Option value="erc">Equal Risk Contribution</Select.Option>
                       </Select>
                     </Form.Item>
-                    <Button type="primary" block icon={<ExperimentOutlined />}>Compute Optimal Weights</Button>
+                    <Button 
+                      type="primary" 
+                      block 
+                      icon={<ExperimentOutlined />} 
+                      onClick={() => handleOptimizationWeightsTrigger()}
+                      loading={loading.optimization}
+                    >
+                      Compute Optimal Weights
+                    </Button>
                   </Form>
                   <Divider />
                   <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
                     <Pie 
-                      data={[
-                        { type: 'AAPL', value: 25 },
-                        { type: 'MSFT', value: 40 },
-                        { type: 'GOOGL', value: 15 },
-                        { type: 'AMZN', value: 20 }
-                      ]}
+                      data={optimizerWeights}
                       angleField="value"
                       colorField="type"
                       radius={0.7}
