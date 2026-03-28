@@ -4,7 +4,7 @@ import { API_BASE_URL } from "./apiConfig";
 export const aiResearchAPI = {
   // Generate executive stock analysis
   analyzeStock: async (symbol) => {
-    const response = await fetch(`${API_BASE_URL}/analyze?symbol=${symbol}`, {
+    const response = await fetch(`${API_BASE_URL}/research/analyze?symbol=${symbol}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -15,7 +15,7 @@ export const aiResearchAPI = {
 
   // Get thematic asset clusters
   getThematicClusters: async () => {
-    const response = await fetch(`${API_BASE_URL}/themes`, {
+    const response = await fetch(`${API_BASE_URL}/research/themes`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'

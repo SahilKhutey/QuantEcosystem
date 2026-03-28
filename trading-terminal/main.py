@@ -43,6 +43,7 @@ from api.endpoints.quant_engine import quant_engine_bp
 from api.endpoints.ai_agent import ai_agent_bp
 from api.endpoints.settings import settings_bp
 from api.endpoints.sip import sip_bp
+from api.endpoints.ai_research import ai_research_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -60,6 +61,7 @@ app.register_blueprint(ai_agent_bp, url_prefix='/api/ai-agent')
 app.register_blueprint(settings_bp, url_prefix='/api/settings')
 app.register_blueprint(sip_bp, url_prefix='/api/sip')
 app.register_blueprint(signals_bp, url_prefix='/api/signals')
+app.register_blueprint(ai_research_bp, url_prefix='/api/research')
 app.register_blueprint(global_market_bp, url_prefix='/api/global-market')
 app.register_blueprint(wealth_bp, url_prefix='/api/wealth')
 app.register_blueprint(autonomous_bp, url_prefix='/api/autonomous')
@@ -88,6 +90,10 @@ app.register_blueprint(tradingview_bp, url_prefix='/api/tradingview')
 app.register_blueprint(indian_brokers_bp, url_prefix='/api/indian_brokers')
 app.register_blueprint(alerts_bp, url_prefix='/api/alerts')
 app.register_blueprint(copilot_bp, url_prefix='/api/copilot')
+
+@app.route('/api/ping')
+def api_ping():
+    return jsonify({"status": "live", "message": "API layer responsive"})
 
 @app.route('/health')
 def health_check():

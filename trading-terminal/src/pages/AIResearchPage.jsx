@@ -28,23 +28,41 @@ const { Search } = Input;
 const AIResearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [activeTheme, setActiveTheme] = useState('AI_INFRA');
-  const [analysisText, setAnalysisText] = useState('');
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [clusterData, setClusterData] = useState([]);
+  const [error, setError] = useState(null);
 
-  const clusterData = [
-    { theme: 'Gen AI', symbol: 'NVDA', value: 85, vol: 35 },
-    { theme: 'Gen AI', symbol: 'MSFT', value: 72, vol: 22 },
-    { theme: 'Yield Sens.', symbol: 'JPM', value: 65, vol: 18 },
-    { theme: 'Yield Sens.', symbol: 'GS', value: 58, vol: 20 },
-    { theme: 'Energy Frag.', symbol: 'XOM', value: 92, vol: 40 },
-    { theme: 'Energy Frag.', symbol: 'CVX', value: 88, vol: 38 }
-  ];
+  useEffect(() => {
+    const fetchThemes = async () => {
+      try {
+        const res = await aiResearchAPI.getThematicClusters();
+        if (res.status === 'success') {
+          setClusterData(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch thematic clusters:", err);
+      }
+    };
+    fetchThemes();
+  }, []);
 
-  const handleResearchTrigger = (value) => {
-     setLoading(true);
-     setTimeout(() => {
-        setAnalysisText(`Deep Analysis for ${value}: Stock presents a strong bullish divergence on the weekly time-frame. Sentiment is overwhelmingly positive (+0.82) following the recent Q3 guidance beat. Institutional accumulation detected in Dark Pools. Recommend overweight position with 1.2x beta adjustment (aligning with 'ai_analyst.py').`);
-        setLoading(false);
-     }, 2000);
+  const handleResearchTrigger = async (value) => {
+    if (!value) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await aiResearchAPI.analyzeStock(value);
+      if (res.status === 'success') {
+        setAnalysisResult(res.data);
+      } else {
+        setError(res.message || "Failed to generate research");
+      }
+    } catch (err) {
+      setError("Network error: Institutional API connectivity failed.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,40 +87,51 @@ const AIResearchPage = () => {
                 loading={loading}
               />
               <Divider />
-              {analysisText ? (
+              {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />}
+              {analysisResult ? (
                 <div className="ai-output">
-                   <div style={{ display: 'flex', gap: '12px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-                      <Avatar icon={<RobotOutlined />} style={{ backgroundColor: '#1890ff', flexShrink: 0 }} />
+                   <div style={{ display: 'flex', gap: '12px', padding: '16px', backgroundColor: 'rgba(59,130,246,0.05)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.1)' }}>
+                      <Avatar icon={<RobotOutlined />} style={{ backgroundColor: '#1d4ed8', flexShrink: 0 }} />
                       <div style={{ flex: 1 }}>
                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <Text strong>Lead AI Strategist (GPT-4)</Text>
-                            <Tooltip title={new Date().toLocaleTimeString()}><Text type="secondary">{new Date().toLocaleTimeString()}</Text></Tooltip>
+                            <Text strong style={{ color: '#f0f6fc' }}>Lead AI Strategist (Core-Engine)</Text>
+                            <Tooltip title={analysisResult.timestamp}><Text type="secondary" style={{ fontSize: 11 }}>{new Date(analysisResult.timestamp).toLocaleTimeString()}</Text></Tooltip>
                          </div>
-                         <Paragraph style={{ fontSize: '14px', lineHeight: '1.6', marginBottom: 0 }}>{analysisText}</Paragraph>
+                         <Paragraph style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: 0, color: '#e6edf3' }}>{analysisResult.analysisText}</Paragraph>
                       </div>
                    </div>
                    <Row gutter={16} style={{ marginTop: 24 }}>
                       <Col span={8}>
-                         <Card size="small" title="Technical Outlook" className="mini-card">
-                            <Tag color="green">BULLISH DIVERGENCE</Tag>
-                            <Paragraph style={{ fontSize: '11px', marginTop: 8 }}>RSI: 42. MACD: Crossover confirmed.</Paragraph>
+                         <Card size="small" title="Technical Outlook" className="mini-card dark-card">
+                            <Tag color={analysisResult.sentiment === 'Bullish' ? 'green' : 'red'}>{analysisResult.technicalOutlook}</Tag>
+                            <Paragraph style={{ fontSize: '11px', marginTop: 8, color: '#8b949e' }}>Confidence: {analysisResult.sentimentScore}%</Paragraph>
                          </Card>
                       </Col>
                       <Col span={8}>
-                         <Card size="small" title="News Sentiment" className="mini-card">
-                            <Progress type="circle" percent={82} strokeColor="#52c41a" width={60} />
-                            <div style={{ marginTop: 8 }}>High institutional coverage.</div>
+                         <Card size="small" title="Sentiment Score" className="mini-card dark-card">
+                            <Progress 
+                              type="circle" 
+                              percent={analysisResult.sentimentScore} 
+                              strokeColor={analysisResult.sentiment === 'Bullish' ? '#10b981' : '#ef4444'} 
+                              width={60} 
+                              trailColor="rgba(255,255,255,0.05)"
+                            />
                          </Card>
                       </Col>
                       <Col span={8}>
-                         <Card size="small" title="Scenario Impact" className="mini-card">
-                            <Statistic title="VaR Impact" value={2.4} suffix="%" valueStyle={{ fontSize: 18 }} />
+                         <Card size="small" title="Scenario Impact" className="mini-card dark-card">
+                            <Statistic 
+                              title="VaR Impact (Est)" 
+                              value={analysisResult.varImpact} 
+                              suffix="%" 
+                              valueStyle={{ fontSize: 18, color: '#3b82f6' }} 
+                            />
                          </Card>
                       </Col>
                    </Row>
                 </div>
               ) : (
-                <Empty description="Enter a symbol to begin institutional AI research" />
+                <Empty description={<span style={{ color: '#8b949e' }}>Enter a symbol to begin institutional AI research</span>} />
               )}
            </Card>
         </Col>
