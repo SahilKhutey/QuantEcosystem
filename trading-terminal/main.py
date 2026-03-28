@@ -1,4 +1,6 @@
 import logging
+import os
+from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_cors import CORS
 from api.endpoints.market import market_bp
@@ -45,7 +47,11 @@ from api.endpoints.settings import settings_bp
 from api.endpoints.sip import sip_bp
 from api.endpoints.ai_research import ai_research_bp
 
+# Load environment variables from .env file
+load_dotenv()
+
 app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'quantum_dev_insecure_default_8829')
 CORS(app)
 
 # Register Blueprints

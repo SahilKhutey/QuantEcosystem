@@ -5,6 +5,7 @@ import { theme } from './styles/theme';
 import './styles/globals.css';
 
 import { Sidebar, Header } from './components/Sidebar';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // ── Page imports ──────────────────────────────────────────────────────────────
 import DashboardPage      from './pages/DashboardPage';
@@ -139,59 +140,61 @@ function App() {
                 WebkitOverflowScrolling: 'touch',
               }}
             >
-              <Routes>
-                {/* Core Terminal */}
-                <Route path="/"                    element={<DashboardPage />} />
-                <Route path="/trading"             element={<TradingPage />} />
-                <Route path="/signals"             element={<SignalsPage />} />
-                <Route path="/portfolio"           element={<PortfolioPage />} />
-                <Route path="/risk"                element={<RiskPage />} />
-                <Route path="/news"                element={<NewsPage />} />
-                <Route path="/analytics"           element={<AnalyticsPage />} />
-                <Route path="/settings"            element={<SettingsPage />} />
+              <ErrorBoundary>
+                <Routes>
+                  {/* Core Terminal */}
+                  <Route path="/"                    element={<DashboardPage />} />
+                  <Route path="/trading"             element={<TradingPage />} />
+                  <Route path="/signals"             element={<SignalsPage />} />
+                  <Route path="/portfolio"           element={<PortfolioPage />} />
+                  <Route path="/risk"                element={<RiskPage />} />
+                  <Route path="/news"                element={<NewsPage />} />
+                  <Route path="/analytics"           element={<AnalyticsPage />} />
+                  <Route path="/settings"            element={<SettingsPage />} />
 
-                {/* Quant Ecosystem */}
-                <Route path="/global-market"       element={<GlobalMarketPage />} />
-                <Route path="/stock-analysis"      element={<StockAnalysisPage />} />
-                <Route path="/quant-engine"        element={<QuantEnginePage />} />
-                <Route path="/ai-agent"            element={<AIAgentPage />} />
-                <Route path="/trading-engine"      element={<TradingEnginePage />} />
+                  {/* Quant Ecosystem */}
+                  <Route path="/global-market"       element={<GlobalMarketPage />} />
+                  <Route path="/stock-analysis"      element={<StockAnalysisPage />} />
+                  <Route path="/quant-engine"        element={<QuantEnginePage />} />
+                  <Route path="/ai-agent"            element={<AIAgentPage />} />
+                  <Route path="/trading-engine"      element={<TradingEnginePage />} />
 
-                {/* Wealth Management */}
-                <Route path="/wealth"              element={<GlobalWealthPage />} />
-                <Route path="/wealth/sip"          element={<SIPDashboard />} />
-                <Route path="/wealth/swp"          element={<SWPDashboard />} />
-                <Route path="/wealth/equity"       element={<EquityAnalysisPage />} />
+                  {/* Wealth Management */}
+                  <Route path="/wealth"              element={<GlobalWealthPage />} />
+                  <Route path="/wealth/sip"          element={<SIPDashboard />} />
+                  <Route path="/wealth/swp"          element={<SWPDashboard />} />
+                  <Route path="/wealth/equity"       element={<EquityAnalysisPage />} />
 
-                {/* Strategy & Execution */}
-                <Route path="/multi-strategy"      element={<MultiStrategyPage />} />
-                <Route path="/options"             element={<OptionsPage />} />
-                <Route path="/developer"           element={<DeveloperPortalPage />} />
-                <Route path="/system-health"       element={<SystemHealthPage />} />
-                <Route path="/optimization"        element={<OptimizationPage />} />
-                <Route path="/drl-studio"          element={<DRLStudioPage />} />
-                <Route path="/advanced-eval"       element={<AdvancedEvaluationPage />} />
-                <Route path="/commodities"         element={<CommoditiesPage />} />
-                <Route path="/macro"               element={<MacroPage />} />
-                <Route path="/devops"              element={<DevOpsPage />} />
-                <Route path="/performance-audit"   element={<PerformanceAuditPage />} />
-                <Route path="/pipeline"            element={<PipelinePage />} />
-                <Route path="/backtest-studio"     element={<BacktestStudioPage />} />
-                <Route path="/allocator"           element={<AllocatorPage />} />
-                <Route path="/orchestrator"        element={<OrchestratorPage />} />
-                <Route path="/stress-test"         element={<StressTestPage />} />
-                <Route path="/commodity-alpha"     element={<CommodityAlphaPage />} />
-                <Route path="/model-zoo"           element={<ModelZooPage />} />
-                <Route path="/sentiment-topology"  element={<SentimentTopologyPage />} />
-                <Route path="/rl-agent-studio"     element={<RLAgentStudioPage />} />
-                <Route path="/hft-backtest-lab"    element={<HFTBacktestPage />} />
-                <Route path="/ai-research"         element={<AIResearchPage />} />
-                <Route path="/asset-allocation-lab"element={<AssetAllocationPage />} />
-                <Route path="/signal-monitor"      element={<SignalMonitorPage />} />
-                <Route path="/macro-hub"           element={<MacroHubPage />} />
-                <Route path="/sovereign-risk"      element={<SovereignRiskPage />} />
-                <Route path="/infrastructure"      element={<DeploymentPage />} />
-              </Routes>
+                  {/* Strategy & Execution */}
+                  <Route path="/multi-strategy"      element={<MultiStrategyPage />} />
+                  <Route path="/options"             element={<OptionsPage />} />
+                  <Route path="/developer"           element={<DeveloperPortalPage />} />
+                  <Route path="/system-health"       element={<SystemHealthPage />} />
+                  <Route path="/optimization"        element={<OptimizationPage />} />
+                  <Route path="/drl-studio"          element={<DRLStudioPage />} />
+                  <Route path="/advanced-eval"       element={<AdvancedEvaluationPage />} />
+                  <Route path="/commodities"         element={<CommoditiesPage />} />
+                  <Route path="/macro"               element={<MacroPage />} />
+                  <Route path="/devops"              element={<DevOpsPage />} />
+                  <Route path="/performance-audit"   element={<PerformanceAuditPage />} />
+                  <Route path="/pipeline"            element={<PipelinePage />} />
+                  <Route path="/backtest-studio"     element={<BacktestStudioPage />} />
+                  <Route path="/allocator"           element={<AllocatorPage />} />
+                  <Route path="/orchestrator"        element={<OrchestratorPage />} />
+                  <Route path="/stress-test"         element={<StressTestPage />} />
+                  <Route path="/commodity-alpha"     element={<CommodityAlphaPage />} />
+                  <Route path="/model-zoo"           element={<ModelZooPage />} />
+                  <Route path="/sentiment-topology"  element={<SentimentTopologyPage />} />
+                  <Route path="/rl-agent-studio"     element={<RLAgentStudioPage />} />
+                  <Route path="/hft-backtest-lab"    element={<HFTBacktestPage />} />
+                  <Route path="/ai-research"         element={<AIResearchPage />} />
+                  <Route path="/asset-allocation-lab"element={<AssetAllocationPage />} />
+                  <Route path="/signal-monitor"      element={<SignalMonitorPage />} />
+                  <Route path="/macro-hub"           element={<MacroHubPage />} />
+                  <Route path="/sovereign-risk"      element={<SovereignRiskPage />} />
+                  <Route path="/infrastructure"      element={<DeploymentPage />} />
+                </Routes>
+              </ErrorBoundary>
             </div>
           </div>
         </div>

@@ -22,3 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.secret
+*.key
+*.token
+
+# Build Caches
+node_modules/.vite
+.vite
+dist
+dist-ssr

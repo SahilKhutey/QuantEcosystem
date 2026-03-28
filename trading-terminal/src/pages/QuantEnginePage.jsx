@@ -62,6 +62,7 @@ import {
 } from '@ant-design/icons';
 import { Line, Column, Pie, Heatmap, DualAxes, Scatter, Area } from '@ant-design/plots';
 import { quantEngineAPI } from '../services/api/quantEngine';
+import { API_BASE_URL } from '../services/api/apiConfig';
 import './QuantEnginePage.css';
 
 const { TabPane } = Tabs;
@@ -163,7 +164,7 @@ const QuantEnginePage = () => {
     try {
       const selectedAssets = assets || modelZooForm.getFieldValue('assets') || ['AAPL', 'MSFT', 'GOOGL', 'AMZN'];
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/quant-engine/optimization/portfolio`, {
+      const response = await fetch(`${API_BASE_URL}/quant-engine/optimization/portfolio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assets: selectedAssets })
