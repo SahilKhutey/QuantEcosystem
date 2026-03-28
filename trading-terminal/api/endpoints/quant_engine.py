@@ -72,6 +72,31 @@ def run_optimization(strategy_id):
         }
     })
 
+@quant_engine_bp.route('/signals/fusion/run', methods=['POST'])
+def run_model_fusion():
+    """Execute multi-modal signal fusion for a specific symbol."""
+    data = request.json
+    if isinstance(data, str):
+        symbol = data
+    else:
+        symbol = data.get('symbol', 'RELIANCE') if data else 'RELIANCE'
+    
+    # Generate a sophisticated signal consensus (Simulated)
+    import random
+    fusion_signal = round(random.uniform(0.3, 0.95), 2)
+    sentiment_score = round(random.uniform(0.1, 0.9), 2)
+    technical_rank = round(random.uniform(1, 10), 1)
+    
+    return jsonify({
+        "status": "success",
+        "symbol": symbol,
+        "fusion_signal": fusion_signal,
+        "sentiment_score": sentiment_score,
+        "technical_rank": technical_rank,
+        "consensus": "STRONG BULLISH" if fusion_signal > 0.7 else "NEUTRAL" if fusion_signal > 0.4 else "BEARISH",
+        "timestamp": datetime.now().isoformat()
+    })
+
 @quant_engine_bp.route('/optimization/<strategy_id>', methods=['GET'])
 def get_optimization_results(strategy_id):
     # Simulated parameter heatmap data

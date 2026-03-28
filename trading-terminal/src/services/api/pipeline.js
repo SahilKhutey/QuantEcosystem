@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1/pipeline';
+import { API_BASE_URL } from "./apiConfig";
+
 
 export const pipelineAPI = {
   // Get GitHub Actions build status

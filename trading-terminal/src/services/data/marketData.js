@@ -3,7 +3,7 @@ import axios from 'axios';
 import useAppStore from '../store/appStore';
 
 // Get backend URL from env or default
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../api/apiConfig';
 
 // Helper to get a stable base price for any symbol
 const getBasePrice = (symbol) => {

@@ -137,24 +137,24 @@ def delete_alert(alert_id):
 # System/Profile Endpoints
 @settings_bp.route('/system', methods=['GET', 'PUT'])
 def handle_system_config():
+    global system_config
     if request.method == 'GET':
         return jsonify({"status": "success", "data": system_config})
-    global system_config
     system_config.update(request.json)
     return jsonify({"status": "success", "data": system_config})
 
 @settings_bp.route('/profile', methods=['GET', 'PUT'])
 def handle_profile():
+    global user_profile
     if request.method == 'GET':
         return jsonify({"status": "success", "data": user_profile})
-    global user_profile
     user_profile.update(request.json)
     return jsonify({"status": "success", "data": user_profile})
 
 @settings_bp.route('/notifications', methods=['GET', 'PUT'])
 def handle_notifications():
+    global notification_prefs
     if request.method == 'GET':
         return jsonify({"status": "success", "data": notification_prefs})
-    global notification_prefs
     notification_prefs.update(request.json)
     return jsonify({"status": "success", "data": notification_prefs})

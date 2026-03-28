@@ -386,3 +386,122 @@ body {
   flex-shrink: 0;
 }
 
+/* =====================================================
+   ANT DESIGN GLOBAL DARK-MODE OVERRIDES
+   Ensures AntD components don't break the dark theme
+   ===================================================== */
+
+/* Force Ant Layout top-level background to dark */
+.ant-layout {
+  background: var(--bg-primary) !important;
+}
+
+/* Sider base */
+.ant-layout-sider {
+  background: #0a0d14 !important;
+}
+
+.ant-layout-sider-trigger {
+  background: #070a0f !important;
+  border-top: 1px solid rgba(255,255,255,0.06) !important;
+  color: #484f58 !important;
+}
+
+.ant-layout-sider-trigger:hover {
+  color: #8b949e !important;
+}
+
+/* Header override — in case any AntD Header is in use */
+.ant-layout-header {
+  background: #0a0d14 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  padding: 0 !important;
+  height: auto !important;
+  line-height: normal !important;
+}
+
+/* Content */
+.ant-layout-content {
+  background: transparent !important;
+}
+
+/* Menu global */
+.ant-menu-dark {
+  background: transparent !important;
+}
+
+.ant-menu-dark.ant-menu-inline {
+  border-right: none !important;
+}
+
+/* Card */
+.ant-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+.ant-card-head {
+  background: transparent !important;
+  border-bottom-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif;
+}
+
+.ant-card-body {
+  color: var(--text-primary);
+}
+
+/* Typography */
+.ant-typography, h1.ant-typography, h2.ant-typography, h3.ant-typography, h4.ant-typography {
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.ant-typography.ant-typography-secondary {
+  color: var(--text-secondary) !important;
+}
+
+/* Statistic */
+.ant-statistic-title {
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+  font-family: 'Inter', sans-serif;
+}
+
+.ant-statistic-content {
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tag */
+.ant-tag {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Row/Col utility */
+.ant-row {
+  color: inherit;
+}
+
+/* Button */
+.ant-btn {
+  font-family: 'Inter', sans-serif;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Divider */
+.ant-divider {
+  border-color: var(--border-color) !important;
+}
+
+/* Avatar */
+.ant-avatar {
+  flex-shrink: 0;
+}

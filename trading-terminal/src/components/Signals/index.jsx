@@ -1,18 +1,7 @@
-import React from 'react';
-import styled from 'styled-components';
-
-const Container = styled.div`
-  background: ${({ theme }) => theme.colors.surface};
-  padding: 1rem;
-  border-radius: 8px;
-`;
-
-const Signals = () => {
-  return (
-    <Container>
-      <h3>Active Signals</h3>
-    </Container>
-  );
-};
-
-export default Signals;
+export { default as SignalDashboard } from './SignalDashboard';
+export { default as SignalIndicator } from './SignalIndicator';
+export { default as ConfidenceTicker } from './ConfidenceTicker';
+export { default as SignalStrengthBar } from './SignalStrengthBar';
+export { default as SignalHistory } from './SignalHistory';
+export { default as SignalAlerts } from './SignalAlerts';
+export { default as SignalMetrics } from './SignalMetrics';

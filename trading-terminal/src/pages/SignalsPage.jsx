@@ -45,7 +45,8 @@ import {
   DownloadOutlined,
   SettingOutlined,
   FireOutlined,
-  SearchOutlined
+  SearchOutlined,
+  EyeOutlined
 } from '@ant-design/icons';
 import { Column, Line, Radar, DualAxes } from '@ant-design/plots';
 import { signalsAPI } from '../services/api/signals';

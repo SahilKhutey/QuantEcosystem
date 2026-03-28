@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Row, Col, Card, Button, Tag, Space, Table, Badge, Switch, Modal, message } from 'antd';
+import { Row, Col, Card, Button, Tag, Space, Table, Badge, Switch, Modal, message, Typography, Progress, Divider } from 'antd';
 import { 
   ThunderboltOutlined, 
   PlayCircleOutlined, 
@@ -11,12 +11,13 @@ import {
   GlobalOutlined,
   RiseOutlined
 } from '@ant-design/icons';
-import { Line, Pie, Heatmap } from '@ant-design/plots';
+import { Line, Pie, Radar } from '@ant-design/plots';
 import { tradingEngineAPI } from '../services/api/tradingEngine';
 import MetricCard from '../components/Analytics/MetricCard';
 import { CustomChartBase } from '../components/Visualizations';
 
-const { Text } = Typography;
+const { Text, Title, Paragraph } = Typography;
+
 
 const MultiStrategyPage = () => {
   const [strategies, setStrategies] = useState([

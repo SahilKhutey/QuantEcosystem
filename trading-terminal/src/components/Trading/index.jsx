@@ -1,18 +1,9 @@
-import React from 'react';
-import styled from 'styled-components';
-
-const Container = styled.div`
-  background: ${({ theme }) => theme.colors.surface};
-  padding: 1rem;
-  border-radius: 8px;
-`;
-
-const Trading = () => {
-  return (
-    <Container>
-      <h3>Order Entry</h3>
-    </Container>
-  );
-};
-
-export default Trading;
+export { default as TradingDashboard } from './TradingDashboard';
+export { default as OrderBook } from './OrderBook';
+export { default as OrderTicket } from './OrderTicket';
+export { default as TradeHistory } from './TradeHistory';
+export { default as PositionSummary } from './PositionSummary';
+export { default as MarketDepthChart } from './MarketDepthChart';
+export { default as TradingControls } from './TradingControls';
+export { default as TradingCSS } from './Trading.css';
+export { tradingAPI } from '../../services/api/trading';

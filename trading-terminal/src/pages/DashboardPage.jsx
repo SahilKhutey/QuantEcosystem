@@ -33,13 +33,28 @@ const DashboardPage = () => {
   const changePct = 1.58;
 
   useEffect(() => {
+    let isMounted = true;
     setLoading(true);
-    runModelFusion(selectedSymbol).then(res => {
-      setFusion(res);
-      setLoading(false);
-    });
+    
+    runModelFusion(selectedSymbol)
+      .then(res => {
+        if (isMounted) {
+          setFusion(res || null);
+          setLoading(false);
+        }
+      })
+      .catch(err => {
+        console.error("Fusion signal failed:", err);
+        if (isMounted) {
+          setLoading(false);
+          // Fallback or keep null
+        }
+      });
+
     // Prime indices
     ['^NSEI', '^BSESN'].forEach(getLatestPrice);
+    
+    return () => { isMounted = false; };
   }, [selectedSymbol]);
 
   return (
@@ -68,7 +83,7 @@ const DashboardPage = () => {
         <Col span={6}>
           <MetricCard 
             title="Model Conviction" 
-            value={fusion ? `${Math.round(fusion.fusion_signal * 100)}%` : '--'}
+            value={fusion?.fusion_signal ? `${Math.round(fusion.fusion_signal * 100)}%` : '--'}
             trend="Strong"
             isPositive={true}
             description="Consensus signal: BULLISH"

@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1/performance';
+import { API_BASE_URL } from "./apiConfig";
+
 
 export const performanceAPI = {
   // Get alpha attribution metrics (Sharpe, Sortino, Calmar)

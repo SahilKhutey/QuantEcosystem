@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Row, Col, Card, Table, Tag, Button, Input, Space, Typography, Badge, Progress, Tabs, List, Divider, Tooltip, Statistic, Form, Select, Alert, Modal, Empty, Comment, Avatar } from 'antd';
+import { Row, Col, Card, Table, Tag, Button, Input, Space, Typography, Badge, Progress, Tabs, List, Divider, Tooltip, Statistic, Form, Select, Alert, Modal, Empty, Avatar } from 'antd';
 import { 
   RobotOutlined, 
   SearchOutlined, 
@@ -16,7 +16,7 @@ import {
   CloudUploadOutlined,
   FileTextOutlined
 } from '@ant-design/icons';
-import { Area, Column, Line, Pie, Radar, Scatter, Heatmap, DualAxes, Chord } from '@ant-design/plots';
+import { Area, Column, Line, Pie, Radar, Scatter, Heatmap, DualAxes } from '@ant-design/plots';
 import { aiResearchAPI } from '../services/api/ai_research';
 import MetricCard from '../components/Analytics/MetricCard';
 import './AIResearchPage.css';
@@ -71,12 +71,16 @@ const AIResearchPage = () => {
               <Divider />
               {analysisText ? (
                 <div className="ai-output">
-                   <Comment
-                    author={<Text strong>Lead AI Strategist (GPT-4)</Text>}
-                    avatar={<Avatar icon={<RobotOutlined />} style={{ backgroundColor: '#1890ff' }} />}
-                    content={<Paragraph style={{ fontSize: '14px', lineHeight: '1.6' }}>{analysisText}</Paragraph>}
-                    datetime={<Tooltip title={new Date().toLocaleTimeString()}><Text type="secondary">{new Date().toLocaleTimeString()}</Text></Tooltip>}
-                   />
+                   <div style={{ display: 'flex', gap: '12px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+                      <Avatar icon={<RobotOutlined />} style={{ backgroundColor: '#1890ff', flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <Text strong>Lead AI Strategist (GPT-4)</Text>
+                            <Tooltip title={new Date().toLocaleTimeString()}><Text type="secondary">{new Date().toLocaleTimeString()}</Text></Tooltip>
+                         </div>
+                         <Paragraph style={{ fontSize: '14px', lineHeight: '1.6', marginBottom: 0 }}>{analysisText}</Paragraph>
+                      </div>
+                   </div>
                    <Row gutter={16} style={{ marginTop: 24 }}>
                       <Col span={8}>
                          <Card size="small" title="Technical Outlook" className="mini-card">

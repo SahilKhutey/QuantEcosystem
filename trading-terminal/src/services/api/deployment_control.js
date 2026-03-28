@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1/deployment-control';
+import { API_BASE_URL } from "./apiConfig";
+
 
 export const deploymentControlAPI = {
   // Get Docker container topology

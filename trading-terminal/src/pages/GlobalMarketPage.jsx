@@ -33,7 +33,7 @@ import {
   FundProjectionScreenOutlined,
   CalendarOutlined,
   BankOutlined,
-  GoldOutlined,
+  PropertySafetyOutlined,
   DollarCircleOutlined,
   RiseOutlined,
   FallOutlined,
@@ -44,8 +44,8 @@ import {
   SearchOutlined,
   FilterOutlined,
   NotificationOutlined,
-  DropboxOutlined,
-  BitcoinOutlined
+  DatabaseOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
 import { Heatmap, Column, Line, Scatter } from '@ant-design/plots';
 import { globalMarketAPI } from '../services/api/globalMarket';
@@ -151,9 +151,9 @@ const GlobalMarketPage = () => {
     { title: 'S&P 500', value: globalOverview.sp500?.price, change: globalOverview.sp500?.change24h, changePct: globalOverview.sp500?.change24hPct, icon: <BarChartOutlined />, color: '#52c41a' },
     { title: 'NASDAQ', value: globalOverview.nasdaq?.price, change: globalOverview.nasdaq?.change24h, changePct: globalOverview.nasdaq?.change24hPct, icon: <LineChartOutlined />, color: '#52c41a' },
     { title: 'DOW JONES', value: globalOverview.dow?.price, change: globalOverview.dow?.change24h, changePct: globalOverview.dow?.change24hPct, icon: <FundProjectionScreenOutlined />, color: '#52c41a' },
-    { title: 'GOLD', value: globalOverview.gold?.price, change: globalOverview.gold?.change24h, changePct: globalOverview.gold?.change24hPct, icon: <GoldOutlined />, color: '#faad14' },
-    { title: 'OIL (WTI)', value: globalOverview.oil?.price, change: globalOverview.oil?.change24h, changePct: globalOverview.oil?.change24hPct, icon: <DropboxOutlined />, color: '#ff4d4f' },
-    { title: 'BITCOIN', value: globalOverview.bitcoin?.price, change: globalOverview.bitcoin?.change24h, changePct: globalOverview.bitcoin?.change24hPct, icon: <BitcoinOutlined />, color: '#1890ff' }
+    { title: 'GOLD', value: globalOverview.gold?.price, change: globalOverview.gold?.change24h, changePct: globalOverview.gold?.change24hPct, icon: <PropertySafetyOutlined />, color: '#faad14' },
+    { title: 'OIL (WTI)', value: globalOverview.oil?.price, change: globalOverview.oil?.change24h, changePct: globalOverview.oil?.change24hPct, icon: <DatabaseOutlined />, color: '#ff4d4f' },
+    { title: 'BITCOIN', value: globalOverview.bitcoin?.price, change: globalOverview.bitcoin?.change24h, changePct: globalOverview.bitcoin?.change24hPct, icon: <DollarOutlined />, color: '#1890ff' }
   ], [globalOverview]);
 
   const heatmapConfig = useMemo(() => ({
@@ -293,7 +293,7 @@ const GlobalMarketPage = () => {
              </Row>
           </TabPane>
 
-          <TabPane tab={<span><GoldOutlined />Commodities</span>} key="commodities">
+          <TabPane tab={<span><PropertySafetyOutlined />Commodities</span>} key="commodities">
              <Row gutter={[24, 24]}>
                <Col xs={24} lg={16}><Card title="Commodity Table"><Table dataSource={commodityPrices} columns={commodityColumns} pagination={false} /></Card></Col>
                <Col xs={24} lg={8}>

@@ -1,18 +1,7 @@
-import React from 'react';
-import styled from 'styled-components';
+export { default as StockAnalysisDashboard } from './StockAnalysisDashboard';
+export { default as TechnicalIndicator } from './TechnicalIndicator';
+export { default as IndicatorSettings } from './IndicatorSettings';
+export { default as IndicatorLibrary } from './IndicatorLibrary';
+export { default as PriceChart } from './PriceChart';
+export { default as IndicatorComparison } from './IndicatorComparison';
 
-const Container = styled.div`
-  background: ${({ theme }) => theme.colors.surface};
-  padding: 1rem;
-  border-radius: 8px;
-`;
-
-const StockAnalysis = () => {
-  return (
-    <Container>
-      <h3>Stock Analysis Tools</h3>
-    </Container>
-  );
-};
-
-export default StockAnalysis;

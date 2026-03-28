@@ -17,7 +17,7 @@ import {
   BarChartOutlined,
   DeploymentUnitOutlined
 } from '@ant-design/icons';
-import { Area, Column, Line, Pie, Radar, Scatter, Heatmap, DualAxes, Gauge, Chord } from '@ant-design/plots';
+import { Area, Column, Line, Pie, Radar, Scatter, Heatmap, DualAxes, Gauge } from '@ant-design/plots';
 import { sentimentTopologyAPI } from '../services/api/sentiment_topology';
 import MetricCard from '../components/Analytics/MetricCard';
 import './SentimentTopologyPage.css';
@@ -71,13 +71,13 @@ const SentimentTopologyPage = () => {
         <Col span={12}>
            <Card title="NLP Entity-Impact Topology" className="sentiment-card shadow-sm">
               <div style={{ height: 400 }}>
-                 <Chord 
-                    data={entityData}
-                    sourceField="source"
-                    targetField="target"
-                    weightField="value"
-                    colorField="type"
-                    label={{ style: { fill: '#333', fontSize: 10 } }}
+                 <Radar 
+                    data={entityData.map(d => ({ name: d.source, value: d.value, type: d.type }))}
+                    xField="name"
+                    yField="value"
+                    seriesField="type"
+                    meta={{ value: { min: 0, max: 100 } }}
+                    legend={{ position: 'bottom' }}
                  />
               </div>
               <Paragraph style={{ fontSize: '11px', color: '#8c8c8c', textAlign: 'center', marginTop: 16 }}>

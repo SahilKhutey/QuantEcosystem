@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1/system';
+import { API_BASE_URL } from "./apiConfig";
+
 
 export const systemAPI = {
   // Get health status of all core services

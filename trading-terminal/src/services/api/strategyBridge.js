@@ -1,7 +1,8 @@
+import { API_BASE_URL } from "./apiConfig";
 // src/services/api/strategyBridge.js
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_STRATEGY_ENGINE_URL || 'http://localhost:8000';
+
 
 export const strategyBridge = {
   /**

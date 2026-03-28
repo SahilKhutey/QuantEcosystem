@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1/risk-stress';
+import { API_BASE_URL } from "./apiConfig";
+
 
 export const riskStressAPI = {
   // Run systemic stress test (Black Swan, etc.)

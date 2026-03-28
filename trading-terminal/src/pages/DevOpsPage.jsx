@@ -12,7 +12,7 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   RollbackOutlined,
-  TerminalOutlined,
+  ConsoleSqlOutlined,
   ApiOutlined,
   ContainerOutlined
 } from '@ant-design/icons';
@@ -87,7 +87,7 @@ const DevOpsPage = () => {
         <Col span={24}>
           <Card className="devops-content-card">
              <Tabs defaultActiveKey="orchestration">
-                <TabPane tab={<span><TerminalOutlined /> Deployment Orchestrator (Blue/Green)</span>} key="orchestration">
+                <TabPane tab={<span><ConsoleSqlOutlined /> Deployment Orchestrator (Blue/Green)</span>} key="orchestration">
                    <Row gutter={24}>
                      <Col span={10}>
                         <Title level={4}>Live Deployment Sequence</Title>

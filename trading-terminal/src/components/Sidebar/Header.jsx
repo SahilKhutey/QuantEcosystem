@@ -1,128 +1,118 @@
+// src/components/Sidebar/Header.jsx
 import React, { useState, useEffect } from 'react';
 import {
-  MenuUnfoldOutlined,
-  MenuFoldOutlined,
-  SearchOutlined,
-  ClockCircleOutlined,
-  UserOutlined,
-  BellOutlined,
-  SettingOutlined,
-  LogoutOutlined
+  MenuUnfoldOutlined, MenuFoldOutlined,
+  BellOutlined, SearchOutlined, UserOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
-import { Layout, Button, Space, Typography, Tag, Divider, Avatar, Dropdown, Breadcrumb } from 'antd';
+import { Avatar } from 'antd';
 import { useLocation, Link } from 'react-router-dom';
-import UserMenu from './UserMenu';
-import SystemStatus from './SystemStatus';
-import NotificationBell from './NotificationBell';
-import SearchBar from './SearchBar';
+import useAppStore from '../../services/store/appStore';
+import './Sidebar.css';
 
-const { Header: AntdHeader } = Layout;
-const { Text } = Typography;
+const QUICK_SYMBOLS = ['RELIANCE', 'TCS', 'NIFTY', 'AAPL', 'BTC'];
 
-const Header = ({
-  collapsed = false,
-  onCollapse,
-  title = "Dashboard",
-  selectedSymbol = 'RELIANCE',
-  onSymbolChange
-}) => {
-  const [isCollapsed, setIsCollapsed] = useState(collapsed);
-  const [searchToggle, setSearchToggle] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
+/* Map path segments to human-readable labels */
+const PATH_MAP = {
+  'trading': 'Order Desk', 'signals': 'Signals', 'portfolio': 'Portfolio',
+  'risk': 'Risk', 'news': 'News', 'analytics': 'Analytics', 'settings': 'Settings',
+  'global-market': 'Global Market', 'stock-analysis': 'Stock Analysis',
+  'quant-engine': 'Quant Engine', 'ai-agent': 'AI Agent',
+  'trading-engine': 'Trading Engine', 'wealth': 'Wealth', 'sip': 'SIP',
+  'swp': 'SWP', 'equity': 'Equity', 'multi-strategy': 'Multi-Strategy',
+  'options': 'Derivatives', 'developer': 'Developer', 'system-health': 'System Health',
+  'optimization': 'Optimization', 'drl-studio': 'DRL Studio',
+  'advanced-eval': 'Evaluation', 'commodities': 'Commodities', 'macro': 'Macro',
+  'devops': 'DevOps', 'performance-audit': 'Audit', 'pipeline': 'Pipeline',
+  'backtest-studio': 'Backtest', 'allocator': 'Allocator',
+  'orchestrator': 'Orchestrator', 'stress-test': 'Stress Test',
+  'commodity-alpha': 'Commodity Alpha', 'model-zoo': 'Model Zoo',
+  'sentiment-topology': 'Sentiment', 'rl-agent-studio': 'RL Studio',
+  'hft-backtest-lab': 'HFT Lab', 'ai-research': 'AI Research',
+  'asset-allocation-lab': 'Asset Alloc', 'signal-monitor': 'Signal Monitor',
+  'macro-hub': 'Macro Hub', 'sovereign-risk': 'Sovereign Risk',
+  'infrastructure': 'Infrastructure',
+};
+
+const Header = ({ collapsed, onCollapse }) => {
+  const { selectedSymbol, setSelectedSymbol } = useAppStore();
+  const [time, setTime] = useState(new Date());
   const location = useLocation();
 
-  const pathnames = location.pathname.split('/').filter((x) => x);
-
   useEffect(() => {
-    setIsCollapsed(collapsed);
-  }, [collapsed]);
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
-  const quickSymbols = ['RELIANCE', 'TCS', 'AAPL', 'BTCUSD'];
+  const pathParts = location.pathname.split('/').filter(Boolean);
 
   return (
-    <AntdHeader className="app-header" style={{ padding: '0 24px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
-      <Space size={16}>
-        <Button
-          type="text"
-          icon={isCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          onClick={() => {
-            const next = !isCollapsed;
-            setIsCollapsed(next);
-            if (onCollapse) onCollapse(next);
-          }}
-        />
-        <Text strong style={{ fontSize: '18px' }}>{title}</Text>
-        <Divider type="vertical" />
-        <Breadcrumb style={{ fontSize: '12px' }}>
-          <Breadcrumb.Item><Link to="/">Terminal</Link></Breadcrumb.Item>
-          {pathnames.map((name, index) => {
-            const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
-            const isLast = index === pathnames.length - 1;
+    <div className="app-header-bar">
+      {/* Left: collapse + breadcrumb */}
+      <div className="header-left-zone">
+        <div
+          className="collapse-btn"
+          onClick={() => onCollapse && onCollapse(!collapsed)}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        </div>
+
+        <div className="breadcrumb-trail">
+          <Link to="/" className="breadcrumb-link">Terminal</Link>
+          {pathParts.map((seg, i) => {
+            const isLast = i === pathParts.length - 1;
+            const label = PATH_MAP[seg] || seg.replace(/-/g, ' ');
+            const href = '/' + pathParts.slice(0, i + 1).join('/');
             return (
-              <Breadcrumb.Item key={name}>
+              <React.Fragment key={seg}>
+                <span className="breadcrumb-sep">›</span>
                 {isLast ? (
-                  <span style={{ textTransform: 'capitalize' }}>{name.replace(/-/g, ' ')}</span>
+                  <span className="breadcrumb-current">{label}</span>
                 ) : (
-                  <Link to={routeTo} style={{ textTransform: 'capitalize' }}>{name.replace(/-/g, ' ')}</Link>
+                  <Link to={href} className="breadcrumb-link">{label}</Link>
                 )}
-              </Breadcrumb.Item>
+              </React.Fragment>
             );
           })}
-        </Breadcrumb>
-      </Space>
-
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '32px' }}>
-        {searchToggle ? (
-          <SearchBar
-            compact
-            style={{ width: 400 }}
-            onSearch={(val) => {
-              if (onSymbolChange) onSymbolChange(val);
-              setSearchToggle(false);
-            }}
-          />
-        ) : (
-          <Space size={24}>
-            <Space size={8}>
-              {quickSymbols.map(sym => (
-                <Tag
-                  key={sym}
-                  color={selectedSymbol === sym ? 'blue' : 'default'}
-                  style={{ cursor: 'pointer', borderRadius: '4px', fontWeight: 600 }}
-                  onClick={() => onSymbolChange && onSymbolChange(sym)}
-                >
-                  {sym}
-                </Tag>
-              ))}
-              <Button type="text" icon={<SearchOutlined />} onClick={() => setSearchToggle(true)} size="small" />
-            </Space>
-            <Divider type="vertical" />
-            <SystemStatus compact />
-          </Space>
-        )}
+        </div>
       </div>
-      <Space size={16}>
-        <NotificationBell />
-        <Dropdown 
-          overlay={
-            <UserMenu 
-              user={{ name: 'Institutional Trader', avatar: 'https://joeschmoe.io/api/v1/random' }} 
-            />
-          } 
-          trigger={['click']}
-        >
-          <Button type="text" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px' }}>
-            <Avatar icon={<UserOutlined />} size="small" />
-            <span style={{ fontSize: '12px', fontWeight: 600 }}>Trader #001</span>
-          </Button>
-        </Dropdown>
-      </Space>
-    </AntdHeader>
+
+      {/* Center: quick symbol selector */}
+      <div className="header-center-zone">
+        {QUICK_SYMBOLS.map(sym => (
+          <div
+            key={sym}
+            className={`sym-chip ${selectedSymbol === sym ? 'active' : ''}`}
+            onClick={() => setSelectedSymbol(sym)}
+          >
+            {sym}
+          </div>
+        ))}
+      </div>
+
+      {/* Right: live badge, clock, notifications, user */}
+      <div className="header-right-zone">
+        <div className="live-badge">
+          <span className="pulse-dot" style={{ background: '#10b981' }} />
+          LIVE
+        </div>
+        <div className="clock-display">
+          {time.toLocaleTimeString('en-IN', { hour12: false })}
+        </div>
+        <div className="header-icon-btn" title="Notifications">
+          <BellOutlined />
+        </div>
+        <div className="header-user-btn">
+          <Avatar
+            icon={<UserOutlined />}
+            size={22}
+            style={{ background: 'linear-gradient(135deg,#1d4ed8,#3b82f6)', flexShrink: 0 }}
+          />
+          <span className="header-user-name">Trader #001</span>
+        </div>
+      </div>
+    </div>
   );
 };
 

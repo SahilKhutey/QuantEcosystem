@@ -14,7 +14,7 @@ import {
   BugOutlined,
   CodeOutlined,
   MonitorOutlined,
-  TerminalOutlined
+  ConsoleSqlOutlined
 } from '@ant-design/icons';
 import { Area, Column, Line, Radar, Heatmap, DualAxes, Gauge } from '@ant-design/plots';
 import { orchestratorAPI } from '../services/api/orchestrator';
@@ -37,7 +37,7 @@ const OrchestratorPage = () => {
       <div className="orchestrator-header">
         <Title level={2}><DeploymentUnitOutlined /> Strategy Docker Orchestrator</Title>
         <Space>
-           <Button icon={<TerminalOutlined />}>View Raw Logs</Button>
+           <Button icon={<ConsoleSqlOutlined />}>View Raw Logs</Button>
            <Button type="primary" icon={<SyncOutlined />}>Trigger Rolling Restart</Button>
         </Space>
       </div>
@@ -123,7 +123,7 @@ const OrchestratorPage = () => {
                     />
                  </TabPane>
 
-                 <TabPane tab={<span><TerminalOutlined /> Orchestration Logs</span>} key="logs">
+                 <TabPane tab={<span><ConsoleSqlOutlined /> Orchestration Logs</span>} key="logs">
                     <div className="log-container">
                        <pre style={{ color: '#fff', fontSize: '11px' }}>
 {`[2024-03-26 17:45:01] INFO  strategy-api-v28 Deployment successful.

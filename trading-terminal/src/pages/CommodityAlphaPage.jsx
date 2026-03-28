@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Row, Col, Card, Table, Tag, Button, Input, Space, Typography, Badge, Progress, Tabs, List, Divider, Tooltip, Statistic, Form, InputNumber, Select, Radio, Alert } from 'antd';
 import { 
-  GoldOutlined, 
+  PropertySafetyOutlined, 
   SafetyOutlined, 
   SafetyCertificateOutlined, 
   RetweetOutlined, 
@@ -38,7 +38,7 @@ const CommodityAlphaPage = () => {
   return (
     <div className="commodity-alpha-page">
       <div className="commodity-header">
-        <Title level={2}><GoldOutlined /> Institutional Commodity Alpha Hub</Title>
+        <Title level={2}><PropertySafetyOutlined /> Institutional Commodity Alpha Hub</Title>
         <Space>
            <Button icon={<RetweetOutlined />}>Rebalance Hedges</Button>
            <Button type="primary" icon={<AimOutlined />}>Trigger Optimization Sweep</Button>

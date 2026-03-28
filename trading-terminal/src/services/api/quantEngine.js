@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+import { API_BASE_URL } from "./apiConfig";
+
 
 export const quantEngineAPI = {
   // Get strategy templates
@@ -202,14 +203,22 @@ export const quantEngineAPI = {
 
   // Run model fusion
   runModelFusion: async (config) => {
+    const symbol = typeof config === 'string' ? config : config?.symbol || 'RELIANCE';
     const response = await fetch(`${API_BASE_URL}/quant-engine/signals/fusion/run`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(config)
+      body: JSON.stringify({ symbol })
     });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Fusion API error (${response.status}):`, errorText);
+      throw new Error(`Fusion API failed with status ${response.status}`);
+    }
+    
     return response.json();
   }
 };

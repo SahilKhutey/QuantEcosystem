@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Row, Col, Card, Table, Tag, Button, Space, Typography, Badge, Progress, Tabs, List, Divider, Tooltip, Statistic, Form, Select, Slider, InputNumber } from 'antd';
 import { 
-  GoldOutlined, 
+  PropertySafetyOutlined, 
   LineChartOutlined, 
   DotChartOutlined, 
   SafetyCertificateOutlined, 
@@ -47,7 +47,7 @@ const CommoditiesPage = () => {
   return (
     <div className="commodities-page">
       <div className="commodities-header">
-        <Title level={2}><GoldOutlined /> Commodities Intelligence & Gold Hub</Title>
+        <Title level={2}><PropertySafetyOutlined /> Commodities Intelligence & Gold Hub</Title>
         <Space>
           <Button icon={<SwapOutlined />}>Trigger Hedge Rebalancing</Button>
           <Button type="primary" icon={<HistoryOutlined />}>Commodity Sector Audit</Button>
@@ -56,7 +56,7 @@ const CommoditiesPage = () => {
 
       <Row gutter={[24, 24]}>
         <Col span={6}>
-          <MetricCard title="Spot Gold (per g)" value="₹6,450" icon={<GoldOutlined />} color="#faad14" trend={1.2} />
+          <MetricCard title="Spot Gold (per g)" value="₹6,450" icon={<PropertySafetyOutlined />} color="#faad14" trend={1.2} />
         </Col>
         <Col span={6}>
           <MetricCard title="Portfolio Hedge Ratio" value={`${goldHedge.ratio}%`} icon={<SafetyCertificateOutlined />} color="#52c41a" />
