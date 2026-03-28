@@ -222,16 +222,39 @@ GET  /api/settings/system             # System configuration
 | **aiohttp** | Async HTTP client |
 
 ### Design System
-| Token | Value |
-|---|---|
-| Primary Background | `#070a0f` |
-| Card Background | `#0d1117` |
-| Sidebar | `#0a0d14` |
-| Accent Blue | `#3b82f6` |
-| Accent Green | `#10b981` |
-| Text Primary | `#f0f6fc` |
-| Text Secondary | `#8b949e` |
 | Font | Inter + JetBrains Mono |
+
+---
+
+## 📱 Cross-Platform Support
+
+The Quantum Terminal is designed to run natively on all major platforms using a single codebase.
+
+### 🌐 Web (Browser)
+Standard React 18 + Vite 4 application.
+- **URL**: `http://localhost:5173` (Dev)
+- **Deployment**: Optimized for **Vercel**, **Netlify**, or standard Nginx/Apache.
+- **Config**: See `vercel.json` for routing/security headers.
+
+### 💻 Desktop (PC / Mac / Linux)
+Powered by **Electron 29**. Provides a native window experience with system tray and menu bar support.
+- **Launch Dev**: `npm run electron:dev`
+- **Build Installers**:
+  - Windows (.exe): `npm run build:win`
+  - macOS (.dmg): `npm run build:mac`
+  - Linux (.AppImage): `npm run build:linux`
+- **Features**: OS-level notifications, auto-launch, system tray controls.
+
+### 📱 Mobile (iOS / Android)
+Implements **Progressive Web App (PWA)** standards. No App Store download required.
+- **Installation**:
+  - **iOS**: Open in Safari → "Add to Home Screen"
+  - **Android**: Open in Chrome → "Install App"
+- **Features**:
+  - **Offline Support**: Core UI and charts cached via Service Workers (Workbox).
+  - **Standalone Mode**: Runs in its own full-screen window without browser chrome.
+  - **Shortcuts**: Long-press icon for quick access to Dashboard, Trading, or Portfolio.
+- **Responsive**: Sidebar converts to a sliding drawer; page grids auto-stack.
 
 ---
 

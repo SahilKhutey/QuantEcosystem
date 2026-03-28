@@ -1,0 +1,52 @@
+{
+  "appId": "com.quantumterminal.institutional",
+  "productName": "Quantum Terminal",
+  "copyright": "© 2026 Sahil Khutey. All rights reserved.",
+
+  "directories": {
+    "output": "dist-electron",
+    "buildResources": "public"
+  },
+
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "node_modules/electron-is-dev/**/*"
+  ],
+
+  "asar": true,
+
+  "win": {
+    "target":           [{ "target": "nsis", "arch": ["x64"] }],
+    "icon":             "public/icon-512.png",
+    "publisherName":    "Sahil Khutey",
+    "requestedExecutionLevel": "requireAdministrator"
+  },
+  "nsis": {
+    "oneClick":         false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName":     "Quantum Terminal"
+  },
+
+  "mac": {
+    "target":           [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+    "icon":             "public/icon-512.png",
+    "category":         "public.app-category.finance",
+    "darkModeSupport":  true,
+    "minimumSystemVersion": "11.0"
+  },
+  "dmg": {
+    "title":            "Quantum Terminal ${version}"
+  },
+
+  "linux": {
+    "target":           ["AppImage", "deb", "rpm"],
+    "icon":             "public/icon-512.png",
+    "category":         "Finance",
+    "synopsis":         "Institutional Trading Intelligence Platform"
+  },
+
+  "publish": null
+}

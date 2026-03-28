@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   MenuUnfoldOutlined, MenuFoldOutlined,
-  BellOutlined, SearchOutlined, UserOutlined,
-  ThunderboltOutlined,
+  BellOutlined, UserOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import { Avatar } from 'antd';
 import { useLocation, Link } from 'react-router-dom';
@@ -11,8 +11,8 @@ import useAppStore from '../../services/store/appStore';
 import './Sidebar.css';
 
 const QUICK_SYMBOLS = ['RELIANCE', 'TCS', 'NIFTY', 'AAPL', 'BTC'];
+const MOBILE_BP = 768;
 
-/* Map path segments to human-readable labels */
 const PATH_MAP = {
   'trading': 'Order Desk', 'signals': 'Signals', 'portfolio': 'Portfolio',
   'risk': 'Risk', 'news': 'News', 'analytics': 'Analytics', 'settings': 'Settings',
@@ -34,9 +34,10 @@ const PATH_MAP = {
   'infrastructure': 'Infrastructure',
 };
 
-const Header = ({ collapsed, onCollapse }) => {
+const Header = ({ collapsed, onCollapse, onMobileMenuToggle, mobileOpen }) => {
   const { selectedSymbol, setSelectedSymbol } = useAppStore();
   const [time, setTime] = useState(new Date());
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const location = useLocation();
 
   useEffect(() => {
@@ -44,41 +45,68 @@ const Header = ({ collapsed, onCollapse }) => {
     return () => clearInterval(t);
   }, []);
 
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const isMobile = windowWidth <= MOBILE_BP;
   const pathParts = location.pathname.split('/').filter(Boolean);
+
+  // Current page label for mobile
+  const currentLabel = pathParts.length > 0
+    ? (PATH_MAP[pathParts[pathParts.length - 1]] || pathParts[pathParts.length - 1].replace(/-/g, ' '))
+    : 'Dashboard';
 
   return (
     <div className="app-header-bar">
-      {/* Left: collapse + breadcrumb */}
+      {/* Left: collapse / hamburger + breadcrumb */}
       <div className="header-left-zone">
+        {/* On mobile: hamburger to open drawer. On desktop: collapse toggle */}
         <div
           className="collapse-btn"
-          onClick={() => onCollapse && onCollapse(!collapsed)}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          onClick={() => isMobile
+            ? onMobileMenuToggle && onMobileMenuToggle()
+            : onCollapse && onCollapse(!collapsed)
+          }
+          title={isMobile ? 'Open menu' : (collapsed ? 'Expand sidebar' : 'Collapse sidebar')}
         >
-          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          {isMobile
+            ? <MenuOutlined />
+            : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+          }
         </div>
 
+        {/* Breadcrumb — simplified on mobile */}
         <div className="breadcrumb-trail">
-          <Link to="/" className="breadcrumb-link">Terminal</Link>
-          {pathParts.map((seg, i) => {
-            const isLast = i === pathParts.length - 1;
-            const label = PATH_MAP[seg] || seg.replace(/-/g, ' ');
-            const href = '/' + pathParts.slice(0, i + 1).join('/');
-            return (
-              <React.Fragment key={seg}>
-                <span className="breadcrumb-sep">›</span>
-                {isLast ? (
-                  <span className="breadcrumb-current">{label}</span>
-                ) : (
-                  <Link to={href} className="breadcrumb-link">{label}</Link>
-                )}
-              </React.Fragment>
-            );
-          })}
+          {isMobile ? (
+            <span className="breadcrumb-current" style={{ fontSize: '13px', fontWeight: 700 }}>
+              {currentLabel}
+            </span>
+          ) : (
+            <>
+              <Link to="/" className="breadcrumb-link">Terminal</Link>
+              {pathParts.map((seg, i) => {
+                const isLast = i === pathParts.length - 1;
+                const label = PATH_MAP[seg] || seg.replace(/-/g, ' ');
+                const href = '/' + pathParts.slice(0, i + 1).join('/');
+                return (
+                  <React.Fragment key={seg}>
+                    <span className="breadcrumb-sep">›</span>
+                    {isLast
+                      ? <span className="breadcrumb-current">{label}</span>
+                      : <Link to={href} className="breadcrumb-link">{label}</Link>
+                    }
+                  </React.Fragment>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
 
-      {/* Center: quick symbol selector */}
+      {/* Center: quick symbol selector (hidden on mobile via CSS) */}
       <div className="header-center-zone">
         {QUICK_SYMBOLS.map(sym => (
           <div
@@ -91,7 +119,7 @@ const Header = ({ collapsed, onCollapse }) => {
         ))}
       </div>
 
-      {/* Right: live badge, clock, notifications, user */}
+      {/* Right: live, clock, notifications, user */}
       <div className="header-right-zone">
         <div className="live-badge">
           <span className="pulse-dot" style={{ background: '#10b981' }} />

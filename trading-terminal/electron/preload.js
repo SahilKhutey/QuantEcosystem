@@ -1,7 +1,14 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, shell } = require('electron');
 
+// Expose safe APIs to the renderer (React app)
 contextBridge.exposeInMainWorld('electronAPI', {
+  // App info
   getAppInfo: () => ipcRenderer.invoke('get-app-info'),
-  onMarketData: (callback) => ipcRenderer.on('market-data', callback),
-  removeMarketDataListener: () => ipcRenderer.removeAllListeners('market-data')
+
+  // Platform detection
+  platform: process.platform,
+  isElectron: true,
+
+  // Open external links in default browser
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
 });

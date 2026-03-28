@@ -475,3 +475,214 @@
 .ant-menu-inline-collapsed .ant-menu-submenu-title {
   padding: 0 calc(50% - 14px) !important;
 }
+
+/* ====================================================
+   RESPONSIVE / CROSS-PLATFORM DESIGN
+   Mobile-first breakpoints
+   ==================================================== */
+
+/* ── Mobile Overlay Backdrop ── */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 199;
+  animation: fadeIn 0.2s ease;
+}
+
+.sidebar-backdrop.visible { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── TABLET (768px – 1024px): Collapsed by default ── */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .app-sidebar {
+    flex-shrink: 0;
+  }
+
+  .header-center-zone .sym-chip:nth-child(n+4) {
+    display: none;
+  }
+
+  .breadcrumb-trail .breadcrumb-link:first-child {
+    display: none;
+  }
+}
+
+/* ── MOBILE (≤ 768px): Full overlay drawer ── */
+@media (max-width: 768px) {
+  /* Sidebar becomes a fixed overlay */
+  .app-sidebar,
+  .ant-layout-sider {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    height: 100dvh !important;
+    z-index: 200 !important;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width: 260px !important;
+    min-width: 260px !important;
+    max-width: 260px !important;
+    box-shadow: none;
+  }
+
+  .app-sidebar.mobile-open,
+  .ant-layout-sider.mobile-open {
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  /* Hide Ant Design's built-in collapse trigger on mobile */
+  .app-sidebar .ant-layout-sider-trigger {
+    display: none !important;
+  }
+
+  /* Never collapse sidebar on mobile — full width drawer */
+  .app-sidebar .ant-layout-sider-children {
+    width: 260px !important;
+  }
+
+  .logo-text, .logo-subtitle,
+  .user-info-text, .system-tags,
+  .user-profile-bar .u-name,
+  .user-profile-bar .u-role {
+    display: block !important;
+    opacity: 1 !important;
+  }
+
+  /* Header adjustments */
+  .app-header-bar {
+    padding: 0 12px !important;
+    height: 48px;
+    /* Safe area for iPhone notch */
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  /* Hide symbol chips on small screens */
+  .header-center-zone {
+    display: none !important;
+  }
+
+  /* Hide breadcrumb text (keep just the icon) */
+  .breadcrumb-trail .breadcrumb-link,
+  .breadcrumb-trail .breadcrumb-sep,
+  .breadcrumb-trail .breadcrumb-current {
+    display: none;
+  }
+
+  /* Hide live badge and clock on mobile */
+  .live-badge, .clock-display {
+    display: none !important;
+  }
+
+  /* Hide user name on mobile */
+  .header-user-name {
+    display: none !important;
+  }
+
+  /* Bigger touch targets */
+  .collapse-btn,
+  .header-icon-btn {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 18px !important;
+  }
+
+  .sym-chip {
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Navigation items taller for fat fingers */
+  .sidebar-nav-scroll .ant-menu-item,
+  .sidebar-nav-scroll .ant-menu-submenu-title {
+    height: 44px !important;
+    line-height: 44px !important;
+  }
+
+  .sidebar-nav-scroll .ant-menu-sub .ant-menu-item {
+    height: 40px !important;
+    line-height: 40px !important;
+  }
+
+  /* User profile bar taller */
+  .user-profile-bar {
+    padding: 14px 12px !important;
+  }
+
+  /* Page content: push down by header height; iOS safe area bottom */
+  .qt-page-content {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+}
+
+/* ── SMALL MOBILE (≤ 480px) ── */
+@media (max-width: 480px) {
+  .header-right-zone {
+    gap: 4px !important;
+  }
+
+  .header-user-btn {
+    padding: 4px 6px !important;
+  }
+}
+
+/* ── DESKTOP: ensure backdrop is hidden ── */
+@media (min-width: 769px) {
+  .sidebar-backdrop { display: none !important; }
+
+  .app-sidebar,
+  .ant-layout-sider {
+    position: relative !important;
+    transform: none !important;
+  }
+}
+
+/* ── Electron: remove title bar gap on macOS ── */
+.is-electron-mac .app-header-bar {
+  padding-left: 80px !important; /* room for traffic-light buttons */
+}
+
+/* ── PWA standalone: add safe-area padding ── */
+@media (display-mode: standalone) {
+  .app-header-bar {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  .qt-page-content {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Touch devices: remove hover states that feel sluggish ── */
+@media (hover: none) and (pointer: coarse) {
+  .collapse-btn:hover,
+  .header-icon-btn:hover,
+  .nav-item:hover,
+  .sym-chip:hover,
+  .user-profile-bar:hover {
+    background: transparent !important;
+  }
+
+  /* But keep active state for taps */
+  .collapse-btn:active  { background: rgba(255,255,255,0.08) !important; }
+  .header-icon-btn:active { background: rgba(255,255,255,0.08) !important; }
+  .sym-chip:active      { background: rgba(59,130,246,0.15) !important; }
+}
+
+/* ── High contrast / accessibility ── */
+@media (prefers-contrast: high) {
+  .app-sidebar       { border-right-color: rgba(255,255,255,0.3) !important; }
+  .sidebar-nav-scroll .ant-menu-item-selected { border-left-width: 3px; }
+}
+
+/* ── Print: hide the chrome ── */
+@media print {
+  .app-sidebar, .app-header-bar, .sidebar-backdrop { display: none !important; }
+}
