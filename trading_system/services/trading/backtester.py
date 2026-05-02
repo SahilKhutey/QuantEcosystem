@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional
-from services.trading.strategy import Strategy
+from trading_system.services.trading.strategy import Strategy
 
 logger = logging.getLogger("Backtester")
 

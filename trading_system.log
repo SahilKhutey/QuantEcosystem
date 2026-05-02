@@ -63,3 +63,11 @@ Running: Unit Test Suite...
 2026-05-02 20:58:40,413 - ProductionHealthCheck - INFO - 
 Total: 5/6 checks passed
 2026-05-02 20:58:40,413 - ProductionHealthCheck - INFO - ======================================================================
+2026-05-02 21:03:29,753 - root - INFO - Logging initialized for Global Trading Terminal
+2026-05-02 21:03:29,756 - Database.StorageEngine - INFO - Storage Engine initialized with optimized schema.
+2026-05-02 21:03:29,758 - StrategyMarketplace - INFO - Discovering strategies...
+2026-05-02 21:03:29,763 - StrategyMarketplace - INFO - Loaded strategy: GoldMacroAlpha
+2026-05-02 21:03:29,768 - StrategyMarketplace - INFO - Loaded strategy: HFTScalper
+2026-05-02 21:03:29,770 - StrategyMarketplace - INFO - Loaded strategy: SwingTrendFollower
+2026-05-02 21:03:29,801 - AuditTrail - INFO - Audit trail initialized with 365 day retention
+2026-05-02 21:03:29,801 - AuditTrail - WARNING - Audit trail encryption NOT enabled
