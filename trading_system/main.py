@@ -1,6 +1,9 @@
 import logging
 import asyncio
 import threading
+import random
+import pandas as pd
+import numpy as np
 
 # Fix for asyncio event loop on Windows/Python 3.14
 try:
@@ -8,7 +11,6 @@ try:
 except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
 import time
-from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from trading_system.config.logging import setup_logging
@@ -17,14 +19,20 @@ from trading_system.services.trading.execution import ExecutionController
 from trading_system.services.monitoring.health_check import HealthMonitor
 from trading_system.services.risk.manager import RiskManager
 from trading_system.services.data.market_data import MarketDataService
-from trading_system.services.monitoring.real_time_monitoring import RealTimeMonitor
+from trading_system.services.monitoring.real_time_monitoring import (
+    RealTimeMonitor,
+)
 from trading_system.services.monitoring.backup_manager import BackupManager
-from trading_system.services.monitoring.failover_controller import FailoverController
+from trading_system.services.monitoring.failover_controller import (
+    FailoverController,
+)
 from trading_system.services.compliance.audit_trail import AuditTrail
 from trading_system.services.analytics.analytics_engine import AnalyticsEngine
 from trading_system.services.analytics.backtester import BacktestEngine
 from trading_system.services.analytics.risk_decomp import RiskDecomposition
-from trading_system.services.recovery.disaster_recovery import DisasterRecoverySystem
+from trading_system.services.recovery.disaster_recovery import (
+    DisasterRecoverySystem,
+)
 from trading_system.services.trading.marketplace import StrategyMarketplace
 from trading_system.services.ai.sentiment_engine import SentimentEngine
 from trading_system.services.ai.macro_analyzer import MacroAnalyzer
@@ -32,7 +40,9 @@ from trading_system.services.social.social_manager import SocialManager
 from trading_system.services.database.storage_engine import StorageEngine
 from trading_system.services.trading.hft_optimizer import HFTOptimizer
 from trading_system.services.alerts.alert_manager import AlertManager
-from trading_system.services.analytics.global_exposure import GlobalExposureTracker
+from trading_system.services.analytics.global_exposure import (
+    GlobalExposureTracker,
+)
 from trading_system.services.risk.position_sizer import PositionSizer
 from trading_system.services.ai.signal_fusion import SignalFusion
 from trading_system.services.wealth.wealth_manager import WealthManager
@@ -40,10 +50,14 @@ from trading_system.services.monitoring.system_monitor import SystemMonitor
 from trading_system.services.continuous_improvement.feedback_loop import (
     ContinuousImprovementFramework,
 )
-from trading_system.services.portfolio.aggregator import MultiStrategyAggregator
+from trading_system.services.portfolio.aggregator import (
+    MultiStrategyAggregator,
+)
 from trading_system.services.api.developer_gateway import DeveloperAPIGateway
 from trading_system.services.risk.refiner import RiskParamRefiner
-from trading_system.services.trading.execution_optimizer import ExecutionOptimizer
+from trading_system.services.trading.execution_optimizer import (
+    ExecutionOptimizer,
+)
 from trading_system.services.compliance.automator import ComplianceAutomator
 from trading_system.services.risk.cb_tester import CircuitBreakerTester
 from trading_system.services.portfolio.robust_allocator import RobustAllocator
@@ -139,13 +153,23 @@ def get_performance_metrics():
 # --- Risk Endpoints ---
 @app.route("/api/risk/metrics", methods=["GET"])
 def get_risk_metrics():
-    return jsonify({"daily_loss": 450.0, "drawdown": 0.02, "position_risk": 0.12})
+    return jsonify(
+        {
+            "daily_loss": 450.0,
+            "drawdown": 0.02,
+            "position_risk": 0.12,
+        }
+    )
 
 
 @app.route("/api/risk/parameters", methods=["GET"])
 def get_risk_parameters():
     return jsonify(
-        {"max_daily_loss": 5000.0, "max_drawdown": 0.10, "max_position_size": 0.20}
+        {
+            "max_daily_loss": 5000.0,
+            "max_drawdown": 0.10,
+            "max_position_size": 0.20,
+        }
     )
 
 
@@ -182,13 +206,13 @@ def get_risk_allocation():
 
 @app.route("/api/risk/circuit-breaker", methods=["GET"])
 def get_circuit_breaker_status():
+    reason = (
+        "None"
+        if not risk_manager.circuit_breaker_active
+        else "Loss limit hit"
+    )
     return jsonify(
-        {
-            "active": risk_manager.circuit_breaker_active,
-            "reason": (
-                "None" if not risk_manager.circuit_breaker_active else "Loss limit hit"
-            ),
-        }
+        {"active": risk_manager.circuit_breaker_active, "reason": reason}
     )
 
 
@@ -246,7 +270,9 @@ def get_order_book(symbol):
 
 @app.route("/api/trading/execution-metrics", methods=["GET"])
 def get_execution_metrics():
-    return jsonify({"avg_slippage": 0.0002, "fill_rate": 0.98, "latency_ms": 45})
+    return jsonify(
+        {"avg_slippage": 0.0002, "fill_rate": 0.98, "latency_ms": 45}
+    )
 
 
 # --- Signal Generator Endpoints ---
@@ -351,13 +377,19 @@ def get_performance_attribution_mock():
 def run_backtest():
     # Simplistic backtest trigger
     data = request.json
-    strategy = data.get("strategy", "sma_cross")
     # Mock historical data
     dates = pd.date_range(start="2023-01-01", periods=100)
-    hist_data = pd.DataFrame({"close": np.random.uniform(140, 160, 100)}, index=dates)
+    close_data = np.random.uniform(140, 160, 100)
+    hist_data = pd.DataFrame({"close": close_data}, index=dates)
 
     def mock_logic(row):
-        return "buy" if row["close"] < 145 else "sell" if row["close"] > 155 else "hold"
+        close = row["close"]
+        if close < 145:
+            return "buy"
+        elif close > 155:
+            return "sell"
+        else:
+            return "hold"
 
     result = backtest_engine.run_simulation(mock_logic, hist_data)
     return jsonify(result)
@@ -377,7 +409,8 @@ def get_monitoring_health():
 
 @app.route("/api/recovery/region/current", methods=["GET"])
 def get_current_region():
-    return jsonify({"region": disaster_recovery.recovery_status["primary_region"]})
+    region = disaster_recovery.recovery_status["primary_region"]
+    return jsonify({"region": region})
 
 
 @app.route("/api/recovery/region/update", methods=["POST"])
@@ -444,7 +477,8 @@ def get_compliance_history():
 @app.route("/api/compliance/verify", methods=["GET"])
 def verify_audit_integrity():
     success = audit_trail.verify_integrity()
-    return jsonify({"status": "INTEGRITY_VERIFIED" if success else "TAMPER_DETECTED"})
+    status = "INTEGRITY_VERIFIED" if success else "TAMPER_DETECTED"
+    return jsonify({"status": status})
 
 
 # --- Monitoring Endpoints ---
@@ -467,7 +501,9 @@ def get_breaker_history():
 # --- Market Endpoints ---
 @app.route("/api/market/status", methods=["GET"])
 def get_market_status():
-    return jsonify({"US": "OPEN", "EU": "CLOSED", "ASIA": "CLOSED", "CRYPTO": "OPEN"})
+    return jsonify(
+        {"US": "OPEN", "EU": "CLOSED", "ASIA": "CLOSED", "CRYPTO": "OPEN"}
+    )
 
 
 @app.route("/api/market/global-data", methods=["GET"])
@@ -485,7 +521,9 @@ def get_global_market_data():
 
 @app.route("/api/market/events", methods=["GET"])
 def get_market_events():
-    return jsonify([{"time": "10:00", "event": "Fed Meeting", "impact": "HIGH"}])
+    return jsonify(
+        [{"time": "10:00", "event": "Fed Meeting", "impact": "HIGH"}]
+    )
 
 
 def run_flask():
@@ -550,9 +588,9 @@ async def main():
         logger.info(f"System Health: {health_monitor.get_system_health()}")
 
         # Start Resilience Loops
-        monitoring_task = asyncio.create_task(monitoring_loop())
-        backup_task = asyncio.create_task(backup_loop())
-        dr_task = asyncio.create_task(dr_loop())
+        asyncio.create_task(monitoring_loop())  # noqa: F841
+        asyncio.create_task(backup_loop())  # noqa: F841
+        asyncio.create_task(dr_loop())  # noqa: F841
 
         await data_pipeline.run_pipeline()
     except KeyboardInterrupt:
@@ -691,7 +729,9 @@ async def get_master_signal():
 
 
 @app.get("/api/risk/position-size/{price}/{volatility}/{confidence}")
-async def get_recommended_size(price: float, volatility: float, confidence: float):
+async def get_recommended_size(
+    price: float, volatility: float, confidence: float
+):
     return position_sizer.calculate_size(price, volatility, confidence)
 
 
@@ -723,7 +763,9 @@ async def simulate_sip_return(amount: float, years: int, rate: float):
     return wealth_manager.simulate_sip(amount, years, rate)
 
 
-@app.get("/api/wealth/simulate-swp/{corpus}/{amount}/{years}/{rate}/{inflation}")
+@app.get(
+    "/api/wealth/simulate-swp/{corpus}/{amount}/{years}/{rate}/{inflation}"
+)
 async def simulate_swp_depletion(
     corpus: float, amount: float, years: int, rate: float, inflation: float
 ):
@@ -939,7 +981,12 @@ async def trigger_cb_recovery():
 @app.post("/api/portfolio/robust-optimize")
 async def run_portfolio_optimization():
     # In a real system, these would fetch from live services
-    market_priors = {"Momentum": 0.3, "Scalper": 0.2, "Gold": 0.2, "Wealth": 0.3}
+    market_priors = {
+        "Momentum": 0.3,
+        "Scalper": 0.2,
+        "Gold": 0.2,
+        "Wealth": 0.3,
+    }
     strategy_views = {
         "Momentum": {"expected_return": 0.15, "confidence": 0.8},
         "Scalper": {"expected_return": 0.12, "confidence": 0.6},
@@ -949,7 +996,9 @@ async def run_portfolio_optimization():
     # Mock Covariance Matrix
     cov = np.diag([0.05, 0.03, 0.04, 0.02])
 
-    return robust_allocator.optimize_allocation(market_priors, strategy_views, cov)
+    return robust_allocator.optimize_allocation(
+        market_priors, strategy_views, cov
+    )
 
 
 # --- Asset Class Expansion Endpoints ---
@@ -968,7 +1017,9 @@ async def get_asset_margin(symbol: str):
 @app.post("/api/broker/prepare-order")
 async def prepare_multi_asset_order():
     data = request.json
-    return asset_expander.prepare_order(data["symbol"], data["side"], data["qty"])
+    return asset_expander.prepare_order(
+        data["symbol"], data["side"], data["qty"]
+    )
 
 
 # --- AI & ML Signal Endpoints ---

@@ -13,26 +13,31 @@ class HFTScalper(BaseStrategy):
         self.obi_threshold = 0.7
         self.tick_count = 0
 
-    def generate_signal(self, data: dict) -> dict:
+    def generate_signals(self, data) -> dict:
         """
         Processes real-time L2 data (bids/asks) to generate scalp signals.
         For demo purposes, we simulate the L2 input.
+        Implements abstract method from BaseStrategy.
         """
         self.tick_count += 1
         
         # Simulate OBI calculation from L2 data
         # In production, 'data' would contain the full order book
-        obi = data.get('obi', random.uniform(-1, 1))
+        if isinstance(data, dict):
+            obi = data.get('obi', random.uniform(-1, 1))
+            price = data.get('price', 150.0)
+        else:
+            obi = random.uniform(-1, 1)
+            price = 150.0
         
-        action = "HOLD"
-        price = data.get('price', 150.0)
+        action = 0  # HOLD (0: Hold, 1: Buy, -1: Sell)
         
         if obi >= self.obi_threshold:
-            action = "BUY"
+            action = 1  # BUY
         elif obi <= -self.obi_threshold:
-            action = "SELL"
+            action = -1  # SELL
             
-        if action != "HOLD":
+        if action != 0:
             signal = {
                 'symbol': self.symbol,
                 'action': action,

@@ -3,7 +3,10 @@ import logging
 import requests
 from dataclasses import dataclass
 from datetime import datetime
-from services.broker.broker_interface import BrokerAPI, OrderRequest
+from trading_system.services.broker.broker_interface import (
+    BrokerAPI,
+    OrderRequest,
+)
 
 logger = logging.getLogger("TDAPI")
 

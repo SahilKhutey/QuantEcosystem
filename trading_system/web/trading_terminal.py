@@ -1,4 +1,3 @@
-import filter 
 import streamlit as st
 import time
 import logging
@@ -8,14 +7,22 @@ import numpy as np
 import random
 from datetime import datetime
 
-from services.broker.broker_interface import GlobalBrokerRouter
-from services.broker.alpaca_api import AlpacaAPI
-from services.broker.ib_api import IBAPI
-from services.broker.td_api import TDAPI
-from services.risk.manager import RiskManager
-from services.trading.hft_engine import HFTScalpingEngine
-from services.trading.swing_engine import SwingTradingEngine, SwingSignal
-from services.trading.intraday_engine import IntradayTradingEngine, IntradaySignal
+from trading_system.services.broker.broker_interface import (
+    GlobalBrokerRouter,
+)
+from trading_system.services.broker.alpaca_api import AlpacaBroker
+from trading_system.services.broker.ib_api import IBBroker
+from trading_system.services.broker.td_api import TDAPI
+from trading_system.services.risk.manager import RiskManager
+from trading_system.services.trading.hft_engine import HFTScalpingEngine
+from trading_system.services.trading.swing_engine import (
+    SwingTradingEngine,
+    SwingSignal,
+)
+from trading_system.services.trading.intraday_engine import (
+    IntradayTradingEngine,
+    IntradaySignal,
+)
 
 # Page configuration
 st.set_page_config(
@@ -40,20 +47,17 @@ def initialize_system():
     
     # Initialize broker router
     broker_router = GlobalBrokerRouter()
-    
+
     # Add brokers
     try:
         # Alpaca
-        alpaca = AlpacaAPI(
-            api_key="ALPACA_API_KEY", 
-            api_secret="ALPACA_API_SECRET"
-        )
+        alpaca = AlpacaBroker()
         broker_router.add_broker("Alpaca", alpaca)
-        
+
         # Interactive Brokers
-        ib = IBAPI()
+        ib = IBBroker()
         broker_router.add_broker("Interactive Brokers", ib)
-        
+
         # TD Ameritrade
         td = TDAPI(
             api_key="TD_API_KEY",
