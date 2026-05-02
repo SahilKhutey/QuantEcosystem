@@ -2,20 +2,22 @@ from abc import ABC, abstractmethod
 import pandas as pd
 import logging
 
+
 class BaseStrategy(ABC):
     """
     Standard interface for all trading strategies in the ecosystem.
     """
+
     def __init__(self, name: str, config: dict = None):
         self.name = name
         self.config = config or {}
         self.logger = logging.getLogger(f"Strategy.{name}")
         self.is_active = False
         self.performance_metrics = {
-            'total_trades': 0,
-            'win_rate': 0.0,
-            'pnl': 0.0,
-            'max_drawdown': 0.0
+            "total_trades": 0,
+            "win_rate": 0.0,
+            "pnl": 0.0,
+            "max_drawdown": 0.0,
         }
 
     @abstractmethod
@@ -35,5 +37,5 @@ class BaseStrategy(ABC):
 
     def update_performance(self, trade_result: dict):
         """Placeholder for performance tracking logic."""
-        self.performance_metrics['total_trades'] += 1
-        self.performance_metrics['pnl'] += trade_result.get('pnl', 0.0)
+        self.performance_metrics["total_trades"] += 1
+        self.performance_metrics["pnl"] += trade_result.get("pnl", 0.0)

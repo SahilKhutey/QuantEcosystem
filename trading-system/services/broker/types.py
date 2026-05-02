@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, Any, Optional
 
+
 @dataclass
 class OrderRequest:
     symbol: str
@@ -14,6 +15,7 @@ class OrderRequest:
     extended_hours: bool = False
     take_profit: Optional[Dict[str, float]] = None
     stop_loss: Optional[Dict[str, float]] = None
+
 
 @dataclass
 class OrderResult:

@@ -2,16 +2,22 @@ import alpaca_trade_api as tradeapi
 import logging
 from trading_system.config.settings import settings
 
+
 class AlpacaBroker:
     """
     Production-ready Alpaca integration for the Global Trading Terminal.
     Handles order execution, account status, and position management.
     """
+
     def __init__(self):
         self.api = tradeapi.REST(
             settings.ALPACA_API_KEY,
             settings.ALPACA_SECRET_KEY,
-            base_url='https://paper-api.alpaca.markets' if settings.ALPACA_PAPER else 'https://api.alpaca.markets'
+            base_url=(
+                "https://paper-api.alpaca.markets"
+                if settings.ALPACA_PAPER
+                else "https://api.alpaca.markets"
+            ),
         )
         self.logger = logging.getLogger(__name__)
 
@@ -23,18 +29,37 @@ class AlpacaBroker:
             self.logger.error(f"Error fetching Alpaca account: {e}")
             return None
 
-    def execute_order(self, symbol, qty, side, type='market', time_in_force='day', limit_price=None):
+    def execute_order(
+        self,
+        symbol,
+        qty,
+        side,
+        order_type="market",
+        time_in_force="day",
+        limit_price=None,
+        stop_price=None,
+        client_order_id=None,
+        extended_hours=False,
+    ):
         """Executes a trade on Alpaca."""
         try:
             order = self.api.submit_order(
                 symbol=symbol,
                 qty=qty,
                 side=side,
-                type=type,
+                type=order_type,
                 time_in_force=time_in_force,
-                limit_price=limit_price
+                limit_price=limit_price,
+                stop_price=stop_price,
+                client_order_id=client_order_id,
+                extended_hours=extended_hours,
             )
-            self.logger.info(f"Submitting {side} order for {qty} shares of {symbol}")
+            self.logger.info(
+                "Submitting %s order for %s shares of %s",
+                side,
+                qty,
+                symbol,
+            )
             return order
         except Exception as e:
             self.logger.error(f"Failed to execute Alpaca order: {e}")
@@ -42,4 +67,8 @@ class AlpacaBroker:
 
     def get_positions(self):
         """Returns all open positions."""
-        return self.api.list_positions()
+        try:
+            return self.api.list_positions()
+        except Exception as e:
+            self.logger.error(f"Error fetching Alpaca positions: {e}")
+            return []
